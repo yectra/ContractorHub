@@ -1,21 +1,11 @@
 import { createBrowserRouter } from 'react-router-dom';
-import HomePage from './app/HomePage';
-
-function NotFoundPage() {
-  return (
-    <section id="center">
-      <div>
-        <h1>Page not found</h1>
-        <p>The route you requested does not exist.</p>
-      </div>
-    </section>
-  );
-}
+import ThreePanelPage from './app/ThreePanelPage';
+import NotFoundPage from './app/NotFoundPage';
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <HomePage />,
+    element: <ThreePanelPage />,
     errorElement: <NotFoundPage />,
-  },
+  }
 ]);
