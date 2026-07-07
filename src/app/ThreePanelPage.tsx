@@ -16,6 +16,14 @@ import { isAmplifyConfigured } from '../services/api';
 // Hours for the schedule grid (7 AM to 7 PM)
 const hours = Array.from({ length: 12 }, (_, i) => i + 7);
 
+const getTodayString = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function ThreePanelPage() {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
@@ -25,12 +33,36 @@ export default function ThreePanelPage() {
   const [notificationType, setNotificationType] = useState<'success' | 'error' | 'warning'>('success');
   const [isDragging, setIsDragging] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
+
+  const getScheduleByDate = (date: string) => {
+    console.log(`Fetching schedule for date: ${date}`);
+    // Future API integration: getScheduleByDate(date).then(...)
+  };
+
+  const handleDateChange = (newDate: string) => {
+    setSelectedDate(newDate || getTodayString());
+    getScheduleByDate(newDate || getTodayString());
+  };
 
   // Fetch real data from Amplify
   const { serviceRequests, loading: srLoading, error: srError, updateServiceRequest, deleteServiceRequest } = useServiceRequests();
   const { technicians, loading: techLoading, error: techError } = useTechnicians();
   const { scheduledJobs, createScheduledJob, updateScheduledJob, deleteScheduledJob } = useScheduledJobs();
   const { clients, loading: clLoading } = useClients();
+
+  // Filter scheduled jobs by selectedDate (defaulting legacy jobs to today's date)
+  const filteredJobs = useMemo(() => {
+    return scheduledJobs.filter((job) => {
+      const jobDate = job.scheduledDate || getTodayString();
+      return jobDate === selectedDate;
+    });
+  }, [scheduledJobs, selectedDate]);
+
+  // Filter service requests to show only those that are unassigned in the queue
+  const pendingRequests = useMemo(() => {
+    return serviceRequests.filter((req) => req.status === 'Unassigned');
+  }, [serviceRequests]);
 
   // Get selected service request helper
   const selectedServiceReq = useMemo(() => {
@@ -117,6 +149,12 @@ export default function ThreePanelPage() {
         (job) => job.serviceRequestId === selectedServiceReq.id
       );
 
+      // Check if status is set to Assigned/InProgress/Completed but no job is scheduled
+      if (!associatedJob && (editStatus === 'Assigned' || editStatus === 'InProgress' || editStatus === 'Completed')) {
+        showNotification_('Cannot set status to Assigned, In Progress, or Completed without scheduling the job on the timeline first.', 'error');
+        return;
+      }
+
       // Update service request in Amplify
       await updateServiceRequest(selectedServiceReq.id!, {
         service: editService,
@@ -125,18 +163,23 @@ export default function ThreePanelPage() {
         notes: editNotes,
         type: editType,
         status: editStatus,
+        assignedTechnicianId: editStatus === 'Unassigned' ? null : selectedServiceReq.assignedTechnicianId,
       });
 
-      // If there's an associated scheduled job, sync job status and notes
+      // Sync or delete scheduled job based on status
       if (associatedJob) {
-        let jobStatus: 'Scheduled' | 'InProgress' | 'Completed' | 'Cancelled' = 'Scheduled';
-        if (editStatus === 'InProgress') jobStatus = 'InProgress';
-        else if (editStatus === 'Completed') jobStatus = 'Completed';
-        
-        await updateScheduledJob(associatedJob.id!, {
-          status: jobStatus,
-          notes: editNotes,
-        });
+        if (editStatus === 'Unassigned') {
+          await deleteScheduledJob(associatedJob.id!);
+        } else {
+          let jobStatus: 'Scheduled' | 'InProgress' | 'Completed' | 'Cancelled' = 'Scheduled';
+          if (editStatus === 'InProgress') jobStatus = 'InProgress';
+          else if (editStatus === 'Completed') jobStatus = 'Completed';
+          
+          await updateScheduledJob(associatedJob.id!, {
+            status: jobStatus,
+            notes: editNotes,
+          });
+        }
       }
 
       showNotification_('Work order saved successfully!', 'success');
@@ -219,18 +262,34 @@ export default function ThreePanelPage() {
     try {
       if (data.type === 'request') {
         const request = serviceRequests.find((r) => r.id === data.id);
-        if (!request) throw new Error('Request not found');
+        if (!request) {
+          showNotification_('Request not found', 'error');
+          return;
+        }
 
-        // Create scheduled job
-        await createScheduledJob({
-          techId,
-          serviceRequestId: data.id,
-          startHour,
-          duration: 2,
-          status: 'Scheduled',
-        });
+        // Check if there is an existing scheduled job for this request
+        const existingJob = scheduledJobs.find((j) => j.serviceRequestId === data.id);
 
-        // Update service request status
+        if (existingJob) {
+          // Update the existing scheduled job
+          await updateScheduledJob(existingJob.id!, {
+            techId,
+            startHour,
+            scheduledDate: selectedDate,
+          });
+        } else {
+          // Create scheduled job
+          await createScheduledJob({
+            techId,
+            serviceRequestId: data.id,
+            startHour,
+            duration: 2,
+            status: 'Scheduled',
+            scheduledDate: selectedDate,
+          });
+        }
+
+        // Update service request status and technician
         await updateServiceRequest(data.id, {
           status: 'Assigned',
           assignedTechnicianId: techId,
@@ -241,12 +300,22 @@ export default function ThreePanelPage() {
 
       if (data.type === 'job') {
         const job = scheduledJobs.find((j) => j.id === data.id);
-        if (!job) throw new Error('Job not found');
+        if (!job) {
+          showNotification_('Job not found', 'error');
+          return;
+        }
 
-        // Update scheduled job with new technician and time
+        // Update scheduled job with new technician, time, and date
         await updateScheduledJob(data.id, {
           techId,
           startHour,
+          scheduledDate: selectedDate,
+        });
+
+        // Also update service request's technician and status to keep them in sync
+        await updateServiceRequest(job.serviceRequestId, {
+          status: 'Assigned',
+          assignedTechnicianId: techId,
         });
 
         showNotification_(`Job reassigned to ${getTechnicianName(techId)}`, 'success');
@@ -291,12 +360,47 @@ export default function ThreePanelPage() {
           <>
             {/* Header */}
             <Box sx={{ p: 1.5, borderBottom: '2px solid #e0e0e0', backgroundColor: '#fafafa' }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', mb: 0.3, fontSize: '0.95rem' }}>
-                Service Queue
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '0.95rem' }}>
+                  Service Queue
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => window.location.href = '/technician'}
+                  sx={{
+                    fontSize: '0.65rem',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    py: 0.2,
+                    px: 1,
+                  }}
+                >
+                  Technician View
+                </Button>
+              </Box>
               <Typography variant="caption" sx={{ color: '#666', fontSize: '0.7rem' }}>
-                {srLoading ? 'Loading...' : `${serviceRequests.length} pending requests`}
+                {srLoading ? 'Loading...' : `${pendingRequests.length} pending requests`}
               </Typography>
+              <TextField
+                type="date"
+                label="Schedule Date"
+                value={selectedDate}
+                onChange={(e) => handleDateChange(e.target.value)}
+                onClick={(e) => {
+                  try {
+                    (e.target as HTMLInputElement).showPicker();
+                  } catch {
+                    // Fallback
+                  }
+                }}
+                sx={{ mt: 1.5 }}
+                fullWidth
+                size="small"
+                slotProps={{
+                  inputLabel: { shrink: true }
+                }}
+              />
               {srError && (
                 <Alert severity="error" sx={{ mt: 1, fontSize: '0.7rem', py: 0.5 }}>
                   {srError}
@@ -310,12 +414,12 @@ export default function ThreePanelPage() {
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
                   <CircularProgress size={40} />
                 </Box>
-              ) : serviceRequests.length === 0 ? (
+              ) : pendingRequests.length === 0 ? (
                 <Typography variant="body2" sx={{ color: '#999', textAlign: 'center', py: 2 }}>
                   No pending requests
                 </Typography>
               ) : (
-                serviceRequests.map((request) => (
+                pendingRequests.map((request) => (
                   <Card
                     key={request.id}
                     draggable
@@ -428,9 +532,18 @@ export default function ThreePanelPage() {
               Running in <strong>Offline Demo Mode</strong> using local browser storage. Run <code>npx amplify sandbox</code> to deploy the AWS Amplify backend.
             </Alert>
           )}
-          <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1a1a', mb: 0.3, fontSize: '1.1rem' }}>
-            Dispatch Command Center
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.3 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.1rem' }}>
+              Dispatch Command Center
+            </Typography>
+            <Chip 
+              label={new Date(selectedDate + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+              color="primary"
+              variant="outlined"
+              size="small"
+              sx={{ fontWeight: 600, fontSize: '0.75rem' }}
+            />
+          </Box>
           <Typography variant="body2" sx={{ color: '#666', fontSize: '0.8rem' }}>
             Drag and drop service requests to schedule technicians
           </Typography>
@@ -587,7 +700,7 @@ export default function ThreePanelPage() {
                     ))}
 
                     {/* Scheduled Jobs */}
-                    {scheduledJobs
+                    {filteredJobs
                       .filter((job) => job.techId === tech.id)
                       .map((job, idx) => (
                         <Box

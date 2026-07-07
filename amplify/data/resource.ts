@@ -52,6 +52,7 @@ const schema = a.schema({
       duration: a.integer().required(),
       status: a.enum(['Scheduled', 'InProgress', 'Completed', 'Cancelled']),
       notes: a.string(),
+      scheduledDate: a.string(),
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
     })

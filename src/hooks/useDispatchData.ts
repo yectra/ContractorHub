@@ -183,6 +183,7 @@ export function useScheduledJobs() {
     duration: number;
     status?: 'Scheduled' | 'InProgress' | 'Completed' | 'Cancelled';
     notes?: string;
+    scheduledDate?: string;
   }) => {
     try {
       const created = await scheduledJobAPI.createScheduledJob(data);
