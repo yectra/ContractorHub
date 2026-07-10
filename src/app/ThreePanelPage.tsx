@@ -364,20 +364,36 @@ export default function ThreePanelPage() {
                 <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '0.95rem' }}>
                   Service Queue
                 </Typography>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => window.location.href = '/technician'}
-                  sx={{
-                    fontSize: '0.65rem',
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    py: 0.2,
-                    px: 1,
-                  }}
-                >
-                  Technician View
-                </Button>
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => window.location.href = '/crm'}
+                    sx={{
+                      fontSize: '0.65rem',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      py: 0.2,
+                      px: 0.8,
+                    }}
+                  >
+                    Client CRM
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => window.location.href = '/technician'}
+                    sx={{
+                      fontSize: '0.65rem',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      py: 0.2,
+                      px: 0.8,
+                    }}
+                  >
+                    Technician View
+                  </Button>
+                </Box>
               </Box>
               <Typography variant="caption" sx={{ color: '#666', fontSize: '0.7rem' }}>
                 {srLoading ? 'Loading...' : `${pendingRequests.length} pending requests`}

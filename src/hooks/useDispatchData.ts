@@ -54,12 +54,25 @@ export function useServiceRequests() {
     }
   };
 
+  const createServiceRequest = async (data: Partial<Schema['ServiceRequest']['type']>) => {
+    try {
+      const created = await serviceRequestAPI.createServiceRequest(data);
+      setServiceRequests((prev) => [...prev, created!]);
+      return created;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create service request';
+      setError(message);
+      throw err;
+    }
+  };
+
   return {
     serviceRequests,
     loading,
     error,
     deleteServiceRequest,
     updateServiceRequest,
+    createServiceRequest,
   };
 }
 
@@ -258,11 +271,24 @@ export function useClients() {
     }
   };
 
+  const createClient = async (data: Partial<Schema['Client']['type']>) => {
+    try {
+      const created = await clientAPI.createClient(data);
+      setClients((prev) => [...prev, created!]);
+      return created;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create client';
+      setError(message);
+      throw err;
+    }
+  };
+
   return {
     clients,
     loading,
     error,
     deleteClient,
     updateClient,
+    createClient,
   };
 }
