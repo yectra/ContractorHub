@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Box, IconButton, Card, CardContent, Typography, Chip, Avatar, Divider, Alert, Snackbar, Button, CircularProgress, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -87,18 +87,31 @@ export default function ThreePanelPage() {
   const [editNotes, setEditNotes] = useState('');
   const [editType, setEditType] = useState<'Emergency' | 'WebRequest' | 'Scheduled'>('Scheduled');
   const [editStatus, setEditStatus] = useState<'Unassigned' | 'Assigned' | 'InProgress' | 'Completed'>('Unassigned');
+  const [syncedServiceReqKey, setSyncedServiceReqKey] = useState<string | null>(null);
+  const selectedServiceReqKey = selectedServiceReq
+    ? JSON.stringify([
+        selectedServiceReq.id,
+        selectedServiceReq.service,
+        selectedServiceReq.priority,
+        selectedServiceReq.location,
+        selectedServiceReq.notes,
+        selectedServiceReq.type,
+        selectedServiceReq.status,
+      ])
+    : null;
 
   // Synchronize edit states with selected service request
-  useEffect(() => {
-    if (selectedServiceReq) {
-      setEditService(selectedServiceReq.service || '');
-      setEditPriority((selectedServiceReq.priority) || 'low');
-      setEditLocation(selectedServiceReq.location || '');
-      setEditNotes(selectedServiceReq.notes || '');
-      setEditType((selectedServiceReq.type) || 'Scheduled');
-      setEditStatus((selectedServiceReq.status) || 'Unassigned');
-    }
-  }, [selectedServiceReq]);
+  if (selectedServiceReq && selectedServiceReqKey !== syncedServiceReqKey) {
+    setSyncedServiceReqKey(selectedServiceReqKey);
+    setEditService(selectedServiceReq.service || '');
+    setEditPriority((selectedServiceReq.priority) || 'low');
+    setEditLocation(selectedServiceReq.location || '');
+    setEditNotes(selectedServiceReq.notes || '');
+    setEditType((selectedServiceReq.type) || 'Scheduled');
+    setEditStatus((selectedServiceReq.status) || 'Unassigned');
+  } else if (!selectedServiceReq && syncedServiceReqKey) {
+    setSyncedServiceReqKey(null);
+  }
 
   // Get selected client details
   const selectedClient = useMemo(() => {

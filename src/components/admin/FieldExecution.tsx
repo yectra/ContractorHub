@@ -71,6 +71,41 @@ const DEFAULT_STEPS: ChecklistItem[] = [
   { id: '8', text: 'Clean work area and dispose of debris', checked: false },
 ];
 
+const readCachedArray = <T,>(key: string, fallback: T[]): T[] => {
+  const cached = localStorage.getItem(key);
+  if (!cached) return fallback;
+
+  try {
+    const parsed = JSON.parse(cached);
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const getChecklistForJob = (jobId: string, notes?: string | null): ChecklistItem[] => {
+  const cached = localStorage.getItem(`checklist_job_${jobId}`);
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached);
+      return Array.isArray(parsed) ? parsed : DEFAULT_STEPS;
+    } catch {
+      return DEFAULT_STEPS;
+    }
+  }
+
+  if (notes?.startsWith('CHECKLIST:')) {
+    try {
+      const parsed = JSON.parse(notes.replace('CHECKLIST:', ''));
+      return Array.isArray(parsed) ? parsed : DEFAULT_STEPS;
+    } catch {
+      return DEFAULT_STEPS;
+    }
+  }
+
+  return DEFAULT_STEPS;
+};
+
 export default function FieldExecution() {
   // Connectivity state
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
@@ -87,7 +122,7 @@ export default function FieldExecution() {
   const previousView = sessionStorage.getItem('previousView') || 'ADMIN';
 
   // If the TechDashboard passed a specific job ID via sessionStorage, honour it.
-  const sessionJobId = sessionStorage.getItem('selectedJobId') || '';
+  const [sessionJobId] = useState(() => sessionStorage.getItem('selectedJobId') || '');
 
   // Selected job state — pre-populated from session if available
   const [selectedJobId, setSelectedJobId] = useState<string>(sessionJobId);
@@ -139,91 +174,52 @@ export default function FieldExecution() {
     });
   }, [scheduledJobs, serviceRequests]);
 
-  // Set initial selected job once jobs are loaded
+  // Prefer the session-passed job if it matches an active job; otherwise fall back to the first job.
+  const sessionPreferredJobId = sessionJobId && activeJobs.some((j) => j.id === sessionJobId)
+    ? sessionJobId
+    : '';
+  const effectiveSelectedJobId = selectedJobId || sessionPreferredJobId || activeJobs[0]?.id || '';
+
   useEffect(() => {
-    if (activeJobs.length > 0 && !selectedJobId) {
-      // Prefer the session-passed job (from TechDashboard chip click) if it
-      // matches one of the active jobs; otherwise fall back to the first job.
-      const sessionPreferred = sessionJobId
-        ? activeJobs.find((j) => j.id === sessionJobId)
-        : null;
-      setSelectedJobId(sessionPreferred?.id || activeJobs[0].id || '');
+    if (activeJobs.length > 0 && sessionJobId) {
       // Clear the session hint so it doesn't interfere on next manual selection
       sessionStorage.removeItem('selectedJobId');
       sessionStorage.removeItem('selectedSrId');
     }
-  }, [activeJobs, selectedJobId, sessionJobId]);
+  }, [activeJobs.length, sessionJobId]);
 
   // Find currently selected job details
   const selectedJob = useMemo(() => {
-    return activeJobs.find((j) => j.id === selectedJobId) || null;
-  }, [activeJobs, selectedJobId]);
+    return activeJobs.find((j) => j.id === effectiveSelectedJobId) || null;
+  }, [activeJobs, effectiveSelectedJobId]);
+
+  const [loadedJobCacheKey, setLoadedJobCacheKey] = useState<string | null>(null);
+  const selectedJobCacheKey = effectiveSelectedJobId
+    ? JSON.stringify([effectiveSelectedJobId, selectedJob?.notes])
+    : null;
 
   // Load checklist and photos from cache when job selection changes
-  useEffect(() => {
-    if (!selectedJobId) return;
-
-    // Load Checklist
-    const cachedChecklist = localStorage.getItem(`checklist_job_${selectedJobId}`);
-    if (cachedChecklist) {
-      try {
-        setChecklist(JSON.parse(cachedChecklist));
-      } catch {
-        setChecklist(DEFAULT_STEPS);
-      }
-    } else {
-      // Check if job notes contains checklist state
-      if (selectedJob?.notes && selectedJob.notes.startsWith('CHECKLIST:')) {
-        try {
-          const jsonStr = selectedJob.notes.replace('CHECKLIST:', '');
-          const parsed = JSON.parse(jsonStr);
-          setChecklist(parsed);
-          localStorage.setItem(`checklist_job_${selectedJobId}`, jsonStr);
-        } catch {
-          setChecklist(DEFAULT_STEPS);
-        }
-      } else {
-        setChecklist(DEFAULT_STEPS);
-      }
-    }
-
-    // Load Upload Queue
-    const cachedQueue = localStorage.getItem(`upload_queue_${selectedJobId}`);
-    if (cachedQueue) {
-      try {
-        setUploadQueue(JSON.parse(cachedQueue));
-      } catch {
-        setUploadQueue([]);
-      }
-    } else {
-      setUploadQueue([]);
-    }
-
-    // Load Photos
-    const cachedPhotos = localStorage.getItem(`photos_job_${selectedJobId}`);
-    if (cachedPhotos) {
-      try {
-        setUploadedPhotos(JSON.parse(cachedPhotos));
-      } catch {
-        setUploadedPhotos([]);
-      }
-    } else {
-      setUploadedPhotos([]);
-    }
-  }, [selectedJobId, selectedJob]);
+  if (effectiveSelectedJobId && selectedJobCacheKey !== loadedJobCacheKey) {
+    setLoadedJobCacheKey(selectedJobCacheKey);
+    setChecklist(getChecklistForJob(effectiveSelectedJobId, selectedJob?.notes));
+    setUploadQueue(readCachedArray<QueuedUpload>(`upload_queue_${effectiveSelectedJobId}`, []));
+    setUploadedPhotos(readCachedArray<UploadedPhoto>(`photos_job_${effectiveSelectedJobId}`, []));
+  } else if (!effectiveSelectedJobId && loadedJobCacheKey) {
+    setLoadedJobCacheKey(null);
+  }
 
   // Persist checklist changes
   const saveChecklist = async (updatedChecklist: ChecklistItem[]) => {
     setChecklist(updatedChecklist);
-    if (!selectedJobId) return;
+    if (!effectiveSelectedJobId) return;
 
     const checklistStr = JSON.stringify(updatedChecklist);
-    localStorage.setItem(`checklist_job_${selectedJobId}`, checklistStr);
+    localStorage.setItem(`checklist_job_${effectiveSelectedJobId}`, checklistStr);
 
     // Try to sync with Amplify backend if online
     if (isOnline) {
       try {
-        await updateScheduledJob(selectedJobId, {
+        await updateScheduledJob(effectiveSelectedJobId, {
           notes: `CHECKLIST:${checklistStr}`,
         });
       } catch (err) {
@@ -313,7 +309,7 @@ export default function FieldExecution() {
           : (blob as Blob);
         
         const result = await storageModule.uploadData({
-          path: `jobs/${selectedJobId}/${Date.now()}_${name}`,
+          path: `jobs/${effectiveSelectedJobId}/${Date.now()}_${name}`,
           data: fileObj,
           options: {
             contentType: 'image/jpeg',
@@ -343,7 +339,7 @@ export default function FieldExecution() {
   // Core file upload selection handler
   const handlePhotoSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files || files.length === 0 || !selectedJobId) return;
+    if (!files || files.length === 0 || !effectiveSelectedJobId) return;
 
     setIsUploading(true);
     setErrorAlert(null);
@@ -368,7 +364,7 @@ export default function FieldExecution() {
 
         const updatedQueue = [...uploadQueue, newQueueItem];
         setUploadQueue(updatedQueue);
-        localStorage.setItem(`upload_queue_${selectedJobId}`, JSON.stringify(updatedQueue));
+        localStorage.setItem(`upload_queue_${effectiveSelectedJobId}`, JSON.stringify(updatedQueue));
         setErrorAlert('Offline: Photo upload queued. Will resume when online.');
         setTimeout(() => setErrorAlert(null), 4000);
       } else {
@@ -381,7 +377,7 @@ export default function FieldExecution() {
 
         const updatedPhotos = [...uploadedPhotos, newPhoto];
         setUploadedPhotos(updatedPhotos);
-        localStorage.setItem(`photos_job_${selectedJobId}`, JSON.stringify(updatedPhotos));
+        localStorage.setItem(`photos_job_${effectiveSelectedJobId}`, JSON.stringify(updatedPhotos));
         setSuccessAlert('Photo uploaded successfully!');
         setTimeout(() => setSuccessAlert(null), 3000);
       }
@@ -396,7 +392,7 @@ export default function FieldExecution() {
 
   // Auto-process upload queue when connectivity returns
   useEffect(() => {
-    if (!isOnline || uploadQueue.length === 0 || !selectedJobId) return;
+    if (!isOnline || uploadQueue.length === 0 || !effectiveSelectedJobId) return;
 
     const processQueue = async () => {
       setIsUploading(true);
@@ -420,14 +416,14 @@ export default function FieldExecution() {
       }
 
       setUploadedPhotos(successfulPhotos);
-      localStorage.setItem(`photos_job_${selectedJobId}`, JSON.stringify(successfulPhotos));
+      localStorage.setItem(`photos_job_${effectiveSelectedJobId}`, JSON.stringify(successfulPhotos));
 
       setUploadQueue(failedUploads);
       if (failedUploads.length > 0) {
-        localStorage.setItem(`upload_queue_${selectedJobId}`, JSON.stringify(failedUploads));
+        localStorage.setItem(`upload_queue_${effectiveSelectedJobId}`, JSON.stringify(failedUploads));
         setErrorAlert('Some queued photo uploads failed to sync.');
       } else {
-        localStorage.removeItem(`upload_queue_${selectedJobId}`);
+        localStorage.removeItem(`upload_queue_${effectiveSelectedJobId}`);
         setSuccessAlert('All offline photo uploads synced successfully!');
         setTimeout(() => setSuccessAlert(null), 3000);
       }
@@ -435,18 +431,18 @@ export default function FieldExecution() {
     };
 
     processQueue();
-  }, [isOnline, uploadQueue, selectedJobId, uploadedPhotos]);
+  }, [isOnline, uploadQueue, effectiveSelectedJobId, uploadedPhotos]);
 
   // Complete Job & Invoice flow
   const handleCompleteJob = async () => {
-    if (!isChecklistComplete || !selectedJobId || !selectedJob) return;
+    if (!isChecklistComplete || !effectiveSelectedJobId || !selectedJob) return;
 
     try {
       setIsUploading(true);
       setErrorAlert(null);
 
       // 1. Update ScheduledJob status to Completed in database
-      await updateScheduledJob(selectedJobId, {
+      await updateScheduledJob(effectiveSelectedJobId, {
         status: 'Completed',
       });
 
@@ -458,8 +454,8 @@ export default function FieldExecution() {
       }
 
       // 3. Clear cached checklist and queue (keep photos for completed job history)
-      localStorage.removeItem(`checklist_job_${selectedJobId}`);
-      localStorage.removeItem(`upload_queue_${selectedJobId}`);
+      localStorage.removeItem(`checklist_job_${effectiveSelectedJobId}`);
+      localStorage.removeItem(`upload_queue_${effectiveSelectedJobId}`);
 
       setSuccessAlert('🎉 JOB COMPLETED & INVOICE SENT! Status set to completed.');
       setTimeout(() => setSuccessAlert(null), 5000);
@@ -545,7 +541,7 @@ export default function FieldExecution() {
           {/* Job Selector Dropdown */}
           <div style={{ flex: 1, marginLeft: '12px', marginRight: '12px' }}>
             <select
-              value={selectedJobId}
+              value={effectiveSelectedJobId}
               onChange={(e) => setSelectedJobId(e.target.value)}
               style={{
                 backgroundColor: '#2a2a2a',

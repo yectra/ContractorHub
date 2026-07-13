@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+ import React, { useState, useEffect, useMemo } from 'react';
 import { useClients, useServiceRequests } from '../../hooks/useDispatchData';
 
 // Inline SVG Icons for zero-dependency consistency with FieldExecution
@@ -130,17 +130,12 @@ export default function ClientCRMRecord() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Set default client once loaded
-  useEffect(() => {
-    if (clients.length > 0 && !selectedClientId) {
-      setSelectedClientId(clients[0].id || '');
-    }
-  }, [clients, selectedClientId]);
+  const effectiveSelectedClientId = selectedClientId || clients[0]?.id || '';
 
   // Find currently selected client details
   const selectedClient = useMemo(() => {
-    return clients.find((c) => c.id === selectedClientId) || null;
-  }, [clients, selectedClientId]);
+    return clients.find((c) => c.id === effectiveSelectedClientId) || null;
+  }, [clients, effectiveSelectedClientId]);
 
   // Parse GPS coordinates helper
   const parsedGPS = useMemo(() => {
@@ -149,28 +144,46 @@ export default function ClientCRMRecord() {
     return match ? `${match[1]}, ${match[2]}` : '37.7749, -122.4194';
   }, [selectedClient]);
 
-  // Populate edit form when selected client changes
-  useEffect(() => {
-    if (selectedClient) {
-      const match = selectedClient.notes?.match(/GPS:\s*([-\d.]+),\s*([-\d.]+)/);
-      const gpsVal = match ? `${match[1]}, ${match[2]}` : '37.7749, -122.4194';
-      const rawNotes = selectedClient.notes?.replace(/GPS:\s*([-\d.]+),\s*([-\d.]+)\s*/g, '').trim() || '';
+  const [syncedClientKey, setSyncedClientKey] = useState<string | null>(null);
+  const selectedClientKey = selectedClient
+    ? JSON.stringify([
+        selectedClient.id,
+        selectedClient.name,
+        selectedClient.phone,
+        selectedClient.email,
+        selectedClient.address,
+        selectedClient.city,
+        selectedClient.state,
+        selectedClient.zipCode,
+        selectedClient.notes,
+        selectedClient.outstandingBalance,
+        selectedClient.preferenceNotes,
+      ])
+    : null;
 
-      setEditForm({
-        name: selectedClient.name || '',
-        phone: selectedClient.phone || '',
-        email: selectedClient.email || '',
-        address: selectedClient.address || '',
-        city: selectedClient.city || '',
-        state: selectedClient.state || '',
-        zipCode: selectedClient.zipCode || '',
-        gps: gpsVal,
-        outstandingBalance: selectedClient.outstandingBalance || '0.00',
-        preferenceNotes: selectedClient.preferenceNotes || '',
-        notes: rawNotes,
-      });
-    }
-  }, [selectedClient]);
+  // Populate edit form when selected client changes
+  if (selectedClient && selectedClientKey !== syncedClientKey) {
+    const match = selectedClient.notes?.match(/GPS:\s*([-\d.]+),\s*([-\d.]+)/);
+    const gpsVal = match ? `${match[1]}, ${match[2]}` : '37.7749, -122.4194';
+    const rawNotes = selectedClient.notes?.replace(/GPS:\s*([-\d.]+),\s*([-\d.]+)\s*/g, '').trim() || '';
+
+    setSyncedClientKey(selectedClientKey);
+    setEditForm({
+      name: selectedClient.name || '',
+      phone: selectedClient.phone || '',
+      email: selectedClient.email || '',
+      address: selectedClient.address || '',
+      city: selectedClient.city || '',
+      state: selectedClient.state || '',
+      zipCode: selectedClient.zipCode || '',
+      gps: gpsVal,
+      outstandingBalance: selectedClient.outstandingBalance || '0.00',
+      preferenceNotes: selectedClient.preferenceNotes || '',
+      notes: rawNotes,
+    });
+  } else if (!selectedClient && syncedClientKey) {
+    setSyncedClientKey(null);
+  }
 
   // Filter jobs (service requests) associated with the selected client
   const clientJobs = useMemo(() => {
@@ -795,7 +808,7 @@ export default function ClientCRMRecord() {
             {/* Client Selector dropdown */}
             {!loadingClients && clients.length > 0 && (
               <select
-                value={selectedClientId}
+                value={effectiveSelectedClientId}
                 onChange={(e) => setSelectedClientId(e.target.value)}
                 style={styles.clientSelect}
               >
@@ -1324,7 +1337,7 @@ export default function ClientCRMRecord() {
                   <label style={styles.formLabel}>Order Type</label>
                   <select
                     value={newJobForm.type}
-                    onChange={(e) => setNewJobForm({ ...newJobForm, type: e.target.value as any })}
+                    onChange={(e) => setNewJobForm({ ...newJobForm, type: e.target.value as 'Scheduled' | 'Emergency' | 'WebRequest' })}
                     style={styles.formSelect}
                   >
                     <option value="Scheduled">Scheduled</option>
@@ -1337,7 +1350,7 @@ export default function ClientCRMRecord() {
                   <label style={styles.formLabel}>Priority Level</label>
                   <select
                     value={newJobForm.priority}
-                    onChange={(e) => setNewJobForm({ ...newJobForm, priority: e.target.value as any })}
+                    onChange={(e) => setNewJobForm({ ...newJobForm, priority: e.target.value as 'high' | 'medium' | 'low' })}
                     style={styles.formSelect}
                   >
                     <option value="low">Low Priority</option>
