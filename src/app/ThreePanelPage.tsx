@@ -383,6 +383,20 @@ export default function ThreePanelPage() {
                   >
                     Technician View
                   </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => window.location.href = '/crm'}
+                    sx={{
+                      fontSize: '0.65rem',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      py: 0.2,
+                      px: 0.8,
+                    }}
+                  >
+                    Client CRM
+                  </Button>
                   {/* NEW: Technician Dashboard button */}
                   <Button
                     id="tech-dashboard-nav-btn"

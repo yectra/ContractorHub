@@ -3,6 +3,7 @@ import ThreePanelPage from './app/ThreePanelPage';
 import NotFoundPage from './app/NotFoundPage';
 import FieldExecution from './app/FieldExecution';
 import TechDashboard from './components/TechDashboard';
+import ClientCRMRecord from './app/ClientCRMRecord';
 
 export const router = createBrowserRouter([
   {
@@ -18,4 +19,8 @@ export const router = createBrowserRouter([
     path: '/tech-dashboard',
     element: <TechDashboard />,
   },
+  {
+    path: '/crm',
+    element: <ClientCRMRecord />,
+  }
 ]);
