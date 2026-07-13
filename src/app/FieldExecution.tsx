@@ -81,8 +81,16 @@ export default function FieldExecution() {
   const { serviceRequests, updateServiceRequest } = useServiceRequests();
   const { scheduledJobs, updateScheduledJob } = useScheduledJobs();
 
-  // Selected job state
-  const [selectedJobId, setSelectedJobId] = useState<string>('');
+  // ── Navigation context ────────────────────────────────────────────────────
+  // Reads the previousView token set by the caller (Admin panel or TechDashboard)
+  // so the back arrow can route correctly without hard-coding a single destination.
+  const previousView = sessionStorage.getItem('previousView') || 'ADMIN';
+
+  // If the TechDashboard passed a specific job ID via sessionStorage, honour it.
+  const sessionJobId = sessionStorage.getItem('selectedJobId') || '';
+
+  // Selected job state — pre-populated from session if available
+  const [selectedJobId, setSelectedJobId] = useState<string>(sessionJobId);
 
   // Checklist state
   const [checklist, setChecklist] = useState<ChecklistItem[]>(DEFAULT_STEPS);
@@ -134,9 +142,17 @@ export default function FieldExecution() {
   // Set initial selected job once jobs are loaded
   useEffect(() => {
     if (activeJobs.length > 0 && !selectedJobId) {
-      setSelectedJobId(activeJobs[0].id || '');
+      // Prefer the session-passed job (from TechDashboard chip click) if it
+      // matches one of the active jobs; otherwise fall back to the first job.
+      const sessionPreferred = sessionJobId
+        ? activeJobs.find((j) => j.id === sessionJobId)
+        : null;
+      setSelectedJobId(sessionPreferred?.id || activeJobs[0].id || '');
+      // Clear the session hint so it doesn't interfere on next manual selection
+      sessionStorage.removeItem('selectedJobId');
+      sessionStorage.removeItem('selectedSrId');
     }
-  }, [activeJobs, selectedJobId]);
+  }, [activeJobs, selectedJobId, sessionJobId]);
 
   // Find currently selected job details
   const selectedJob = useMemo(() => {
@@ -499,7 +515,16 @@ export default function FieldExecution() {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <button 
-            onClick={() => window.location.href = '/'}
+            onClick={() => {
+              // Context-aware back navigation:
+              // If the user arrived from the TechDashboard calendar, return there.
+              // Otherwise default to the Admin Dispatch panel.
+              if (previousView === 'TECH_DASHBOARD') {
+                window.location.href = '/tech-dashboard';
+              } else {
+                window.location.href = '/';
+              }
+            }}
             style={{
               backgroundColor: 'transparent',
               border: 'none',

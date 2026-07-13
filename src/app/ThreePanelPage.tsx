@@ -364,20 +364,42 @@ export default function ThreePanelPage() {
                 <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '0.95rem' }}>
                   Service Queue
                 </Typography>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => window.location.href = '/technician'}
-                  sx={{
-                    fontSize: '0.65rem',
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    py: 0.2,
-                    px: 1,
-                  }}
-                >
-                  Technician View
-                </Button>
+                {/* Original Technician View button — DO NOT MODIFY */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      sessionStorage.setItem('previousView', 'ADMIN');
+                      window.location.href = '/technician';
+                    }}
+                    sx={{
+                      fontSize: '0.65rem',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      py: 0.2,
+                      px: 1,
+                    }}
+                  >
+                    Technician View
+                  </Button>
+                  {/* NEW: Technician Dashboard button */}
+                  <Button
+                    id="tech-dashboard-nav-btn"
+                    variant="outlined"
+                    size="small"
+                    onClick={() => (window.location.href = '/tech-dashboard')}
+                    sx={{
+                      fontSize: '0.65rem',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      py: 0.2,
+                      px: 1                     
+                    }}
+                  >
+                    Technician Dashboard
+                  </Button>
+                </Box>
               </Box>
               <Typography variant="caption" sx={{ color: '#666', fontSize: '0.7rem' }}>
                 {srLoading ? 'Loading...' : `${pendingRequests.length} pending requests`}
@@ -710,6 +732,8 @@ export default function ThreePanelPage() {
                           onDragEnd={handleDragEnd}
                           onClick={() => {
                             if (!isDragging) {
+                              // Set ADMIN as previous view so FieldExecution back button returns here
+                              sessionStorage.setItem('previousView', 'ADMIN');
                               handleRequestClick(job.serviceRequestId!);
                             }
                           }}
