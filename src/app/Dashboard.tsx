@@ -12,6 +12,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useServiceRequests, useTechnicians, useScheduledJobs, useClients } from '../hooks/useDispatchData';
 import { isAmplifyConfigured } from '../services/api';
+import EngineeringIcon from '@mui/icons-material/Engineering';
+import GroupsIcon from '@mui/icons-material/Groups';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import Tooltip from '@mui/material/Tooltip';
 
 // Hours for the schedule grid (7 AM to 7 PM)
 const hours = Array.from({ length: 12 }, (_, i) => i + 7);
@@ -360,13 +364,88 @@ export default function ThreePanelPage() {
           <>
             {/* Header */}
             <Box sx={{ p: 1.5, borderBottom: '2px solid #e0e0e0', backgroundColor: '#fafafa' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+            <Box sx={{ mb: 1 }}>
+              {/* Navigation Buttons */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: 1,
+                  mb: 1,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Tooltip title="Open Technician View" arrow>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<EngineeringIcon fontSize="small" />}
+                    onClick={() => {
+                      sessionStorage.setItem('previousView', 'ADMIN');
+                      window.location.href = '/technician';
+                    }}
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Tech
+                  </Button>
+                </Tooltip>
+
+                <Tooltip title="Open Client CRM" arrow>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<GroupsIcon fontSize="small" />}
+                    onClick={() => (window.location.href = '/crm')}
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    CRM
+                  </Button>
+                </Tooltip>
+
+                <Tooltip title="Open Technician Dashboard" arrow>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<DashboardIcon fontSize="small" />}
+                    onClick={() => (window.location.href = '/tech-dashboard')}
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Dashboard
+                  </Button>
+                </Tooltip>
+              </Box>
+
+              {/* Section Title */}
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: '#1a1a1a',
+                  fontSize: '0.95rem',
+                }}
+              >
+                Service Queue
+              </Typography>
+            </Box>
+              {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '0.95rem' }}>
                   Service Queue
-                </Typography>
+                </Typography> */}
                 {/* Original Technician View button — DO NOT MODIFY */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                  <Button
+                {/* <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}> */}
+                  {/* <Button
                     variant="outlined"
                     size="small"
                     onClick={() => {
@@ -382,8 +461,8 @@ export default function ThreePanelPage() {
                     }}
                   >
                     Technician View
-                  </Button>
-                  <Button
+                  </Button> */}
+                  {/* <Button
                     variant="outlined"
                     size="small"
                     onClick={() => window.location.href = '/crm'}
@@ -396,9 +475,9 @@ export default function ThreePanelPage() {
                     }}
                   >
                     Client CRM
-                  </Button>
+                  </Button> */}
                   {/* NEW: Technician Dashboard button */}
-                  <Button
+                  {/* <Button
                     id="tech-dashboard-nav-btn"
                     variant="outlined"
                     size="small"
@@ -412,9 +491,9 @@ export default function ThreePanelPage() {
                     }}
                   >
                     Technician Dashboard
-                  </Button>
-                </Box>
-              </Box>
+                  </Button> */}
+                {/* </Box>
+              </Box> */}
               <Typography variant="caption" sx={{ color: '#666', fontSize: '0.7rem' }}>
                 {srLoading ? 'Loading...' : `${pendingRequests.length} pending requests`}
               </Typography>
