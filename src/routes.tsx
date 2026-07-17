@@ -4,6 +4,7 @@ import NotFoundPage from './app/NotFoundPage';
 import FieldExecution from './components/admin/FieldExecution';
 import TechDashboard from './components/TechDashboard';
 import ClientCRMRecord from './components/admin/ClientCRMRecord';
+import UserManagement from './components/admin/UserManagement';
 
 export const router = createBrowserRouter([
   {
@@ -22,5 +23,9 @@ export const router = createBrowserRouter([
   {
     path: '/crm',
     element: <ClientCRMRecord />,
+  },
+  {
+    path: '/admin/users',
+    element: <UserManagement />,
   }
 ]);

@@ -828,6 +828,20 @@ export default function ClientCRMRecord() {
               <PlusIcon />
               {!isMobile && 'NEW CLIENT'}
             </button>
+
+            {/* User Management button */}
+            <button
+              onClick={() => window.location.href = '/admin/users'}
+              style={{
+                ...styles.newClientBtn,
+                color: '#82b1ff',
+                borderColor: '#82b1ff',
+              }}
+              title="Open User Management"
+            >
+              <UsersIcon />
+              {!isMobile && 'USERS'}
+            </button>
           </div>
         </div>
       </header>

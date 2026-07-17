@@ -438,6 +438,23 @@ export default function ThreePanelPage() {
                     Dashboard
                   </Button>
                 </Tooltip>
+
+                <Tooltip title="Open User Management" arrow>
+                  <Button
+                    id="user-management-nav-btn"
+                    variant="outlined"
+                    size="small"
+                    startIcon={<PersonAddIcon fontSize="small" />}
+                    onClick={() => (window.location.href = '/admin/users')}
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Users
+                  </Button>
+                </Tooltip>
               </Box>
 
               {/* Section Title */}
