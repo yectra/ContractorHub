@@ -797,7 +797,7 @@ export default function UserManagement() {
                     '&:hover': { backgroundColor: '#1d4ed8' },
                   }}
                 >
-                  Create User Account
+                  Create User
                 </Button>
               </Box>
             </Box>

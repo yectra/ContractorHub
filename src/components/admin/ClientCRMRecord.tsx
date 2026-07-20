@@ -1,4 +1,5 @@
- import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from "react-router-dom";
 import { useClients, useServiceRequests } from '../../hooks/useDispatchData';
 
 // Inline SVG Icons for zero-dependency consistency with FieldExecution
@@ -81,6 +82,8 @@ export default function ClientCRMRecord() {
   const [showNewJobModal, setShowNewJobModal] = useState<boolean>(false);
   const [showNewClientModal, setShowNewClientModal] = useState<boolean>(false);
 
+  const navigate = useNavigate();
+  
   // Form states
   const [editForm, setEditForm] = useState({
     name: '',
@@ -795,7 +798,7 @@ export default function ClientCRMRecord() {
         <div style={styles.headerRow}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
-              onClick={() => window.location.href = '/'}
+              onClick={() => navigate(-1)}
               style={styles.backButton}
               aria-label="Back to dashboard"
             >
