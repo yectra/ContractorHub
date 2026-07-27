@@ -376,19 +376,19 @@ export default function ClientCRMRecord() {
       flexDirection: 'column' as const,
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
       boxSizing: 'border-box' as const,
-      paddingBottom: '40px',
+      paddingBottom: '28px',
     },
     header: {
       backgroundColor: '#1a1a1a',
       borderBottom: '1px solid #333',
-      padding: '12px 18px',
+      padding: '8px 14px',
       position: 'sticky' as const,
       top: 0,
       zIndex: 100,
       boxShadow: '0 2px 12px rgba(0,0,0,0.6)',
       display: 'flex',
       flexDirection: 'column' as const,
-      gap: '10px',
+      gap: '6px',
     },
     headerRow: {
       display: 'flex',
@@ -403,21 +403,24 @@ export default function ClientCRMRecord() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '6px',
-      borderRadius: '8px',
-      minWidth: '40px',
-      minHeight: '40px',
+      padding: '0',
+      borderRadius: '6px',
+      minWidth: '30px',
+      minHeight: '30px',
+      width: '30px',
+      height: '30px',
       transition: 'background-color 0.2s',
     },
     clientSelect: {
       backgroundColor: '#2a2a2a',
       color: '#ffffff',
       border: '1px solid #444',
-      borderRadius: '8px',
-      padding: '8px 12px',
-      fontSize: '0.85rem',
+      borderRadius: '6px',
+      padding: '0 10px',
+      fontSize: '0.74rem',
       fontWeight: 600,
-      minHeight: '44px',
+      minHeight: '32px',
+      height: '32px',
       outline: 'none',
       cursor: 'pointer',
     },
@@ -425,31 +428,32 @@ export default function ClientCRMRecord() {
       backgroundColor: '#2a2a2a',
       color: '#00e676',
       border: '1px solid #00e676',
-      borderRadius: '8px',
-      padding: '0 14px',
-      fontSize: '0.8rem',
+      borderRadius: '6px',
+      padding: '0 10px',
+      fontSize: '0.7rem',
       fontWeight: 800,
-      minHeight: '44px',
+      minHeight: '32px',
+      height: '32px',
       display: 'flex',
       alignItems: 'center',
-      gap: '6px',
+      gap: '5px',
       cursor: 'pointer',
       transition: 'all 0.2s',
     },
     headerTitle: {
       margin: 0,
-      fontSize: '1.2rem',
-      fontWeight: 900,
+      fontSize: '1rem',
+      fontWeight: 800,
       color: '#ffffff',
       letterSpacing: '0.3px',
     },
     contentArea: {
-      padding: '16px',
+      padding: '10px 12px',
       flex: 1,
       display: 'flex',
       flexDirection: isMobile ? ('column' as const) : ('row' as const),
-      gap: '16px',
-      maxWidth: '1440px',
+      gap: '10px',
+      maxWidth: '1320px',
       width: '100%',
       margin: '0 auto',
       boxSizing: 'border-box' as const,
@@ -458,32 +462,32 @@ export default function ClientCRMRecord() {
       flex: isMobile ? 'none' : '3 1 0',
       display: 'flex',
       flexDirection: 'column' as const,
-      gap: '16px',
+      gap: '10px',
       minWidth: 0, // Prevent flex items from overflowing
     },
     sidebarSection: {
       flex: isMobile ? 'none' : '1.1 1 0',
       display: 'flex',
       flexDirection: 'column' as const,
-      gap: '16px',
-      minWidth: '280px',
+      gap: '10px',
+      minWidth: '250px',
     },
     card: {
       backgroundColor: '#1e1e1e',
-      borderRadius: '10px',
+      borderRadius: '8px',
       border: '1px solid #2e2e2e',
-      padding: '16px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+      padding: '10px 12px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.24)',
       boxSizing: 'border-box' as const,
     },
     sectionTitle: {
-      margin: '0 0 12px 0',
-      fontSize: '11px',
+      margin: '0 0 8px 0',
+      fontSize: '10px',
       fontWeight: 800,
       color: '#ff9800',
       textTransform: 'uppercase' as const,
-      letterSpacing: '1px',
-      paddingBottom: '8px',
+      letterSpacing: '0.7px',
+      paddingBottom: '6px',
       borderBottom: '1px solid #2e2e2e',
       display: 'flex',
       justifyContent: 'space-between',
@@ -492,24 +496,24 @@ export default function ClientCRMRecord() {
     profileDetail: {
       display: 'flex',
       flexDirection: 'column' as const,
-      gap: '12px',
+      gap: '8px',
     },
     detailItem: {
       display: 'flex',
       flexDirection: 'column' as const,
-      gap: '4px',
+      gap: '3px',
     },
     detailLabel: {
-      fontSize: '11px',
+      fontSize: '10px',
       color: '#888',
       fontWeight: 700,
       textTransform: 'uppercase' as const,
     },
     detailValue: {
-      fontSize: '14px',
+      fontSize: '12px',
       color: '#ffffff',
       fontWeight: 600,
-      lineHeight: 1.4,
+      lineHeight: 1.3,
     },
     phoneLink: {
       color: '#00e676',
@@ -517,7 +521,7 @@ export default function ClientCRMRecord() {
       fontWeight: 800,
       display: 'inline-flex',
       alignItems: 'center',
-      gap: '6px',
+      gap: '5px',
     },
     mapLink: {
       color: '#82b1ff',
@@ -525,25 +529,26 @@ export default function ClientCRMRecord() {
       fontWeight: 800,
       display: 'inline-flex',
       alignItems: 'center',
-      gap: '6px',
+      gap: '5px',
     },
     buttonPrimary: {
       backgroundColor: '#ff9800',
       color: '#000000',
       border: 'none',
-      borderRadius: '8px',
+      borderRadius: '6px',
       fontWeight: 800,
-      fontSize: '13px',
-      letterSpacing: '0.5px',
-      padding: '12px 16px',
+      fontSize: '11px',
+      letterSpacing: '0.35px',
+      padding: '0 12px',
       cursor: 'pointer',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: '8px',
-      boxShadow: '0 2px 8px rgba(255, 152, 0, 0.35)',
+      gap: '6px',
+      boxShadow: '0 2px 6px rgba(255, 152, 0, 0.28)',
       width: '100%',
-      minHeight: '44px',
+      minHeight: '34px',
+      height: '34px',
       boxSizing: 'border-box' as const,
       transition: 'background-color 0.2s',
     },
@@ -551,16 +556,17 @@ export default function ClientCRMRecord() {
       backgroundColor: 'transparent',
       color: '#ff9800',
       border: '1.5px solid #ff9800',
-      borderRadius: '8px',
+      borderRadius: '6px',
       fontWeight: 800,
-      fontSize: '13px',
-      padding: '10px 16px',
+      fontSize: '11px',
+      padding: '0 12px',
       cursor: 'pointer',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: '6px',
-      minHeight: '44px',
+      gap: '5px',
+      minHeight: '34px',
+      height: '34px',
       width: '100%',
       boxSizing: 'border-box' as const,
       transition: 'all 0.2s',
@@ -568,30 +574,30 @@ export default function ClientCRMRecord() {
     metricGrid: {
       display: 'grid',
       gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: '12px',
+      gap: '8px',
     },
     metricCard: {
       backgroundColor: '#242424',
-      borderRadius: '8px',
+      borderRadius: '6px',
       border: '1px solid #333',
-      padding: '12px',
+      padding: '10px',
       textAlign: 'center' as const,
       display: 'flex',
       flexDirection: 'column' as const,
       justifyContent: 'center',
-      minHeight: '100px',
+      minHeight: '72px',
     },
     metricValue: {
-      fontSize: '20px',
+      fontSize: '16px',
       fontWeight: 900,
       color: '#ffffff',
-      margin: '4px 0',
+      margin: '2px 0',
     },
     tableControls: {
       display: 'flex',
       flexDirection: isMobile ? ('column' as const) : ('row' as const),
-      gap: '10px',
-      marginBottom: '14px',
+      gap: '8px',
+      marginBottom: '10px',
     },
     searchInputWrapper: {
       flex: 1,
@@ -602,16 +608,17 @@ export default function ClientCRMRecord() {
       backgroundColor: '#2a2a2a',
       color: '#ffffff',
       border: '1px solid #444',
-      borderRadius: '8px',
-      padding: '8px 12px 8px 36px',
-      fontSize: '0.85rem',
+      borderRadius: '6px',
+      padding: '0 10px 0 30px',
+      fontSize: '0.74rem',
       outline: 'none',
-      minHeight: '40px',
+      minHeight: '32px',
+      height: '32px',
       boxSizing: 'border-box' as const,
     },
     searchIconPos: {
       position: 'absolute' as const,
-      left: '12px',
+      left: '10px',
       top: '50%',
       transform: 'translateY(-50%)',
       color: '#888',
@@ -622,37 +629,38 @@ export default function ClientCRMRecord() {
       backgroundColor: '#2a2a2a',
       color: '#ffffff',
       border: '1px solid #444',
-      borderRadius: '8px',
-      padding: '8px 12px',
-      fontSize: '0.85rem',
+      borderRadius: '6px',
+      padding: '0 10px',
+      fontSize: '0.74rem',
       outline: 'none',
-      minHeight: '40px',
-      minWidth: '150px',
+      minHeight: '32px',
+      height: '32px',
+      minWidth: '128px',
       cursor: 'pointer',
     },
     tableWrapper: {
       overflowX: 'auto' as const,
-      borderRadius: '8px',
+      borderRadius: '6px',
       border: '1px solid #2e2e2e',
     },
     table: {
       width: '100%',
       borderCollapse: 'collapse' as const,
-      fontSize: '13px',
+      fontSize: '12px',
       textAlign: 'left' as const,
     },
     th: {
       backgroundColor: '#242424',
       color: '#888',
       fontWeight: 800,
-      padding: '12px 14px',
+      padding: '8px 10px',
       textTransform: 'uppercase' as const,
-      fontSize: '10px',
+      fontSize: '9px',
       letterSpacing: '0.5px',
       borderBottom: '1px solid #2e2e2e',
     },
     td: {
-      padding: '12px 14px',
+      padding: '8px 10px',
       borderBottom: '1px solid #2e2e2e',
       color: '#e0e0e0',
     },
@@ -663,9 +671,9 @@ export default function ClientCRMRecord() {
     pill: (bg: string, fg: string) => ({
       backgroundColor: bg,
       color: fg,
-      padding: '3px 8px',
+      padding: '2px 6px',
       borderRadius: '4px',
-      fontSize: '10px',
+      fontSize: '9px',
       fontWeight: 900,
       textTransform: 'uppercase' as const,
       display: 'inline-block',
@@ -682,16 +690,16 @@ export default function ClientCRMRecord() {
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1000,
-      padding: '16px',
+      padding: '10px 12px',
       backdropFilter: 'blur(4px)',
       boxSizing: 'border-box' as const,
     },
     modalContent: {
       backgroundColor: '#1e1e1e',
-      borderRadius: '10px',
+      borderRadius: '8px',
       border: '1px solid #333',
       width: '100%',
-      maxWidth: '520px',
+      maxWidth: '500px',
       maxHeight: '90vh',
       overflowY: 'auto' as const,
       boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
@@ -701,12 +709,12 @@ export default function ClientCRMRecord() {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: '16px',
+      padding: '12px',
       borderBottom: '1px solid #2e2e2e',
     },
     modalTitle: {
       margin: 0,
-      fontSize: '15px',
+      fontSize: '12px',
       fontWeight: 800,
       color: '#ff9800',
       textTransform: 'uppercase' as const,
@@ -720,21 +728,21 @@ export default function ClientCRMRecord() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '4px',
+      padding: '2px',
       borderRadius: '50%',
       transition: 'color 0.2s',
     },
     modalBody: {
-      padding: '16px',
+      padding: '10px 12px',
     },
     formGroup: {
-      marginBottom: '14px',
+      marginBottom: '10px',
       display: 'flex',
       flexDirection: 'column' as const,
-      gap: '6px',
+      gap: '5px',
     },
     formLabel: {
-      fontSize: '11px',
+      fontSize: '10px',
       color: '#ff9800',
       fontWeight: 800,
       textTransform: 'uppercase' as const,
@@ -744,9 +752,9 @@ export default function ClientCRMRecord() {
       backgroundColor: '#2a2a2a',
       color: '#ffffff',
       border: '1px solid #444',
-      borderRadius: '8px',
-      padding: '10px 12px',
-      fontSize: '0.85rem',
+      borderRadius: '6px',
+      padding: '7px 10px',
+      fontSize: '0.76rem',
       outline: 'none',
       width: '100%',
       boxSizing: 'border-box' as const,
@@ -755,12 +763,12 @@ export default function ClientCRMRecord() {
       backgroundColor: '#2a2a2a',
       color: '#ffffff',
       border: '1px solid #444',
-      borderRadius: '8px',
-      padding: '10px 12px',
-      fontSize: '0.85rem',
+      borderRadius: '6px',
+      padding: '7px 10px',
+      fontSize: '0.76rem',
       outline: 'none',
       width: '100%',
-      minHeight: '80px',
+      minHeight: '68px',
       resize: 'vertical' as const,
       boxSizing: 'border-box' as const,
     },
@@ -768,9 +776,9 @@ export default function ClientCRMRecord() {
       backgroundColor: '#2a2a2a',
       color: '#ffffff',
       border: '1px solid #444',
-      borderRadius: '8px',
-      padding: '10px 12px',
-      fontSize: '0.85rem',
+      borderRadius: '6px',
+      padding: '7px 10px',
+      fontSize: '0.76rem',
       outline: 'none',
       width: '100%',
       cursor: 'pointer',
@@ -865,25 +873,25 @@ export default function ClientCRMRecord() {
 
       {/* Main CRM Workspace */}
       {loadingClients ? (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: '14px', height: '300px' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: '12px', height: '220px' }}>
           Loading CRM records...
         </div>
       ) : clients.length === 0 ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 24px', textAlign: 'center', gap: '16px' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 18px', textAlign: 'center', gap: '10px' }}>
           <UsersIcon />
-          <h2 style={{ fontSize: '1.2rem', color: '#ff9800', margin: 0 }}>No CRM Records Found</h2>
-          <p style={{ color: '#aaa', fontSize: '0.85rem', maxWidth: '380px', margin: 0, lineHeight: 1.5 }}>
+          <h2 style={{ fontSize: '1rem', color: '#ff9800', margin: 0 }}>No CRM Records Found</h2>
+          <p style={{ color: '#aaa', fontSize: '0.76rem', maxWidth: '360px', margin: 0, lineHeight: 1.35 }}>
             There are currently no clients registered in the system. Get started by adding your first client record.
           </p>
           <button
             onClick={() => setShowNewClientModal(true)}
-            style={{ ...styles.buttonPrimary, width: 'auto', padding: '12px 24px' }}
+            style={{ ...styles.buttonPrimary, width: 'auto', padding: '0 16px' }}
           >
             <PlusIcon /> Add First Client
           </button>
         </div>
       ) : !selectedClient ? (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: '14px', height: '300px' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: '12px', height: '220px' }}>
           Please select a client from the dropdown menu.
         </div>
       ) : (
@@ -902,7 +910,7 @@ export default function ClientCRMRecord() {
                   <div style={{ ...styles.metricValue, color: outstandingInvoicesCount > 0 ? '#ff9800' : '#ffffff' }}>
                     {outstandingInvoicesCount}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#888' }}>Unpaid Work Orders</div>
+                  <div style={{ fontSize: '9px', color: '#888' }}>Unpaid Work Orders</div>
                 </div>
 
                 <div style={styles.metricCard}>
@@ -910,12 +918,12 @@ export default function ClientCRMRecord() {
                   <div style={{ ...styles.metricValue, color: totalOutstanding > 0 ? '#ff6b6b' : '#00e676' }}>
                     ${totalOutstanding.toFixed(2)}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#888' }}>Billing Balance</div>
+                  <div style={{ fontSize: '9px', color: '#888' }}>Billing Balance</div>
                 </div>
 
                 <div style={styles.metricCard}>
                   <div style={styles.detailLabel}>Payment Status</div>
-                  <div style={{ marginTop: '6px' }}>
+                  <div style={{ marginTop: '4px' }}>
                     {paymentStatus === 'PAID' ? (
                       <span style={styles.pill('rgba(0, 230, 118, 0.15)', '#00e676')}>PAID / GOOD</span>
                     ) : paymentStatus === 'OVERDUE' ? (
@@ -924,7 +932,7 @@ export default function ClientCRMRecord() {
                       <span style={styles.pill('rgba(255, 152, 0, 0.15)', '#ff9800')}>PENDING ({outstandingInvoicesCount})</span>
                     )}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#888', marginTop: '6px' }}>Account Standing</div>
+                  <div style={{ fontSize: '9px', color: '#888', marginTop: '4px' }}>Account Standing</div>
                 </div>
               </div>
             </div>
@@ -965,11 +973,11 @@ export default function ClientCRMRecord() {
               {/* Table wrapper */}
               <div style={styles.tableWrapper}>
                 {loadingRequests ? (
-                  <div style={{ padding: '30px', textAlign: 'center', color: '#888' }}>
+                  <div style={{ padding: '22px', textAlign: 'center', color: '#888', fontSize: '12px' }}>
                     Syncing job details...
                   </div>
                 ) : filteredJobs.length === 0 ? (
-                  <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666', fontSize: '13px' }}>
+                  <div style={{ padding: '28px 16px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
                     No matching jobs found for this search/filter selection.
                   </div>
                 ) : (
@@ -1038,7 +1046,7 @@ export default function ClientCRMRecord() {
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    padding: '4px',
+                    padding: '2px',
                   }}
                   title="Edit Profile"
                 >
@@ -1049,7 +1057,7 @@ export default function ClientCRMRecord() {
               <div style={styles.profileDetail}>
                 <div style={styles.detailItem}>
                   <span style={styles.detailLabel}>Client Name</span>
-                  <span style={{ ...styles.detailValue, fontSize: '15px', fontWeight: 800 }}>
+                  <span style={{ ...styles.detailValue, fontSize: '13px', fontWeight: 750 }}>
                     {selectedClient.name}
                   </span>
                 </div>
@@ -1115,8 +1123,8 @@ export default function ClientCRMRecord() {
                       backgroundColor: 'rgba(255, 152, 0, 0.05)',
                       border: '1px solid rgba(255, 152, 0, 0.15)',
                       borderRadius: '6px',
-                      padding: '8px 10px',
-                      fontSize: '12px',
+                      padding: '6px 8px',
+                      fontSize: '11px',
                       color: '#ff9800',
                       lineHeight: 1.4,
                     }}>
@@ -1127,7 +1135,7 @@ export default function ClientCRMRecord() {
 
                 <button
                   onClick={() => setShowEditModal(true)}
-                  style={{ ...styles.buttonOutline, marginTop: '8px' }}
+                  style={{ ...styles.buttonOutline, marginTop: '4px' }}
                 >
                   <EditIcon /> EDIT PROFILE DETAILS
                 </button>
@@ -1139,8 +1147,8 @@ export default function ClientCRMRecord() {
               <div style={styles.sectionTitle}>
                 <span>Quick-Actions Menu</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <p style={{ color: '#aaa', fontSize: '12px', margin: '0 0 4px 0', lineHeight: 1.4 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <p style={{ color: '#aaa', fontSize: '11px', margin: '0 0 2px 0', lineHeight: 1.3 }}>
                   Instantly dispatch or schedule service requests for this client using the pre-populated template below.
                 </p>
                 <button

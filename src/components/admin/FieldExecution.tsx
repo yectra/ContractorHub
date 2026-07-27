@@ -474,7 +474,7 @@ export default function FieldExecution() {
     display: 'flex',
     flexDirection: 'column',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-    paddingBottom: '85px',
+    paddingBottom: '68px',
     boxSizing: 'border-box',
   };
 
@@ -486,9 +486,9 @@ export default function FieldExecution() {
           backgroundColor: '#d32f2f',
           color: '#ffffff',
           textAlign: 'center',
-          padding: '8px 12px',
+          padding: '6px 10px',
           fontWeight: 700,
-          fontSize: '0.72rem',
+          fontSize: '0.66rem',
           letterSpacing: '0.5px',
           position: 'sticky',
           top: 0,
@@ -503,13 +503,13 @@ export default function FieldExecution() {
       <header style={{
         backgroundColor: '#1a1a1a',
         borderBottom: '1px solid #333',
-        padding: '10px 14px',
+        padding: '8px 12px',
         position: 'sticky',
         top: !isOnline ? '35px' : 0,
         zIndex: 100,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.6)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.55)',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
           <button 
             onClick={() => {
               // Context-aware back navigation:
@@ -529,9 +529,11 @@ export default function FieldExecution() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '6px',
-              minWidth: '44px',
-              minHeight: '44px',
+              padding: 0,
+              minWidth: '30px',
+              minHeight: '30px',
+              width: '30px',
+              height: '30px',
             }}
             aria-label="Back to dashboard"
           >
@@ -539,7 +541,7 @@ export default function FieldExecution() {
           </button>
 
           {/* Job Selector Dropdown */}
-          <div style={{ flex: 1, marginLeft: '12px', marginRight: '12px' }}>
+          <div style={{ flex: 1, marginLeft: '8px', marginRight: '8px' }}>
             <select
               value={effectiveSelectedJobId}
               onChange={(e) => setSelectedJobId(e.target.value)}
@@ -547,12 +549,13 @@ export default function FieldExecution() {
                 backgroundColor: '#2a2a2a',
                 color: '#ffffff',
                 border: '1px solid #444',
-                borderRadius: '8px',
-                padding: '8px 12px',
+                borderRadius: '6px',
+                padding: '0 10px',
                 width: '100%',
-                fontSize: '0.75rem',
+                fontSize: '0.72rem',
                 fontWeight: 600,
-                minHeight: '48px',
+                minHeight: '32px',
+                height: '32px',
                 outline: 'none',
               }}
             >
@@ -573,11 +576,12 @@ export default function FieldExecution() {
             display: 'flex',
             alignItems: 'center',
             backgroundColor: '#2a2a2a',
-            padding: '6px 10px',
-            borderRadius: '16px',
-            gap: '6px',
-            fontSize: '0.65rem',
+            padding: '0 8px',
+            borderRadius: '12px',
+            gap: '5px',
+            fontSize: '0.6rem',
             fontWeight: 700,
+            minHeight: '26px',
           }}>
             <CloudIcon offline={!isOnline} />
             <span style={{ color: isOnline ? '#00e676' : '#ff4d4d' }}>
@@ -587,25 +591,25 @@ export default function FieldExecution() {
         </div>
 
         {selectedJob && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '10px', color: '#ff9800', fontWeight: 700, letterSpacing: '0.6px', textTransform: 'uppercase', marginBottom: '2px' }}>
+              <div style={{ fontSize: '9px', color: '#ff9800', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '1px' }}>
                 Active Job
               </div>
-              <h1 style={{ fontSize: '15px', margin: 0, fontWeight: 900, color: '#ffffff', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <h1 style={{ fontSize: '13px', margin: 0, fontWeight: 800, color: '#ffffff', lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {selectedJob.serviceName}
               </h1>
             </div>
             <span style={{
               backgroundColor: selectedJob.status === 'Completed' ? '#00e676' : '#ff9800',
               color: '#000',
-              fontSize: '10px',
+              fontSize: '9px',
               fontWeight: 900,
-              padding: '4px 10px',
+              padding: '2px 7px',
               borderRadius: '4px',
-              letterSpacing: '0.8px',
+              letterSpacing: '0.5px',
               textTransform: 'uppercase',
-              marginLeft: '12px',
+              marginLeft: '8px',
               flexShrink: 0,
               boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
             }}>
@@ -621,10 +625,10 @@ export default function FieldExecution() {
           backgroundColor: 'rgba(211,47,47,0.12)',
           color: '#ff6b6b',
           borderLeft: '3px solid #d32f2f',
-          margin: '10px 14px',
-          padding: '9px 12px',
+          margin: '8px 12px',
+          padding: '7px 10px',
           borderRadius: '6px',
-          fontSize: '12px',
+          fontSize: '11px',
           fontWeight: 600,
         }}>
           {errorAlert}
@@ -636,10 +640,10 @@ export default function FieldExecution() {
           backgroundColor: 'rgba(0,230,118,0.1)',
           color: '#00e676',
           borderLeft: '3px solid #00e676',
-          margin: '10px 14px',
-          padding: '9px 12px',
+          margin: '8px 12px',
+          padding: '7px 10px',
           borderRadius: '6px',
-          fontSize: '12px',
+          fontSize: '11px',
           fontWeight: 600,
         }}>
           {successAlert}
@@ -654,49 +658,49 @@ export default function FieldExecution() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '40px 24px',
+          padding: '28px 18px',
           textAlign: 'center',
         }}>
           <CloudIcon offline />
-          <h2 style={{ fontSize: '1.0rem', fontWeight: 700, color: '#ff9800', margin: '16px 0 8px 0' }}>
+          <h2 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#ff9800', margin: '10px 0 6px 0' }}>
             No Active Job Selected
           </h2>
-          <p style={{ color: '#aaa', fontSize: '0.75rem', maxWidth: '300px', lineHeight: 1.5 }}>
+          <p style={{ color: '#aaa', fontSize: '0.7rem', maxWidth: '300px', lineHeight: 1.35 }}>
             To start, schedule a job on the Dispatch timeline and make sure you select it from the dropdown above.
           </p>
         </div>
       ) : (
-        <main style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <main style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           
           {/* Client Info Section */}
           <section style={{
             backgroundColor: '#1e1e1e',
-            borderRadius: '10px',
+            borderRadius: '8px',
             border: '1px solid #2e2e2e',
-            padding: '12px',
+            padding: '10px',
             boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
           }}>
             <h2 style={{
-              margin: '0 0 8px 0',
-              fontSize: '10px',
+              margin: '0 0 6px 0',
+              fontSize: '9px',
               fontWeight: 800,
               color: '#ff9800',
               textTransform: 'uppercase',
-              letterSpacing: '0.8px',
-              paddingBottom: '6px',
+              letterSpacing: '0.6px',
+              paddingBottom: '5px',
               borderBottom: '1px solid #2e2e2e',
             }}>
               Customer & Job Site
             </h2>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', marginBottom: '2px', lineHeight: 1.3 }}>
+            <div style={{ fontSize: '12px', fontWeight: 750, color: '#ffffff', marginBottom: '2px', lineHeight: 1.25 }}>
               {selectedJob.clientName}
             </div>
-            <div style={{ fontSize: '12px', color: '#999', lineHeight: 1.4, marginBottom: '10px' }}>
+            <div style={{ fontSize: '11px', color: '#999', lineHeight: 1.3, marginBottom: '8px' }}>
               {selectedJob.address}
             </div>
 
             {/* Large Thumb Actions (Call, Maps Route) */}
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '6px' }}>
               <a
                 href={`tel:${selectedJob.phone}`}
                 style={{
@@ -704,15 +708,15 @@ export default function FieldExecution() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '7px',
+                  gap: '5px',
                   backgroundColor: '#1a2a1a',
                   color: '#00e676',
                   border: '1.5px solid #00e676',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   textDecoration: 'none',
                   fontWeight: 800,
-                  fontSize: '12px',
-                  minHeight: '52px',
+                  fontSize: '11px',
+                  minHeight: '38px',
                   touchAction: 'manipulation',
                   letterSpacing: '0.4px',
                 }}
@@ -730,15 +734,15 @@ export default function FieldExecution() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '7px',
+                  gap: '5px',
                   backgroundColor: '#1a1f2e',
                   color: '#82b1ff',
                   border: '1.5px solid #3d6bde',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   textDecoration: 'none',
                   fontWeight: 800,
-                  fontSize: '12px',
-                  minHeight: '52px',
+                  fontSize: '11px',
+                  minHeight: '38px',
                   touchAction: 'manipulation',
                   letterSpacing: '0.4px',
                 }}
@@ -752,23 +756,23 @@ export default function FieldExecution() {
           {/* Checklist Progress Bar & Items */}
           <section style={{
             backgroundColor: '#1e1e1e',
-            borderRadius: '10px',
+            borderRadius: '8px',
             border: '1px solid #2e2e2e',
-            padding: '12px',
+            padding: '10px',
             boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
               <h2 style={{
                 margin: 0,
-                fontSize: '10px',
+                fontSize: '9px',
                 fontWeight: 800,
                 color: '#ff9800',
                 textTransform: 'uppercase',
-                letterSpacing: '0.8px',
+                letterSpacing: '0.6px',
               }}>
                 Work Checklist
               </h2>
-              <span style={{ fontSize: '12px', fontWeight: 900, color: progressPercentage === 100 ? '#00e676' : '#ff9800', letterSpacing: '0.4px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: progressPercentage === 100 ? '#00e676' : '#ff9800', letterSpacing: '0.3px' }}>
                 {progressPercentage}%
               </span>
             </div>
@@ -776,11 +780,11 @@ export default function FieldExecution() {
             {/* Live Progress Bar */}
             <div style={{
               width: '100%',
-              height: '5px',
+              height: '4px',
               backgroundColor: '#2a2a2a',
               borderRadius: '3px',
               overflow: 'hidden',
-              marginBottom: '10px',
+              marginBottom: '8px',
             }}>
               <div style={{
                 width: `${progressPercentage}%`,
@@ -791,7 +795,7 @@ export default function FieldExecution() {
             </div>
 
             {/* Checklist items */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
               {checklist.map((step) => (
                 <div
                   key={step.id}
@@ -801,10 +805,10 @@ export default function FieldExecution() {
                     alignItems: 'center',
                     backgroundColor: step.checked ? 'rgba(0, 230, 118, 0.06)' : '#242424',
                     border: step.checked ? '1px solid rgba(0, 230, 118, 0.25)' : '1px solid #303030',
-                    borderRadius: '7px',
-                    padding: '0 12px',
+                    borderRadius: '6px',
+                    padding: '0 10px',
                     cursor: 'pointer',
-                    minHeight: '52px',
+                    minHeight: '38px',
                     boxSizing: 'border-box',
                     userSelect: 'none',
                     transition: 'all 0.15s ease',
@@ -812,25 +816,25 @@ export default function FieldExecution() {
                 >
                   {/* Checkbox Circle */}
                   <div style={{
-                    width: '22px',
-                    height: '22px',
+                    width: '18px',
+                    height: '18px',
                     borderRadius: '50%',
                     border: step.checked ? '2px solid #00e676' : '2px solid #555',
                     backgroundColor: step.checked ? '#00e676' : 'transparent',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginRight: '12px',
+                    marginRight: '8px',
                     flexShrink: 0,
                     color: '#000',
                   }}>
                     {step.checked && <CheckIcon />}
                   </div>
                   <span style={{
-                    fontSize: '13px',
+                    fontSize: '12px',
                     color: step.checked ? '#777' : '#e0e0e0',
                     textDecoration: step.checked ? 'line-through' : 'none',
-                    lineHeight: 1.35,
+                    lineHeight: 1.25,
                     fontWeight: step.checked ? 400 : 500,
                   }}>
                     {step.text}
@@ -843,42 +847,42 @@ export default function FieldExecution() {
           {/* Photo Attachments & S3 Upload */}
           <section style={{
             backgroundColor: '#1e1e1e',
-            borderRadius: '10px',
+            borderRadius: '8px',
             border: '1px solid #2e2e2e',
-            padding: '12px',
+            padding: '10px',
             boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
           }}>
             <h2 style={{
-              margin: '0 0 8px 0',
-              fontSize: '10px',
+              margin: '0 0 6px 0',
+              fontSize: '9px',
               fontWeight: 800,
               color: '#ff9800',
               textTransform: 'uppercase',
-              letterSpacing: '0.8px',
-              paddingBottom: '6px',
+              letterSpacing: '0.6px',
+              paddingBottom: '5px',
               borderBottom: '1px solid #2e2e2e',
             }}>
               Job Photos
             </h2>
 
             {/* Photo Capture CTA */}
-            <div style={{ marginBottom: '10px' }}>
+            <div style={{ marginBottom: '8px' }}>
               <label style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '10px',
+                gap: '6px',
                 backgroundColor: isUploading ? '#333' : '#ff9800',
                 color: '#000',
                 fontWeight: 800,
-                fontSize: '13px',
-                letterSpacing: '0.5px',
-                padding: '0 16px',
-                borderRadius: '8px',
+                fontSize: '11px',
+                letterSpacing: '0.35px',
+                padding: '0 12px',
+                borderRadius: '6px',
                 cursor: isUploading ? 'not-allowed' : 'pointer',
-                minHeight: '52px',
+                minHeight: '38px',
                 textAlign: 'center',
-                boxShadow: '0 2px 8px rgba(255, 152, 0, 0.35)',
+                boxShadow: '0 2px 6px rgba(255, 152, 0, 0.28)',
                 transition: 'background-color 0.2s',
               }}>
                 <CameraIcon />
@@ -896,14 +900,14 @@ export default function FieldExecution() {
 
             {/* Upload Queue Display if any items exist */}
             {(uploadQueue.length > 0 || uploadedPhotos.length > 0) ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                 
                 {/* Render Queue Items */}
                 {uploadQueue.map((item) => (
                   <div key={item.id} style={{
                     position: 'relative',
                     aspectRatio: '1',
-                    borderRadius: '8px',
+                    borderRadius: '6px',
                     overflow: 'hidden',
                     border: '1px solid #d32f2f',
                   }}>
@@ -922,7 +926,7 @@ export default function FieldExecution() {
                       fontSize: '0.55rem',
                       fontWeight: 800,
                       textAlign: 'center',
-                      padding: '4px 2px',
+                      padding: '3px 2px',
                       textTransform: 'uppercase',
                     }}>
                       QUEUED (OFFLINE)
@@ -935,7 +939,7 @@ export default function FieldExecution() {
                   <div key={photo.id} style={{
                     position: 'relative',
                     aspectRatio: '1',
-                    borderRadius: '8px',
+                    borderRadius: '6px',
                     overflow: 'hidden',
                     border: '1px solid #333',
                   }}>
@@ -946,13 +950,13 @@ export default function FieldExecution() {
                     />
                     <div style={{
                       position: 'absolute',
-                      top: 4,
-                      right: 4,
+                      top: 3,
+                      right: 3,
                       backgroundColor: 'rgba(0, 230, 118, 0.85)',
                       color: '#000',
                       borderRadius: '50%',
-                      width: '16px',
-                      height: '16px',
+                      width: '14px',
+                      height: '14px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -965,11 +969,11 @@ export default function FieldExecution() {
             ) : (
               <div style={{
                 border: '2px dashed #2e2e2e',
-                borderRadius: '8px',
-                padding: '20px',
+                borderRadius: '6px',
+                padding: '14px',
                 textAlign: 'center',
                 color: '#555',
-                fontSize: '12px',
+                fontSize: '11px',
               }}>
                 No photos uploaded yet for this job.
               </div>
@@ -983,13 +987,13 @@ export default function FieldExecution() {
         <footer style={{
           backgroundColor: '#181818',
           borderTop: '1px solid #2e2e2e',
-          padding: '10px 14px',
+          padding: '8px 12px',
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
           zIndex: 100,
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.7)',
+          boxShadow: '0 -3px 14px rgba(0,0,0,0.65)',
         }}>
           <button
             onClick={handleCompleteJob}
@@ -999,15 +1003,15 @@ export default function FieldExecution() {
               backgroundColor: isChecklistComplete ? '#00e676' : '#242424',
               color: isChecklistComplete ? '#000000' : '#555555',
               border: isChecklistComplete ? 'none' : '1px solid #333',
-              borderRadius: '10px',
+              borderRadius: '8px',
               fontWeight: 900,
-              fontSize: '14px',
-              letterSpacing: '0.8px',
+              fontSize: '12px',
+              letterSpacing: '0.5px',
               cursor: isChecklistComplete && !isUploading ? 'pointer' : 'not-allowed',
-              minHeight: '58px',
+              minHeight: '44px',
               textTransform: 'uppercase',
               transition: 'all 0.2s',
-              boxShadow: isChecklistComplete ? '0 0 20px rgba(0, 230, 118, 0.5), 0 4px 12px rgba(0,0,0,0.4)' : 'none',
+              boxShadow: isChecklistComplete ? '0 0 14px rgba(0, 230, 118, 0.38), 0 3px 10px rgba(0,0,0,0.35)' : 'none',
             }}
           >
             {isUploading ? 'SYNCING...' : isChecklistComplete ? '✓  COMPLETE JOB & INVOICE' : 'CHECK ALL ITEMS TO COMPLETE'}
