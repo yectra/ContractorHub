@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -35,6 +35,7 @@ import {
   DialogActions,
   InputAdornment,
 } from '@mui/material';
+import { useNavigate } from "react-router-dom";
 
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
@@ -162,101 +163,213 @@ export default function UserManagement() {
     severity: 'success',
   });
 
+  const navigate = useNavigate();
+
   // Load user data combined with technician store
+  // useEffect(() => {
+  //   async function loadData() {
+  //     try {
+  //       setLoading(true);
+  //       // Get list of technicians from standard DB
+  //       const techs = await technicianAPI.listTechnicians();
+        
+  //       // Check if users exist in LocalStorage
+  //       const cachedUsersRaw = localStorage.getItem('mock_users');
+        
+  //       let initialUsers: UserAccount[] = [];
+        
+  //       if (cachedUsersRaw) {
+  //         initialUsers = JSON.parse(cachedUsersRaw);
+  //       } else {
+  //         // Map existing technicians to users
+  //         const mappedTechs: UserAccount[] = techs.map((t) => {
+  //           // Register tokens for active default techs
+  //           const hasToken = t.id === 'tech-1' || t.id === 'tech-2';
+  //           return {
+  //             id: t.id!,
+  //             name: t.name,
+  //             email: t.email || `${t.name.toLowerCase().replace(' ', '')}@contractorsaas.com`,
+  //             phone: t.phone || '555-0100',
+  //             role: 'Technician',
+  //             status: t.isAvailable ? 'Active' : 'Inactive',
+  //             devicePushToken: hasToken ? `fcm-push-token-${t.id}-${Math.floor(100000 + Math.random() * 900000)}` : null,
+  //             deviceType: hasToken ? (t.id === 'tech-1' ? 'iOS' : 'Android') : null,
+  //             deviceRegisteredAt: hasToken ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() : null,
+  //             permissions: [...ROLE_PRESETS.Technician],
+  //             specialty: (t.specialty as any) || 'General',
+  //             createdAt: t.createdAt || new Date().toISOString(),
+  //             updatedAt: t.updatedAt || new Date().toISOString(),
+  //           };
+  //         });
+
+  //         // Add default dispatchers
+  //         const defaultDispatchers: UserAccount[] = [
+  //           {
+  //             id: 'disp-1',
+  //             name: 'Jane Doe',
+  //             email: 'jane@contractorsaas.com',
+  //             phone: '555-9090',
+  //             role: 'Dispatcher',
+  //             status: 'Active',
+  //             devicePushToken: 'web-push-token-jane-8837190',
+  //             deviceType: 'Web',
+  //             deviceRegisteredAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
+  //             permissions: [...ROLE_PRESETS.Dispatcher],
+  //             createdAt: new Date().toISOString(),
+  //             updatedAt: new Date().toISOString(),
+  //           },
+  //           {
+  //             id: 'disp-2',
+  //             name: 'Alex Rivera',
+  //             email: 'alex.rivera@contractorsaas.com',
+  //             phone: '555-8080',
+  //             role: 'Dispatcher',
+  //             status: 'Active',
+  //             devicePushToken: null,
+  //             deviceType: null,
+  //             deviceRegisteredAt: null,
+  //             permissions: [...ROLE_PRESETS.Dispatcher],
+  //             createdAt: new Date().toISOString(),
+  //             updatedAt: new Date().toISOString(),
+  //           }
+  //         ];
+
+  //         initialUsers = [...mappedTechs, ...defaultDispatchers];
+  //         localStorage.setItem('mock_users', JSON.stringify(initialUsers));
+  //       }
+
+  //       // Keep local techs synchronized in case users list updated while offline
+  //       setUsers(initialUsers);
+  //     } catch (err) {
+  //       console.error('Failed to load users:', err);
+  //       showSnackbar('Error reading user records', 'error');
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+
+  //   loadData();
+  // }, []);
+
+  // Helper to trigger alert notifications
+  const showSnackbar = useCallback(
+    (message: string, severity: "success" | "error") => {
+      setAlert({
+        open: true,
+        message,
+        severity,
+      });
+    },
+    []
+  );
+
   useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        // Get list of technicians from standard DB
-        const techs = await technicianAPI.listTechnicians();
-        
-        // Check if users exist in LocalStorage
-        const cachedUsersRaw = localStorage.getItem('mock_users');
-        
-        let initialUsers: UserAccount[] = [];
-        
-        if (cachedUsersRaw) {
-          initialUsers = JSON.parse(cachedUsersRaw);
-        } else {
-          // Map existing technicians to users
-          const mappedTechs: UserAccount[] = techs.map((t) => {
-            // Register tokens for active default techs
-            const hasToken = t.id === 'tech-1' || t.id === 'tech-2';
-            return {
-              id: t.id!,
-              name: t.name,
-              email: t.email || `${t.name.toLowerCase().replace(' ', '')}@contractorsaas.com`,
-              phone: t.phone || '555-0100',
-              role: 'Technician',
-              status: t.isAvailable ? 'Active' : 'Inactive',
-              devicePushToken: hasToken ? `fcm-push-token-${t.id}-${Math.floor(100000 + Math.random() * 900000)}` : null,
-              deviceType: hasToken ? (t.id === 'tech-1' ? 'iOS' : 'Android') : null,
-              deviceRegisteredAt: hasToken ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() : null,
-              permissions: [...ROLE_PRESETS.Technician],
-              specialty: (t.specialty as any) || 'General',
-              createdAt: t.createdAt || new Date().toISOString(),
-              updatedAt: t.updatedAt || new Date().toISOString(),
-            };
-          });
+  const loadData = async () => {
+    try {
+      setLoading(true);
 
-          // Add default dispatchers
-          const defaultDispatchers: UserAccount[] = [
-            {
-              id: 'disp-1',
-              name: 'Jane Doe',
-              email: 'jane@contractorsaas.com',
-              phone: '555-9090',
-              role: 'Dispatcher',
-              status: 'Active',
-              devicePushToken: 'web-push-token-jane-8837190',
-              deviceType: 'Web',
-              deviceRegisteredAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-              permissions: [...ROLE_PRESETS.Dispatcher],
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            {
-              id: 'disp-2',
-              name: 'Alex Rivera',
-              email: 'alex.rivera@contractorsaas.com',
-              phone: '555-8080',
-              role: 'Dispatcher',
-              status: 'Active',
-              devicePushToken: null,
-              deviceType: null,
-              deviceRegisteredAt: null,
-              permissions: [...ROLE_PRESETS.Dispatcher],
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            }
-          ];
+      // Get list of technicians from standard DB
+      const techs = await technicianAPI.listTechnicians();
 
-          initialUsers = [...mappedTechs, ...defaultDispatchers];
-          localStorage.setItem('mock_users', JSON.stringify(initialUsers));
-        }
+      // Check if users exist in LocalStorage
+      const cachedUsersRaw = localStorage.getItem("mock_users");
 
-        // Keep local techs synchronized in case users list updated while offline
-        setUsers(initialUsers);
-      } catch (err) {
-        console.error('Failed to load users:', err);
-        showSnackbar('Error reading user records', 'error');
-      } finally {
-        setLoading(false);
+      let initialUsers: UserAccount[] = [];
+
+      if (cachedUsersRaw) {
+        initialUsers = JSON.parse(cachedUsersRaw);
+      } else {
+        // Map existing technicians to users
+        const mappedTechs: UserAccount[] = techs.map((t) => {
+          const hasToken = t.id === "tech-1" || t.id === "tech-2";
+
+          return {
+            id: t.id!,
+            name: t.name,
+            email:
+              t.email ??
+              `${t.name.toLowerCase().replace(/\s+/g, "")}@contractorsaas.com`,
+            phone: t.phone ?? "555-0100",
+            role: "Technician",
+            status: t.isAvailable ? "Active" : "Inactive",
+            devicePushToken: hasToken
+              ? `fcm-push-token-${t.id}-${Math.floor(
+                  100000 + Math.random() * 900000
+                )}`
+              : null,
+            deviceType: hasToken
+              ? t.id === "tech-1"
+                ? "iOS"
+                : "Android"
+              : null,
+            deviceRegisteredAt: hasToken
+              ? new Date(
+                  Date.now() - 30 * 24 * 60 * 60 * 1000
+                ).toISOString()
+              : null,
+            permissions: [...ROLE_PRESETS.Technician],
+
+            // Remove `as any`
+            specialty: t.specialty ?? "General",
+
+            createdAt: t.createdAt ?? new Date().toISOString(),
+            updatedAt: t.updatedAt ?? new Date().toISOString(),
+          };
+        });
+
+        const defaultDispatchers: UserAccount[] = [
+          {
+            id: "disp-1",
+            name: "Jane Doe",
+            email: "jane@contractorsaas.com",
+            phone: "555-9090",
+            role: "Dispatcher",
+            status: "Active",
+            devicePushToken: "web-push-token-jane-8837190",
+            deviceType: "Web",
+            deviceRegisteredAt: new Date(
+              Date.now() - 60 * 24 * 60 * 60 * 1000
+            ).toISOString(),
+            permissions: [...ROLE_PRESETS.Dispatcher],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: "disp-2",
+            name: "Alex Rivera",
+            email: "alex.rivera@contractorsaas.com",
+            phone: "555-8080",
+            role: "Dispatcher",
+            status: "Active",
+            devicePushToken: null,
+            deviceType: null,
+            deviceRegisteredAt: null,
+            permissions: [...ROLE_PRESETS.Dispatcher],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ];
+
+        initialUsers = [...mappedTechs, ...defaultDispatchers];
+        localStorage.setItem("mock_users", JSON.stringify(initialUsers));
       }
-    }
 
-    loadData();
-  }, []);
+      setUsers(initialUsers);
+    } catch (err) {
+      console.error("Failed to load users:", err);
+      showSnackbar("Error reading user records", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadData();
+}, [showSnackbar]);
 
   // Save changes back to user DB and synchronize with Technician API
   const saveUsersList = async (updatedList: UserAccount[]) => {
     setUsers(updatedList);
     localStorage.setItem('mock_users', JSON.stringify(updatedList));
-  };
-
-  // Helper to trigger alert notifications
-  const showSnackbar = (message: string, severity: 'success' | 'error') => {
-    setAlert({ open: true, message, severity });
   };
 
   // Filtered Users List
@@ -534,7 +647,8 @@ export default function UserManagement() {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
             <IconButton
-              onClick={() => (window.location.href = '/')}
+              // onClick={() => (window.location.href = '/')}
+              onClick={() => navigate(-1)}
               sx={{
                 border: '1px solid #cbd5e1',
                 borderRadius: '6px',
@@ -1300,7 +1414,7 @@ export default function UserManagement() {
                   labelId="modal-role-label"
                   value={formRole}
                   label="System Role"
-                  onChange={(e) => handleRoleChange(e.target.value as any)}
+                  onChange={(e) => handleRoleChange(e.target.value)}
                   sx={{ borderRadius: '8px' }}
                 >
                   <MenuItem value="Technician">Technician (Field Execution)</MenuItem>
@@ -1315,7 +1429,7 @@ export default function UserManagement() {
                     labelId="modal-specialty-label"
                     value={formSpecialty}
                     label="Trade Specialty"
-                    onChange={(e) => setFormSpecialty(e.target.value as any)}
+                    onChange={(e) => setFormSpecialty(e.target.value)}
                     sx={{ borderRadius: '8px' }}
                   >
                     <MenuItem value="Plumbing">Plumbing</MenuItem>
