@@ -28,6 +28,92 @@ const getTodayString = () => {
   return `${year}-${month}-${day}`;
 };
 
+const compactButtonSx = {
+  textTransform: 'none',
+  borderRadius: '6px',
+  fontWeight: 600,
+  minHeight: 28,
+  height: 28,
+  px: 1,
+  py: 0,
+  fontSize: '0.72rem',
+  lineHeight: 1.2,
+  color: '#475569',
+  borderColor: '#cbd5e1',
+  '& .MuiButton-startIcon': {
+    mr: 0.5,
+    '& svg': { fontSize: '0.95rem' },
+  },
+};
+
+const compactPrimaryButtonSx = {
+  textTransform: 'none',
+  borderRadius: '8px',
+  fontWeight: 600,
+  minHeight: 34,
+  height: 34,
+  px: 1.5,
+  py: 0,
+  fontSize: '0.78rem',
+  lineHeight: 1.2,
+  '& .MuiButton-startIcon': {
+    mr: 0.75,
+    '& svg': { fontSize: '1rem' },
+  },
+};
+
+const compactFieldSx = {
+  '& .MuiOutlinedInput-root': {
+    height: 34,
+    borderRadius: '8px',
+    fontSize: '0.78rem',
+  },
+  '& .MuiOutlinedInput-root.MuiInputBase-multiline': {
+    height: 'auto',
+    minHeight: 58,
+    alignItems: 'flex-start',
+  },
+  '& .MuiInputBase-input': {
+    py: 0,
+    height: '34px',
+    boxSizing: 'border-box',
+    fontSize: '0.78rem',
+  },
+  '& .MuiInputBase-inputMultiline': {
+    height: 'auto',
+    py: 0.75,
+    lineHeight: 1.35,
+  },
+  '& .MuiInputLabel-root': {
+    fontSize: '0.75rem',
+    transform: 'translate(14px, 8px) scale(1)',
+    '&.MuiInputLabel-shrink': {
+      transform: 'translate(14px, -7px) scale(0.75)',
+    },
+  },
+};
+
+const compactSelectSx = {
+  height: 34,
+  borderRadius: '8px',
+  fontSize: '0.78rem',
+  '& .MuiSelect-select': {
+    py: 0,
+    pr: '28px !important',
+    pl: 1.25,
+    minHeight: '0 !important',
+    lineHeight: '34px',
+  },
+};
+
+const compactInputLabelSx = {
+  fontSize: '0.75rem',
+  transform: 'translate(14px, 8px) scale(1)',
+  '&.MuiInputLabel-shrink': {
+    transform: 'translate(14px, -7px) scale(0.75)',
+  },
+};
+
 export default function ThreePanelPage() {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
@@ -383,8 +469,8 @@ export default function ThreePanelPage() {
                 sx={{
                   display: 'flex',
                   justifyContent: 'flex-end',
-                  gap: 1,
-                  mb: 1,
+                  gap: 0.75,
+                  mb: 0.75,
                   flexWrap: 'wrap',
                 }}
               >
@@ -392,16 +478,12 @@ export default function ThreePanelPage() {
                   <Button
                     variant="outlined"
                     size="small"
-                    startIcon={<EngineeringIcon fontSize="small" />}
+                    startIcon={<EngineeringIcon sx={{ fontSize: '0.95rem' }} />}
                     onClick={() => {
                       sessionStorage.setItem('previousView', 'ADMIN');
                       window.location.href = '/technician';
                     }}
-                    sx={{
-                      textTransform: 'none',
-                      fontSize: '0.72rem',
-                      fontWeight: 600,
-                    }}
+                    sx={compactButtonSx}
                   >
                     Tech
                   </Button>
@@ -411,13 +493,9 @@ export default function ThreePanelPage() {
                   <Button
                     variant="outlined"
                     size="small"
-                    startIcon={<GroupsIcon fontSize="small" />}
+                    startIcon={<GroupsIcon sx={{ fontSize: '0.95rem' }} />}
                     onClick={() => (window.location.href = '/crm')}
-                    sx={{
-                      textTransform: 'none',
-                      fontSize: '0.72rem',
-                      fontWeight: 600,
-                    }}
+                    sx={compactButtonSx}
                   >
                     CRM
                   </Button>
@@ -427,13 +505,9 @@ export default function ThreePanelPage() {
                   <Button
                     variant="outlined"
                     size="small"
-                    startIcon={<DashboardIcon fontSize="small" />}
+                    startIcon={<DashboardIcon sx={{ fontSize: '0.95rem' }} />}
                     onClick={() => (window.location.href = '/tech-dashboard')}
-                    sx={{
-                      textTransform: 'none',
-                      fontSize: '0.72rem',
-                      fontWeight: 600,
-                    }}
+                    sx={compactButtonSx}
                   >
                     Dashboard
                   </Button>
@@ -444,13 +518,9 @@ export default function ThreePanelPage() {
                     id="user-management-nav-btn"
                     variant="outlined"
                     size="small"
-                    startIcon={<PersonAddIcon fontSize="small" />}
+                    startIcon={<PersonAddIcon sx={{ fontSize: '0.95rem' }} />}
                     onClick={() => (window.location.href = '/admin/users')}
-                    sx={{
-                      textTransform: 'none',
-                      fontSize: '0.72rem',
-                      fontWeight: 600,
-                    }}
+                    sx={compactButtonSx}
                   >
                     Users
                   </Button>
@@ -463,7 +533,8 @@ export default function ThreePanelPage() {
                 sx={{
                   fontWeight: 700,
                   color: '#1a1a1a',
-                  fontSize: '0.95rem',
+                  fontSize: '0.9rem',
+                  lineHeight: 1.2,
                 }}
               >
                 Service Queue
@@ -524,7 +595,7 @@ export default function ThreePanelPage() {
                   </Button> */}
                 {/* </Box>
               </Box> */}
-              <Typography variant="caption" sx={{ color: '#666', fontSize: '0.7rem' }}>
+              <Typography variant="caption" sx={{ color: '#666', fontSize: '0.68rem', lineHeight: 1.2 }}>
                 {srLoading ? 'Loading...' : `${pendingRequests.length} pending requests`}
               </Typography>
               <TextField
@@ -539,7 +610,7 @@ export default function ThreePanelPage() {
                     // Fallback
                   }
                 }}
-                sx={{ mt: 1.5 }}
+                sx={{ mt: 1.25, ...compactFieldSx }}
                 fullWidth
                 size="small"
                 slotProps={{
@@ -554,7 +625,7 @@ export default function ThreePanelPage() {
             </Box>
 
             {/* Queue Cards */}
-            <Box sx={{ flex: 1, overflow: 'auto', p: 1.5, py: 2 }}>
+            <Box sx={{ flex: 1, overflow: 'auto', p: 1.25, py: 1.5 }}>
               {srLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
                   <CircularProgress size={40} />
@@ -571,7 +642,7 @@ export default function ThreePanelPage() {
                     onDragStart={(event) => handleDragStart(event, 'request', request.id!)}
                     onClick={() => handleRequestClick(request.id!)}
                     sx={{
-                      mb: 1.5,
+                      mb: 1,
                       cursor: 'pointer',
                       border: selectedRequest === request.id ? '2px solid #1976d2' : '1px solid #e0e0e0',
                       transition: 'all 0.2s',
@@ -593,6 +664,7 @@ export default function ThreePanelPage() {
                           icon={request.type === 'Emergency' ? <PriorityHighIcon sx={{ fontSize: '0.9rem' }} /> : undefined}
                           sx={{
                             height: 18,
+                            borderRadius: '6px',
                             fontSize: '0.6rem',
                             backgroundColor: request.type === 'Emergency' ? '#ffebee' : '#e3f2fd',
                             color: request.type === 'Emergency' ? '#c62828' : '#1565c0',
@@ -671,14 +743,14 @@ export default function ThreePanelPage() {
         }}
       >
         {/* Header */}
-        <Box sx={{ p: 2, pb: 1.5, borderBottom: '2px solid #e0e0e0', backgroundColor: '#fafafa' }}>
+        <Box sx={{ p: 1.5, pb: 1.25, borderBottom: '2px solid #e0e0e0', backgroundColor: '#fafafa' }}>
           {!isAmplifyConfigured && (
             <Alert severity="info" sx={{ mb: 1.5, fontSize: '0.75rem', py: 0.5 }}>
               Running in <strong>Offline Demo Mode</strong> using local browser storage. Run <code>npx amplify sandbox</code> to deploy the AWS Amplify backend.
             </Alert>
           )}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.3 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.1rem' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
+            <Typography variant="h5" sx={{ fontWeight: 750, color: '#1a1a1a', fontSize: '1rem', lineHeight: 1.2 }}>
               Dispatch Command Center
             </Typography>
             <Chip 
@@ -686,16 +758,16 @@ export default function ThreePanelPage() {
               color="primary"
               variant="outlined"
               size="small"
-              sx={{ fontWeight: 600, fontSize: '0.75rem' }}
+              sx={{ fontWeight: 700, fontSize: '0.66rem', height: 22, borderRadius: '6px', '& .MuiChip-label': { px: 0.75 } }}
             />
           </Box>
-          <Typography variant="body2" sx={{ color: '#666', fontSize: '0.8rem' }}>
+          <Typography variant="body2" sx={{ color: '#666', fontSize: '0.68rem', lineHeight: 1.2 }}>
             Drag and drop service requests to schedule technicians
           </Typography>
         </Box>
 
         {/* Schedule Grid with padding */}
-        <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+        <Box sx={{ flex: 1, overflow: 'auto', p: 1.5 }}>
           <Box sx={{ minWidth: 900 }}>
             {/* Time Header Row */}
             <Box sx={{ display: 'flex', mb: 0.5 }}>
@@ -708,7 +780,8 @@ export default function ThreePanelPage() {
                     minWidth: 80,
                     textAlign: 'center',
                     fontWeight: 600,
-                    fontSize: '0.75rem',
+                    fontSize: '0.66rem',
+                    lineHeight: 1.2,
                     color: '#666',
                     pb: 0.5,
                   }}
@@ -734,36 +807,33 @@ export default function ThreePanelPage() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  minHeight: '400px',
+                  minHeight: '340px',
                   backgroundColor: '#f9f9f9',
-                  borderRadius: 2,
+                  borderRadius: '8px',
                   border: '2px dashed #e0e0e0',
-                  p: 3,
+                  p: 2,
                 }}
               >
-                <PersonAddIcon sx={{ fontSize: 48, color: '#ccc', mb: 2 }} />
+                <PersonAddIcon sx={{ fontSize: 34, color: '#ccc', mb: 1.5 }} />
                 <Typography
                   variant="h6"
-                  sx={{ fontWeight: 700, color: '#1a1a1a', mb: 1, textAlign: 'center', fontSize: '1rem' }}
+                  sx={{ fontWeight: 700, color: '#1a1a1a', mb: 0.75, textAlign: 'center', fontSize: '0.92rem', lineHeight: 1.2 }}
                 >
                   No Technicians on Duty
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ color: '#666', mb: 2.5, textAlign: 'center', fontSize: '0.85rem' }}
+                  sx={{ color: '#666', mb: 2, textAlign: 'center', fontSize: '0.76rem', lineHeight: 1.35 }}
                 >
                   You don't have any technicians available for dispatch. Add staff to your system to start scheduling jobs.
                 </Typography>
                 <Button
                   variant="contained"
-                  startIcon={<PersonAddIcon />}
+                  startIcon={<PersonAddIcon sx={{ fontSize: '1rem' }} />}
                   sx={{
+                    ...compactPrimaryButtonSx,
                     backgroundColor: '#2196f3',
                     color: 'white',
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontSize: '0.85rem',
-                    padding: '0.6rem 1.5rem',
                     '&:hover': {
                       backgroundColor: '#1976d2',
                     },
@@ -793,7 +863,7 @@ export default function ThreePanelPage() {
                     sx={{
                       width: 150,
                       flexShrink: 0,
-                      p: 1,
+                      p: 0.9,
                       display: 'flex',
                       alignItems: 'center',
                       backgroundColor: '#fff',
@@ -832,7 +902,7 @@ export default function ThreePanelPage() {
                         sx={{
                           flex: 1,
                           minWidth: 80,
-                          minHeight: 50,
+                          minHeight: 46,
                           borderRight: '1px solid #e0e0e0',
                           backgroundColor: '#fff',
                           transition: 'background-color 0.2s',
@@ -945,15 +1015,15 @@ export default function ThreePanelPage() {
             {/* Header */}
             <Box sx={{ p: 1.5, borderBottom: '2px solid #e0e0e0', backgroundColor: '#fafafa' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '0.95rem' }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '0.9rem', lineHeight: 1.2 }}>
                   Work Order Details
                 </Typography>
               </Box>
-              <Typography variant="caption" sx={{ color: '#666', fontSize: '0.7rem' }}>
+              <Typography variant="caption" sx={{ color: '#666', fontSize: '0.68rem', lineHeight: 1.2 }}>
                 {selectedRequest || 'No request selected'}
               </Typography>
                        {/* Details Content */}
-            <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+            <Box sx={{ flex: 1, overflow: 'auto', p: 1.5 }}>
               {clLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
                   <CircularProgress size={40} />
@@ -965,12 +1035,12 @@ export default function ThreePanelPage() {
               ) : (
                 <>
                   {/* Work Order Settings (Editable) */}
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: '#1a1a1a', fontSize: '0.85rem' }}>
+                  <Box sx={{ mb: 2.5 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.25, color: '#1a1a1a', fontSize: '0.8rem', lineHeight: 1.2 }}>
                       Work Order Settings
                     </Typography>
                     
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
                       <TextField
                         label="Service Description"
                         value={editService}
@@ -978,6 +1048,7 @@ export default function ThreePanelPage() {
                         fullWidth
                         size="small"
                         disabled={isSaving}
+                        sx={compactFieldSx}
                       />
 
                       <TextField
@@ -987,16 +1058,18 @@ export default function ThreePanelPage() {
                         fullWidth
                         size="small"
                         disabled={isSaving}
+                        sx={compactFieldSx}
                       />
 
-                      <Box sx={{ display: 'flex', gap: 1.5 }}>
+                      <Box sx={{ display: 'flex', gap: 1.25 }}>
                         <FormControl fullWidth size="small">
-                          <InputLabel>Priority</InputLabel>
+                          <InputLabel sx={compactInputLabelSx}>Priority</InputLabel>
                           <Select
                             value={editPriority}
                             label="Priority"
                             onChange={(e) => setEditPriority(e.target.value)}
                             disabled={isSaving}
+                            sx={compactSelectSx}
                           >
                             <MenuItem value="low">Low</MenuItem>
                             <MenuItem value="medium">Medium</MenuItem>
@@ -1005,12 +1078,13 @@ export default function ThreePanelPage() {
                         </FormControl>
 
                         <FormControl fullWidth size="small">
-                          <InputLabel>Request Type</InputLabel>
+                          <InputLabel sx={compactInputLabelSx}>Request Type</InputLabel>
                           <Select
                             value={editType}
                             label="Request Type"
                             onChange={(e) => setEditType(e.target.value)}
                             disabled={isSaving}
+                            sx={compactSelectSx}
                           >
                             <MenuItem value="Emergency">Emergency</MenuItem>
                             <MenuItem value="WebRequest">Web Request</MenuItem>
@@ -1020,12 +1094,13 @@ export default function ThreePanelPage() {
                       </Box>
 
                       <FormControl fullWidth size="small">
-                        <InputLabel>Status</InputLabel>
+                        <InputLabel sx={compactInputLabelSx}>Status</InputLabel>
                         <Select
                           value={editStatus}
                           label="Status"
                           onChange={(e) => setEditStatus(e.target.value)}
                           disabled={isSaving}
+                          sx={compactSelectSx}
                         >
                           <MenuItem value="Unassigned">Unassigned</MenuItem>
                           <MenuItem value="Assigned">Assigned</MenuItem>
@@ -1043,6 +1118,7 @@ export default function ThreePanelPage() {
                         rows={2}
                         size="small"
                         disabled={isSaving}
+                        sx={compactFieldSx}
                       />
                     </Box>
                   </Box>
@@ -1053,30 +1129,30 @@ export default function ThreePanelPage() {
                   {selectedClient ? (
                     <>
                       <Box sx={{ mb: 2.5 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.85rem' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.8rem', lineHeight: 1.2 }}>
                           Contact Information
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                          <Avatar sx={{ width: 40, height: 40, mr: 1.5, backgroundColor: '#1976d2', fontSize: '0.8rem' }}>
+                          <Avatar sx={{ width: 30, height: 30, mr: 1.25, backgroundColor: '#1976d2', fontSize: '0.72rem' }}>
                             {getAvatarInitials(selectedClient.name || 'C')}
                           </Avatar>
                           <Box>
-                            <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                            <Typography variant="body1" sx={{ fontWeight: 700, fontSize: '0.82rem', lineHeight: 1.2 }}>
                               {selectedClient.name}
                             </Typography>
-                            <Chip label="Client" size="small" sx={{ height: 16, fontSize: '0.6rem', mt: 0.3 }} />
+                            <Chip label="Client" size="small" sx={{ height: 18, borderRadius: '6px', fontSize: '0.62rem', mt: 0.3, '& .MuiChip-label': { px: 0.75 } }} />
                           </Box>
                         </Box>
                         <Divider sx={{ my: 1 }} />
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.8 }}>
                           <PhoneIcon sx={{ fontSize: 14, mr: 0.8, color: '#666' }} />
-                          <Typography variant="body2" sx={{ color: '#333', fontSize: '0.8rem' }}>
+                          <Typography variant="body2" sx={{ color: '#333', fontSize: '0.74rem', lineHeight: 1.3 }}>
                             {selectedClient.phone || 'N/A'}
                           </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 0.8 }}>
                           <LocationOnIcon sx={{ fontSize: 14, mr: 0.8, color: '#666', mt: 0.2 }} />
-                          <Typography variant="body2" sx={{ color: '#333', flex: 1, fontSize: '0.8rem' }}>
+                          <Typography variant="body2" sx={{ color: '#333', flex: 1, fontSize: '0.74rem', lineHeight: 1.3 }}>
                             {selectedClient.address || 'N/A'}
                           </Typography>
                         </Box>
@@ -1084,7 +1160,7 @@ export default function ThreePanelPage() {
 
                       {/* Account Status */}
                       <Box sx={{ mb: 2.5 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.85rem' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.8rem', lineHeight: 1.2 }}>
                           Account Status
                         </Typography>
                         <Card sx={{ backgroundColor: selectedClient.outstandingBalance ? '#fff3e0' : '#e8f5e9' }}>
@@ -1092,11 +1168,11 @@ export default function ThreePanelPage() {
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <AttachMoneyIcon sx={{ fontSize: 18, mr: 0.8, color: selectedClient.outstandingBalance ? '#ff9800' : '#4caf50' }} />
-                                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.74rem', lineHeight: 1.3 }}>
                                   Outstanding Balance
                                 </Typography>
                               </Box>
-                              <Typography variant="h6" sx={{ fontWeight: 700, color: selectedClient.outstandingBalance ? '#ff9800' : '#4caf50', fontSize: '0.95rem' }}>
+                              <Typography variant="h6" sx={{ fontWeight: 700, color: selectedClient.outstandingBalance ? '#ff9800' : '#4caf50', fontSize: '0.9rem', lineHeight: 1.2 }}>
                                 ${selectedClient.outstandingBalance || 0}
                               </Typography>
                             </Box>
@@ -1107,12 +1183,12 @@ export default function ThreePanelPage() {
                       {/* Preferences */}
                       {selectedClient.preferenceNotes && (
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.85rem' }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.8rem', lineHeight: 1.2 }}>
                             Customer Preferences
                           </Typography>
                           <Card sx={{ backgroundColor: '#f3e5f5' }}>
                             <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
-                              <Typography variant="body2" sx={{ color: '#333', fontSize: '0.8rem', lineHeight: 1.5 }}>
+                              <Typography variant="body2" sx={{ color: '#333', fontSize: '0.74rem', lineHeight: 1.35 }}>
                                 {selectedClient.preferenceNotes}
                               </Typography>
                             </CardContent>
@@ -1124,7 +1200,7 @@ export default function ThreePanelPage() {
                     </>
                   ) : (
                     <Box sx={{ mb: 2.5 }}>
-                      <Alert severity="warning" sx={{ fontSize: '0.75rem', py: 0.5 }}>
+                      <Alert severity="warning" sx={{ fontSize: '0.72rem', py: 0.5 }}>
                         No associated client profile found for "{selectedServiceReq.client}".
                       </Alert>
                     </Box>
@@ -1136,14 +1212,9 @@ export default function ThreePanelPage() {
                       variant="contained"
                       onClick={handleSave}
                       disabled={isSaving}
-                      startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
+                      startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <SaveIcon sx={{ fontSize: '1rem' }} />}
                       fullWidth
-                      sx={{
-                        padding: '0.6rem 1rem',
-                        fontWeight: 600,
-                        fontSize: '0.85rem',
-                        textTransform: 'none',
-                      }}
+                      sx={compactPrimaryButtonSx}
                     >
                       {isSaving ? 'Saving...' : 'Save Work Order'}
                     </Button>
@@ -1153,13 +1224,12 @@ export default function ThreePanelPage() {
                       color="error"
                       onClick={handleDelete}
                       disabled={isSaving}
-                      startIcon={<DeleteIcon />}
+                      startIcon={<DeleteIcon sx={{ fontSize: '1rem' }} />}
                       fullWidth
                       sx={{
-                        padding: '0.6rem 1rem',
-                        fontWeight: 600,
-                        fontSize: '0.85rem',
-                        textTransform: 'none',
+                        ...compactPrimaryButtonSx,
+                        color: '#be123c',
+                        borderColor: '#fecaca',
                       }}
                     >
                       Delete Work Order
@@ -1167,13 +1237,13 @@ export default function ThreePanelPage() {
                   </Box>
 
                   {/* Map Preview Placeholder */}
-                  <Box sx={{ mt: 3 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.85rem' }}>
+                  <Box sx={{ mt: 2.5 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.8rem', lineHeight: 1.2 }}>
                       Route Preview
                     </Typography>
                     <Box
                       sx={{
-                        height: 120,
+                        height: 104,
                         backgroundColor: '#e0e0e0',
                         borderRadius: 1,
                         display: 'flex',
@@ -1181,7 +1251,7 @@ export default function ThreePanelPage() {
                         justifyContent: 'center',
                       }}
                     >
-                      <Typography variant="body2" sx={{ color: '#666', fontSize: '0.8rem' }}>
+                      <Typography variant="body2" sx={{ color: '#666', fontSize: '0.74rem', lineHeight: 1.3 }}>
                         🗺️ Map Preview
                       </Typography>
                     </Box>
@@ -1198,21 +1268,22 @@ export default function ThreePanelPage() {
         onClick={() => setLeftPanelOpen(!leftPanelOpen)}
         sx={{
           position: 'absolute',
-          left: leftPanelOpen ? 'calc(320px - 16px)' : '8px',
+          left: leftPanelOpen ? 'calc(320px - 15px)' : '8px',
           top: '50%',
           transform: 'translateY(-50%)',
           backgroundColor: 'white',
           border: '1px solid #e0e0e0',
           zIndex: 1001,
-          width: 32,
-          height: 32,
+          width: 30,
+          height: 30,
+          p: 0,
           transition: 'left 0.3s ease-in-out',
           '&:hover': {
             backgroundColor: '#f5f5f5',
           },
         }}
       >
-        {leftPanelOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+        {leftPanelOpen ? <ChevronLeftIcon sx={{ fontSize: '1rem' }} /> : <ChevronRightIcon sx={{ fontSize: '1rem' }} />}
       </IconButton>
 
       {/* Right Panel Toggle Button - Outside container to remain always accessible */}
@@ -1220,21 +1291,22 @@ export default function ThreePanelPage() {
         onClick={() => setRightPanelOpen(!rightPanelOpen)}
         sx={{
           position: 'absolute',
-          right: rightPanelOpen ? 'calc(400px - 16px)' : '8px',
+          right: rightPanelOpen ? 'calc(400px - 15px)' : '8px',
           top: '50%',
           transform: 'translateY(-50%)',
           backgroundColor: 'white',
           border: '1px solid #e0e0e0',
           zIndex: 1001,
-          width: 32,
-          height: 32,
+          width: 30,
+          height: 30,
+          p: 0,
           transition: 'right 0.3s ease-in-out',
           '&:hover': {
             backgroundColor: '#f5f5f5',
           },
         }}
       >
-        {rightPanelOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+        {rightPanelOpen ? <ChevronRightIcon sx={{ fontSize: '1rem' }} /> : <ChevronLeftIcon sx={{ fontSize: '1rem' }} />}
       </IconButton>
 
       {/* Notification Toast */}
@@ -1247,7 +1319,7 @@ export default function ThreePanelPage() {
         <Alert
           onClose={() => setShowNotification(false)}
           severity={notificationType}
-          sx={{ width: '100%', fontSize: '0.85rem' }}
+          sx={{ width: '100%', fontSize: '0.78rem' }}
         >
           {notificationMessage}
         </Alert>
