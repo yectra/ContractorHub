@@ -1,0 +1,832 @@
+.dashboardRoot {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  background-color: #f0f2f5;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.dashboardSidePanel {
+  height: 100%;
+  background-color: #ffffff;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboardLeftPanel {
+  transition: width 0.3s ease-in-out, min-width 0.3s ease-in-out;
+}
+
+.dashboardLeftPanelOpen {
+  width: 320px;
+  min-width: 320px;
+  border-right: 1px solid #e0e0e0;
+}
+
+.dashboardLeftPanelClosed {
+  width: 0;
+  min-width: 0;
+  border-right: none;
+}
+
+.dashboardRightPanel {
+  transition: width 0.3s ease-in-out, min-width 0.3s ease-in-out;
+}
+
+.dashboardRightPanelOpen {
+  width: 400px;
+  min-width: 400px;
+  border-left: 1px solid #e0e0e0;
+}
+
+.dashboardRightPanelClosed {
+  width: 0;
+  min-width: 0;
+  border-left: none;
+}
+
+.dashboardPanelHeader {
+  padding: 12px;
+  border-bottom: 2px solid #e0e0e0;
+  background-color: #fafafa;
+}
+
+.dashboardPanelHeadingWrap {
+  margin-bottom: 8px;
+}
+
+.dashboardNavRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.dashboardCompactButton {
+  text-transform: none !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 8px !important;
+  font-size: 0.72rem !important;
+  line-height: 1.2 !important;
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.dashboardCompactButton .MuiButton-startIcon {
+  margin-right: 4px;
+}
+
+.dashboardCompactButton .MuiButton-startIcon svg,
+.dashboardNavIcon {
+  font-size: 0.95rem !important;
+}
+
+.dashboardPrimaryButton {
+  text-transform: none !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 0 12px !important;
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardPrimaryButton .MuiButton-startIcon {
+  margin-right: 6px;
+}
+
+.dashboardPrimaryButton .MuiButton-startIcon svg {
+  font-size: 1rem !important;
+}
+
+.dashboardAddTechButton {
+  background-color: #2196f3 !important;
+  color: white !important;
+}
+
+.dashboardAddTechButton:hover {
+  background-color: #1976d2 !important;
+}
+
+.dashboardDangerButton {
+  color: #be123c !important;
+  border-color: #fecaca !important;
+}
+
+.dashboardField {
+  margin-top: 10px;
+}
+
+.dashboardCompactField .MuiOutlinedInput-root,
+.dashboardCompactSelect {
+  height: 28px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+}
+
+.dashboardCompactField .MuiOutlinedInput-root.MuiInputBase-multiline {
+  height: auto;
+  min-height: 48px;
+  align-items: flex-start;
+}
+
+.dashboardCompactField .MuiInputBase-input {
+  padding-top: 0;
+  padding-bottom: 0;
+  height: 28px;
+  box-sizing: border-box;
+  font-size: 0.78rem;
+}
+
+.dashboardCompactField .MuiInputBase-inputMultiline {
+  height: auto;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  line-height: 1.35;
+}
+
+.dashboardCompactField .MuiInputLabel-root,
+.dashboardCompactLabel {
+  font-size: 0.75rem !important;
+  transform: translate(14px, 5px) scale(1) !important;
+}
+
+.dashboardCompactField .MuiInputLabel-root.MuiInputLabel-shrink,
+.dashboardCompactLabel.MuiInputLabel-shrink {
+  transform: translate(14px, -7px) scale(0.75) !important;
+}
+
+.dashboardCompactSelect .MuiSelect-select {
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-right: 28px !important;
+  padding-left: 10px;
+  min-height: 0 !important;
+  line-height: 28px;
+}
+
+.dashboardTitle {
+  font-weight: 700 !important;
+  color: #1a1a1a;
+  font-size: 0.9rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardCaption {
+  color: #666;
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardAlertError {
+  margin-top: 8px;
+  font-size: 0.7rem !important;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.dashboardQueueList {
+  flex: 1;
+  overflow: auto;
+  padding: 12px 10px;
+}
+
+.dashboardLoadingBox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.dashboardEmptyText {
+  color: #999;
+  text-align: center;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.dashboardRequestCard {
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dashboardRequestCardSelected {
+  border: 2px solid #1976d2 !important;
+}
+
+.dashboardRequestCardIdle {
+  border: 1px solid #e0e0e0 !important;
+}
+
+.dashboardRequestCard:hover {
+  box-shadow: 0 3px 3px -2px rgba(0, 0, 0, 0.2), 0 3px 4px 0 rgba(0, 0, 0, 0.14), 0 1px 8px 0 rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.dashboardCardContent {
+  padding: 8px !important;
+}
+
+.dashboardCardContent:last-child {
+  padding-bottom: 8px !important;
+}
+
+.dashboardRowBetween {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboardRequestHeader {
+  margin-bottom: 4px;
+}
+
+.dashboardRequestId {
+  font-weight: 700 !important;
+  color: #1a1a1a;
+  font-size: 0.75rem !important;
+}
+
+.dashboardRequestTypeChip {
+  height: 18px !important;
+  border-radius: 6px !important;
+  font-size: 0.6rem !important;
+  font-weight: 600 !important;
+}
+
+.dashboardRequestTypeChip .MuiChip-icon {
+  font-size: 0.9rem !important;
+}
+
+.dashboardEmergencyChip {
+  background-color: #ffebee !important;
+  color: #c62828 !important;
+}
+
+.dashboardStandardChip {
+  background-color: #e3f2fd !important;
+  color: #1565c0 !important;
+}
+
+.dashboardRequestClient {
+  font-weight: 600 !important;
+  margin-bottom: 2px !important;
+  color: #333;
+  font-size: 0.8rem !important;
+}
+
+.dashboardRequestService {
+  margin-bottom: 4px !important;
+  color: #555;
+  font-size: 0.75rem !important;
+}
+
+.dashboardIconTextRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.dashboardRequestIcon {
+  font-size: 12px !important;
+  margin-right: 3px;
+  color: #666;
+}
+
+.dashboardRequestMeta {
+  color: #666;
+  font-size: 0.7rem !important;
+}
+
+.dashboardRequestFooter {
+  margin-top: 4px;
+}
+
+.dashboardDurationChip {
+  height: 16px !important;
+  font-size: 0.6rem !important;
+  background-color: #f5f5f5 !important;
+}
+
+.dashboardPriorityBar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+.dashboardPriorityHigh {
+  background-color: #f44336;
+}
+
+.dashboardPriorityMedium {
+  background-color: #ff9800;
+}
+
+.dashboardPriorityLow {
+  background-color: #4caf50;
+}
+
+.dashboardPriorityDefault {
+  background-color: #9e9e9e;
+}
+
+.dashboardCenterPanel {
+  flex: 1;
+  height: 100%;
+  background-color: #ffffff;
+  overflow: auto;
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboardCenterHeader {
+  padding: 12px 12px 10px;
+  border-bottom: 2px solid #e0e0e0;
+  background-color: #fafafa;
+}
+
+.dashboardInfoAlert {
+  margin-bottom: 12px;
+  font-size: 0.75rem !important;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.dashboardCenterTitleRow {
+  margin-bottom: 2px;
+}
+
+.dashboardCenterTitle {
+  font-weight: 750 !important;
+  color: #1a1a1a;
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardDateChip {
+  font-weight: 700 !important;
+  font-size: 0.66rem !important;
+  height: 22px !important;
+  border-radius: 6px !important;
+}
+
+.dashboardDateChip .MuiChip-label {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.dashboardSubtitle {
+  color: #666;
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardGridScroll {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+.dashboardGridInner {
+  min-width: 900px;
+}
+
+.dashboardTimeHeaderRow {
+  display: flex;
+  margin-bottom: 4px;
+}
+
+.dashboardTechSpacer,
+.dashboardTechInfo {
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.dashboardTimeHeaderCell {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.66rem;
+  line-height: 1.2;
+  color: #666;
+  padding-bottom: 4px;
+}
+
+.dashboardLoadingBoxLarge {
+  min-height: 300px;
+}
+
+.dashboardErrorAlertSpaced {
+  margin-top: 16px;
+}
+
+.dashboardEmptyTechState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 2px dashed #e0e0e0;
+  padding: 16px;
+}
+
+.dashboardEmptyTechIcon {
+  font-size: 34px !important;
+  color: #ccc;
+  margin-bottom: 12px;
+}
+
+.dashboardEmptyTechTitle {
+  font-weight: 700 !important;
+  color: #1a1a1a;
+  margin-bottom: 6px !important;
+  text-align: center;
+  font-size: 0.92rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardEmptyTechCopy {
+  color: #666;
+  margin-bottom: 16px !important;
+  text-align: center;
+  font-size: 0.76rem !important;
+  line-height: 1.35 !important;
+}
+
+.dashboardTechRow {
+  display: flex;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  background-color: #fafafa;
+}
+
+.dashboardTechInfo {
+  padding: 7px;
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-right: 1px solid #e0e0e0;
+}
+
+.dashboardTechAvatar {
+  width: 28px !important;
+  height: 28px !important;
+  margin-right: 6px;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+}
+
+.dashboardTechName {
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardTechSpecialty {
+  color: #666;
+  font-size: 0.65rem !important;
+}
+
+.dashboardTimeSlots {
+  display: flex;
+  flex: 1;
+  position: relative;
+}
+
+.dashboardTimeSlot {
+  flex: 1;
+  min-width: 80px;
+  min-height: 46px;
+  border-right: 1px solid #e0e0e0;
+  background-color: #fff;
+  transition: background-color 0.2s;
+}
+
+.dashboardTimeSlot:hover {
+  background-color: #f0f7ff;
+  cursor: pointer;
+}
+
+.dashboardScheduledJob {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.dashboardScheduledJob:hover {
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12);
+}
+
+.dashboardScheduledJobGrab {
+  cursor: grab;
+}
+
+.dashboardScheduledJobGrabbing {
+  cursor: grabbing;
+}
+
+.dashboardJobId {
+  color: white;
+  font-weight: 700 !important;
+  font-size: 0.65rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardJobClient {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.6rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardGuide {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  border-left: 4px solid #2196f3;
+}
+
+.dashboardGuideTitle {
+  font-weight: 600 !important;
+  margin-bottom: 4px !important;
+  color: #1565c0;
+  font-size: 0.8rem !important;
+}
+
+.dashboardGuideCopy {
+  color: #1976d2;
+  font-size: 0.7rem !important;
+}
+
+.dashboardDetailsContent {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+.dashboardDetailsSection {
+  margin-bottom: 20px;
+}
+
+.dashboardSectionTitle {
+  font-weight: 700 !important;
+  margin-bottom: 10px !important;
+  color: #1a1a1a;
+  font-size: 0.8rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardFormStack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dashboardFormRow {
+  display: flex;
+  gap: 10px;
+}
+
+.dashboardDividerLg {
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
+}
+
+.dashboardContactSection {
+  margin-bottom: 20px;
+}
+
+.dashboardContactRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.dashboardContactRowStart {
+  align-items: flex-start;
+}
+
+.dashboardClientAvatar {
+  width: 30px !important;
+  height: 30px !important;
+  margin-right: 10px;
+  background-color: #1976d2 !important;
+  font-size: 0.72rem !important;
+}
+
+.dashboardClientName {
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardClientChip {
+  height: 18px !important;
+  border-radius: 6px !important;
+  font-size: 0.62rem !important;
+  margin-top: 2px;
+}
+
+.dashboardClientChip .MuiChip-label {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.dashboardContactDivider {
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+}
+
+.dashboardContactIcon {
+  font-size: 14px !important;
+  margin-right: 6px;
+  color: #666;
+}
+
+.dashboardContactIconStart {
+  margin-top: 2px;
+}
+
+.dashboardContactText {
+  color: #333;
+  font-size: 0.74rem !important;
+  line-height: 1.3 !important;
+}
+
+.dashboardContactTextFlex {
+  flex: 1;
+}
+
+.dashboardBalanceCardClear {
+  background-color: #e8f5e9 !important;
+}
+
+.dashboardBalanceCardDue {
+  background-color: #fff3e0 !important;
+}
+
+.dashboardBalanceContent {
+  padding: 8px !important;
+}
+
+.dashboardBalanceContent:last-child {
+  padding-bottom: 8px !important;
+}
+
+.dashboardBalanceIcon {
+  font-size: 18px !important;
+  margin-right: 6px;
+}
+
+.dashboardBalanceIconClear {
+  color: #4caf50;
+}
+
+.dashboardBalanceIconDue {
+  color: #ff9800;
+}
+
+.dashboardBalanceLabel {
+  font-weight: 600 !important;
+  font-size: 0.74rem !important;
+  line-height: 1.3 !important;
+}
+
+.dashboardBalanceValue {
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.2 !important;
+}
+
+.dashboardBalanceValueClear {
+  color: #4caf50;
+}
+
+.dashboardBalanceValueDue {
+  color: #ff9800;
+}
+
+.dashboardPreferenceSection {
+  margin-bottom: 16px;
+}
+
+.dashboardPreferenceCard {
+  background-color: #f3e5f5 !important;
+}
+
+.dashboardPreferenceCopy {
+  color: #333;
+  font-size: 0.74rem !important;
+  line-height: 1.35 !important;
+}
+
+.dashboardWarningBox {
+  margin-bottom: 20px;
+}
+
+.dashboardWarningAlert {
+  font-size: 0.72rem !important;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.dashboardActions {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboardRoutePreview {
+  margin-top: 20px;
+}
+
+.dashboardMapPreview {
+  height: 104px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboardMapCopy {
+  color: #666;
+  font-size: 0.74rem !important;
+  line-height: 1.3 !important;
+}
+
+.dashboardToggle {
+  position: absolute !important;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: white !important;
+  border: 1px solid #e0e0e0 !important;
+  z-index: 1001;
+  width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+}
+
+.dashboardToggle:hover {
+  background-color: #f5f5f5 !important;
+}
+
+.dashboardToggleLeft {
+  transition: left 0.3s ease-in-out !important;
+}
+
+.dashboardToggleLeftOpen {
+  left: calc(320px - 15px);
+}
+
+.dashboardToggleLeftClosed {
+  left: 8px;
+}
+
+.dashboardToggleRight {
+  transition: right 0.3s ease-in-out !important;
+}
+
+.dashboardToggleRightOpen {
+  right: calc(400px - 15px);
+}
+
+.dashboardToggleRightClosed {
+  right: 8px;
+}
+
+.dashboardToggleIcon {
+  font-size: 1rem !important;
+}
+
+.dashboardToastAlert {
+  width: 100%;
+  font-size: 0.78rem !important;
+}

@@ -16,6 +16,7 @@ import EngineeringIcon from '@mui/icons-material/Engineering';
 import GroupsIcon from '@mui/icons-material/Groups';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import Tooltip from '@mui/material/Tooltip';
+import styles from '../styles/dashboard/Dashboard.module.scss';
 
 // Hours for the schedule grid (7 AM to 7 PM)
 const hours = Array.from({ length: 12 }, (_, i) => i + 7);
@@ -26,92 +27,6 @@ const getTodayString = () => {
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
-};
-
-const compactButtonSx = {
-  textTransform: 'none',
-  borderRadius: '6px',
-  fontWeight: 600,
-  minHeight: 28,
-  height: 28,
-  px: 1,
-  py: 0,
-  fontSize: '0.72rem',
-  lineHeight: 1.2,
-  color: '#475569',
-  borderColor: '#cbd5e1',
-  '& .MuiButton-startIcon': {
-    mr: 0.5,
-    '& svg': { fontSize: '0.95rem' },
-  },
-};
-
-const compactPrimaryButtonSx = {
-  textTransform: 'none',
-  borderRadius: '8px',
-  fontWeight: 600,
-  minHeight: 34,
-  height: 34,
-  px: 1.5,
-  py: 0,
-  fontSize: '0.78rem',
-  lineHeight: 1.2,
-  '& .MuiButton-startIcon': {
-    mr: 0.75,
-    '& svg': { fontSize: '1rem' },
-  },
-};
-
-const compactFieldSx = {
-  '& .MuiOutlinedInput-root': {
-    height: 34,
-    borderRadius: '8px',
-    fontSize: '0.78rem',
-  },
-  '& .MuiOutlinedInput-root.MuiInputBase-multiline': {
-    height: 'auto',
-    minHeight: 58,
-    alignItems: 'flex-start',
-  },
-  '& .MuiInputBase-input': {
-    py: 0,
-    height: '34px',
-    boxSizing: 'border-box',
-    fontSize: '0.78rem',
-  },
-  '& .MuiInputBase-inputMultiline': {
-    height: 'auto',
-    py: 0.75,
-    lineHeight: 1.35,
-  },
-  '& .MuiInputLabel-root': {
-    fontSize: '0.75rem',
-    transform: 'translate(14px, 8px) scale(1)',
-    '&.MuiInputLabel-shrink': {
-      transform: 'translate(14px, -7px) scale(0.75)',
-    },
-  },
-};
-
-const compactSelectSx = {
-  height: 34,
-  borderRadius: '8px',
-  fontSize: '0.78rem',
-  '& .MuiSelect-select': {
-    py: 0,
-    pr: '28px !important',
-    pl: 1.25,
-    minHeight: '0 !important',
-    lineHeight: '34px',
-  },
-};
-
-const compactInputLabelSx = {
-  fontSize: '0.75rem',
-  transform: 'translate(14px, 8px) scale(1)',
-  '&.MuiInputLabel-shrink': {
-    transform: 'translate(14px, -7px) scale(0.75)',
-  },
 };
 
 export default function ThreePanelPage() {
@@ -431,59 +346,32 @@ export default function ThreePanelPage() {
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        minHeight: '100vh',
-        width: '100%',
-        overflow: 'hidden',
-        position: 'relative',
-        backgroundColor: '#f0f2f5',
-        pt: 1,
-        pb: 1,
-        boxSizing: 'border-box',
-      }}
-    >
+    <Box className={styles.dashboardRoot}>
       {/* Left Panel - Queue Panel (320px) */}
       <Box
-        sx={{
-          width: leftPanelOpen ? '320px' : '0px',
-          minWidth: leftPanelOpen ? '320px' : '0px',
-          height: '100%',
-          backgroundColor: '#ffffff',
-          borderRight: leftPanelOpen ? '1px solid #e0e0e0' : 'none',
-          transition: 'width 0.3s ease-in-out, min-width 0.3s ease-in-out',
-          overflow: 'hidden',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
+       className={`${styles.dashboardSidePanel} ${styles.dashboardLeftPanel} ${
+  leftPanelOpen
+    ? styles.dashboardLeftPanelOpen
+    : styles.dashboardLeftPanelClosed
+}`}
       >
         {leftPanelOpen && (
           <>
             {/* Header */}
-            <Box sx={{ p: 1.5, borderBottom: '2px solid #e0e0e0', backgroundColor: '#fafafa' }}>
-            <Box sx={{ mb: 1 }}>
+            <Box className={styles.dashboardPanelHeader}>
+            <Box className={styles.dashboardPanelHeadingWrap}>
               {/* Navigation Buttons */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: 0.75,
-                  mb: 0.75,
-                  flexWrap: 'wrap',
-                }}
-              >
+              <Box className={styles.dashboardNavRow}>
                 <Tooltip title="Open Technician View" arrow>
                   <Button
                     variant="outlined"
                     size="small"
-                    startIcon={<EngineeringIcon sx={{ fontSize: '0.95rem' }} />}
+                    startIcon={<EngineeringIcon className={styles.dashboardNavIcon} />}
                     onClick={() => {
                       sessionStorage.setItem('previousView', 'ADMIN');
                       window.location.href = '/technician';
                     }}
-                    sx={compactButtonSx}
+                    className={styles.dashboardCompactButton}
                   >
                     Tech
                   </Button>
@@ -493,9 +381,9 @@ export default function ThreePanelPage() {
                   <Button
                     variant="outlined"
                     size="small"
-                    startIcon={<GroupsIcon sx={{ fontSize: '0.95rem' }} />}
+                    startIcon={<GroupsIcon className={styles.dashboardNavIcon} />}
                     onClick={() => (window.location.href = '/crm')}
-                    sx={compactButtonSx}
+                    className={styles.dashboardCompactButton}
                   >
                     CRM
                   </Button>
@@ -505,9 +393,9 @@ export default function ThreePanelPage() {
                   <Button
                     variant="outlined"
                     size="small"
-                    startIcon={<DashboardIcon sx={{ fontSize: '0.95rem' }} />}
+                    startIcon={<DashboardIcon className={styles.dashboardNavIcon} />}
                     onClick={() => (window.location.href = '/tech-dashboard')}
-                    sx={compactButtonSx}
+                    className={styles.dashboardCompactButton}
                   >
                     Dashboard
                   </Button>
@@ -518,9 +406,9 @@ export default function ThreePanelPage() {
                     id="user-management-nav-btn"
                     variant="outlined"
                     size="small"
-                    startIcon={<PersonAddIcon sx={{ fontSize: '0.95rem' }} />}
+                    startIcon={<PersonAddIcon className={styles.dashboardNavIcon} />}
                     onClick={() => (window.location.href = '/admin/users')}
-                    sx={compactButtonSx}
+                    className={styles.dashboardCompactButton}
                   >
                     Users
                   </Button>
@@ -530,72 +418,12 @@ export default function ThreePanelPage() {
               {/* Section Title */}
               <Typography
                 variant="h6"
-                sx={{
-                  fontWeight: 700,
-                  color: '#1a1a1a',
-                  fontSize: '0.9rem',
-                  lineHeight: 1.2,
-                }}
+                className={styles.dashboardTitle}
               >
                 Service Queue
               </Typography>
             </Box>
-              {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '0.95rem' }}>
-                  Service Queue
-                </Typography> */}
-                {/* Original Technician View button — DO NOT MODIFY */}
-                {/* <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}> */}
-                  {/* <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => {
-                      sessionStorage.setItem('previousView', 'ADMIN');
-                      window.location.href = '/technician';
-                    }}
-                    sx={{
-                      fontSize: '0.65rem',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      py: 0.2,
-                      px: 1,
-                    }}
-                  >
-                    Technician View
-                  </Button> */}
-                  {/* <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => window.location.href = '/crm'}
-                    sx={{
-                      fontSize: '0.65rem',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      py: 0.2,
-                      px: 0.8,
-                    }}
-                  >
-                    Client CRM
-                  </Button> */}
-                  {/* NEW: Technician Dashboard button */}
-                  {/* <Button
-                    id="tech-dashboard-nav-btn"
-                    variant="outlined"
-                    size="small"
-                    onClick={() => (window.location.href = '/tech-dashboard')}
-                    sx={{
-                      fontSize: '0.65rem',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      py: 0.2,
-                      px: 1                     
-                    }}
-                  >
-                    Technician Dashboard
-                  </Button> */}
-                {/* </Box>
-              </Box> */}
-              <Typography variant="caption" sx={{ color: '#666', fontSize: '0.68rem', lineHeight: 1.2 }}>
+              <Typography variant="caption" className={styles.dashboardCaption}>
                 {srLoading ? 'Loading...' : `${pendingRequests.length} pending requests`}
               </Typography>
               <TextField
@@ -610,7 +438,7 @@ export default function ThreePanelPage() {
                     // Fallback
                   }
                 }}
-                sx={{ mt: 1.25, ...compactFieldSx }}
+                className={`${styles.dashboardField} ${styles.dashboardCompactField}`}
                 fullWidth
                 size="small"
                 slotProps={{
@@ -618,20 +446,20 @@ export default function ThreePanelPage() {
                 }}
               />
               {srError && (
-                <Alert severity="error" sx={{ mt: 1, fontSize: '0.7rem', py: 0.5 }}>
+                <Alert severity="error" className={styles.dashboardAlertError}>
                   {srError}
                 </Alert>
               )}
             </Box>
 
             {/* Queue Cards */}
-            <Box sx={{ flex: 1, overflow: 'auto', p: 1.25, py: 1.5 }}>
+            <Box className={styles.dashboardQueueList}>
               {srLoading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                <Box className={styles.dashboardLoadingBox}>
                   <CircularProgress size={40} />
                 </Box>
               ) : pendingRequests.length === 0 ? (
-                <Typography variant="body2" sx={{ color: '#999', textAlign: 'center', py: 2 }}>
+                <Typography variant="body2" className={styles.dashboardEmptyText}>
                   No pending requests
                 </Typography>
               ) : (
@@ -641,85 +469,63 @@ export default function ThreePanelPage() {
                     draggable
                     onDragStart={(event) => handleDragStart(event, 'request', request.id!)}
                     onClick={() => handleRequestClick(request.id!)}
-                    sx={{
-                      mb: 1,
-                      cursor: 'pointer',
-                      border: selectedRequest === request.id ? '2px solid #1976d2' : '1px solid #e0e0e0',
-                      transition: 'all 0.2s',
-                      '&:hover': {
-                        boxShadow: 3,
-                        transform: 'translateY(-2px)',
-                      },
-                    }}
+                    className={`${styles.dashboardRequestCard} ${
+                      selectedRequest === request.id ? styles.dashboardRequestCardSelected : styles.dashboardRequestCardIdle
+                    }`}
                   >
-                    <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
+                    <CardContent className={styles.dashboardCardContent}>
                       {/* Header Row */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '0.75rem' }}>
+                      <Box className={`${styles.dashboardRowBetween} ${styles.dashboardRequestHeader}`}>
+                        <Typography variant="subtitle2" className={styles.dashboardRequestId}>
                           {request.id}
                         </Typography>
                         <Chip
                           label={request.type}
                           size="small"
-                          icon={request.type === 'Emergency' ? <PriorityHighIcon sx={{ fontSize: '0.9rem' }} /> : undefined}
-                          sx={{
-                            height: 18,
-                            borderRadius: '6px',
-                            fontSize: '0.6rem',
-                            backgroundColor: request.type === 'Emergency' ? '#ffebee' : '#e3f2fd',
-                            color: request.type === 'Emergency' ? '#c62828' : '#1565c0',
-                            fontWeight: 600,
-                          }}
+                          icon={request.type === 'Emergency' ? <PriorityHighIcon /> : undefined}
+                          className={`${styles.dashboardRequestTypeChip} ${
+                            request.type === 'Emergency' ? styles.dashboardEmergencyChip : styles.dashboardStandardChip
+                          }`}
                         />
                       </Box>
 
                       {/* Client Name */}
-                      <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.3, color: '#333', fontSize: '0.8rem' }}>
+                      <Typography variant="body2" className={styles.dashboardRequestClient}>
                         {request.client}
                       </Typography>
 
                       {/* Service */}
-                      <Typography variant="body2" sx={{ mb: 0.5, color: '#555', fontSize: '0.75rem' }}>
+                      <Typography variant="body2" className={styles.dashboardRequestService}>
                         {request.service}
                       </Typography>
 
                       {/* Location */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.3 }}>
-                        <LocationOnIcon sx={{ fontSize: 12, mr: 0.4, color: '#666' }} />
-                        <Typography variant="caption" sx={{ color: '#666', fontSize: '0.7rem' }}>
+                      <Box className={styles.dashboardIconTextRow}>
+                        <LocationOnIcon className={styles.dashboardRequestIcon} />
+                        <Typography variant="caption" className={styles.dashboardRequestMeta}>
                           {request.location}
                         </Typography>
                       </Box>
 
                       {/* Time and Duration */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <AccessTimeIcon sx={{ fontSize: 12, mr: 0.4, color: '#666' }} />
-                          <Typography variant="caption" sx={{ color: '#666', fontSize: '0.7rem' }}>
+                      <Box className={`${styles.dashboardRowBetween} ${styles.dashboardRequestFooter}`}>
+                        <Box className={styles.dashboardIconTextRow}>
+                          <AccessTimeIcon className={styles.dashboardRequestIcon} />
+                          <Typography variant="caption" className={styles.dashboardRequestMeta}>
                             {request.requestTime}
                           </Typography>
                         </Box>
                         <Chip
                           label={request.estimatedDuration}
                           size="small"
-                          sx={{
-                            height: 16,
-                            fontSize: '0.6rem',
-                            backgroundColor: '#f5f5f5',
-                          }}
+                          className={styles.dashboardDurationChip}
                         />
                       </Box>
 
                       {/* Priority Indicator */}
                       <Box
-                        sx={{
-                          position: 'absolute',
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          width: 4,
-                          backgroundColor: getPriorityColor(request.priority),
-                        }}
+                        className={styles.dashboardPriorityBar}
+                        sx={{ backgroundColor: getPriorityColor(request.priority) }}
                       />
                     </CardContent>
                   </Card>
@@ -731,26 +537,16 @@ export default function ThreePanelPage() {
       </Box>
 
       {/* Center Panel - Chrono-Matrix (Flexible) */}
-      <Box
-        sx={{
-          flex: 1,
-          height: '100%',
-          backgroundColor: '#ffffff',
-          overflow: 'auto',
-          transition: 'all 0.3s ease-in-out',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+      <Box className={styles.dashboardCenterPanel}>
         {/* Header */}
-        <Box sx={{ p: 1.5, pb: 1.25, borderBottom: '2px solid #e0e0e0', backgroundColor: '#fafafa' }}>
+        <Box className={styles.dashboardCenterHeader}>
           {!isAmplifyConfigured && (
-            <Alert severity="info" sx={{ mb: 1.5, fontSize: '0.75rem', py: 0.5 }}>
+            <Alert severity="info" className={styles.dashboardInfoAlert}>
               Running in <strong>Offline Demo Mode</strong> using local browser storage. Run <code>npx amplify sandbox</code> to deploy the AWS Amplify backend.
             </Alert>
           )}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
-            <Typography variant="h5" sx={{ fontWeight: 750, color: '#1a1a1a', fontSize: '1rem', lineHeight: 1.2 }}>
+          <Box className={`${styles.dashboardRowBetween} ${styles.dashboardCenterTitleRow}`}>
+            <Typography variant="h5" className={styles.dashboardCenterTitle}>
               Dispatch Command Center
             </Typography>
             <Chip 
@@ -758,33 +554,24 @@ export default function ThreePanelPage() {
               color="primary"
               variant="outlined"
               size="small"
-              sx={{ fontWeight: 700, fontSize: '0.66rem', height: 22, borderRadius: '6px', '& .MuiChip-label': { px: 0.75 } }}
+              className={styles.dashboardDateChip}
             />
           </Box>
-          <Typography variant="body2" sx={{ color: '#666', fontSize: '0.68rem', lineHeight: 1.2 }}>
+          <Typography variant="body2" className={styles.dashboardSubtitle}>
             Drag and drop service requests to schedule technicians
           </Typography>
         </Box>
 
         {/* Schedule Grid with padding */}
-        <Box sx={{ flex: 1, overflow: 'auto', p: 1.5 }}>
-          <Box sx={{ minWidth: 900 }}>
+        <Box className={styles.dashboardGridScroll}>
+          <Box className={styles.dashboardGridInner}>
             {/* Time Header Row */}
-            <Box sx={{ display: 'flex', mb: 0.5 }}>
-              <Box sx={{ width: 150, flexShrink: 0 }} />
+            <Box className={styles.dashboardTimeHeaderRow}>
+              <Box className={styles.dashboardTechSpacer} />
               {hours.map((hour) => (
                 <Box
                   key={hour}
-                  sx={{
-                    flex: 1,
-                    minWidth: 80,
-                    textAlign: 'center',
-                    fontWeight: 600,
-                    fontSize: '0.66rem',
-                    lineHeight: 1.2,
-                    color: '#666',
-                    pb: 0.5,
-                  }}
+                  className={styles.dashboardTimeHeaderCell}
                 >
                   {hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`}
                 </Box>
@@ -793,51 +580,32 @@ export default function ThreePanelPage() {
 
             {/* Technician Rows or Empty State */}
             {techLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
+              <Box className={`${styles.dashboardLoadingBox} ${styles.dashboardLoadingBoxLarge}`}>
                 <CircularProgress size={40} />
               </Box>
             ) : techError ? (
-              <Alert severity="error" sx={{ mt: 2 }}>
+              <Alert severity="error" className={styles.dashboardErrorAlertSpaced}>
                 Failed to load technicians: {techError}
               </Alert>
             ) : technicians.length === 0 ? (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: '340px',
-                  backgroundColor: '#f9f9f9',
-                  borderRadius: '8px',
-                  border: '2px dashed #e0e0e0',
-                  p: 2,
-                }}
-              >
-                <PersonAddIcon sx={{ fontSize: 34, color: '#ccc', mb: 1.5 }} />
+              <Box className={styles.dashboardEmptyTechState}>
+                <PersonAddIcon className={styles.dashboardEmptyTechIcon} />
                 <Typography
                   variant="h6"
-                  sx={{ fontWeight: 700, color: '#1a1a1a', mb: 0.75, textAlign: 'center', fontSize: '0.92rem', lineHeight: 1.2 }}
+                  className={styles.dashboardEmptyTechTitle}
                 >
                   No Technicians on Duty
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ color: '#666', mb: 2, textAlign: 'center', fontSize: '0.76rem', lineHeight: 1.35 }}
+                  className={styles.dashboardEmptyTechCopy}
                 >
                   You don't have any technicians available for dispatch. Add staff to your system to start scheduling jobs.
                 </Typography>
                 <Button
                   variant="contained"
-                  startIcon={<PersonAddIcon sx={{ fontSize: '1rem' }} />}
-                  sx={{
-                    ...compactPrimaryButtonSx,
-                    backgroundColor: '#2196f3',
-                    color: 'white',
-                    '&:hover': {
-                      backgroundColor: '#1976d2',
-                    },
-                  }}
+                  startIcon={<PersonAddIcon />}
+                  className={`${styles.dashboardPrimaryButton} ${styles.dashboardAddTechButton}`}
                   onClick={() => {
                     showNotification_('Redirect to staff management (feature not yet implemented)', 'warning');
                   }}
@@ -849,68 +617,34 @@ export default function ThreePanelPage() {
               technicians.map((tech) => (
                 <Box
                   key={tech.id}
-                  sx={{
-                    display: 'flex',
-                    mb: 0.5,
-                    borderRadius: 1,
-                    overflow: 'hidden',
-                    border: '1px solid #e0e0e0',
-                    backgroundColor: '#fafafa',
-                  }}
+                  className={styles.dashboardTechRow}
                 >
                   {/* Technician Info */}
-                  <Box
-                    sx={{
-                      width: 150,
-                      flexShrink: 0,
-                      p: 0.9,
-                      display: 'flex',
-                      alignItems: 'center',
-                      backgroundColor: '#fff',
-                      borderRight: '1px solid #e0e0e0',
-                    }}
-                  >
+                  <Box className={styles.dashboardTechInfo}>
                     <Avatar
-                      sx={{
-                        width: 28,
-                        height: 28,
-                        mr: 0.8,
-                        backgroundColor: tech.color || '#9e9e9e',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                      }}
+                      className={styles.dashboardTechAvatar}
+                      sx={{ backgroundColor: tech.color || '#9e9e9e' }}
                     >
                       {tech.avatar || getAvatarInitials(tech.name || 'U')}
                     </Avatar>
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.2 }}>
+                      <Typography variant="body2" className={styles.dashboardTechName}>
                         {tech.name}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: '#666', fontSize: '0.65rem' }}>
+                      <Typography variant="caption" className={styles.dashboardTechSpecialty}>
                         {tech.specialty}
                       </Typography>
                     </Box>
                   </Box>
 
                   {/* Time Slots */}
-                  <Box sx={{ display: 'flex', flex: 1, position: 'relative' }}>
+                  <Box className={styles.dashboardTimeSlots}>
                     {hours.map((hour) => (
                       <Box
                         key={hour}
                         onDragOver={(event) => event.preventDefault()}
                         onDrop={(event) => handleDrop(event, tech.id!, hour)}
-                        sx={{
-                          flex: 1,
-                          minWidth: 80,
-                          minHeight: 46,
-                          borderRight: '1px solid #e0e0e0',
-                          backgroundColor: '#fff',
-                          transition: 'background-color 0.2s',
-                          '&:hover': {
-                            backgroundColor: '#f0f7ff',
-                            cursor: 'pointer',
-                          },
-                        }}
+                        className={styles.dashboardTimeSlot}
                       />
                     ))}
 
@@ -930,43 +664,24 @@ export default function ThreePanelPage() {
                               handleRequestClick(job.serviceRequestId!);
                             }
                           }}
+                          className={`${styles.dashboardScheduledJob} ${
+                            isDragging ? styles.dashboardScheduledJobGrabbing : styles.dashboardScheduledJobGrab
+                          }`}
                           sx={{
-                            position: 'absolute',
                             left: `${((job.startHour - 7) / 12) * 100}%`,
                             width: `${(job.duration / 12) * 100}%`,
-                            top: 4,
-                            bottom: 4,
                             backgroundColor: tech.color || getTechnicianColor(tech.id!),
-                            borderRadius: 1,
-                            p: 0.5,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            cursor: isDragging ? 'grabbing' : 'grab',
-                            boxShadow: 1,
-                            '&:hover': {
-                              boxShadow: 3,
-                            },
                           }}
                         >
                           <Typography
                             variant="caption"
-                            sx={{
-                              color: 'white',
-                              fontWeight: 700,
-                              fontSize: '0.65rem',
-                              lineHeight: 1.2,
-                            }}
+                            className={styles.dashboardJobId}
                           >
                             {job.serviceRequestId}
                           </Typography>
                           <Typography
                             variant="caption"
-                            sx={{
-                              color: 'rgba(255,255,255,0.9)',
-                              fontSize: '0.6rem',
-                              lineHeight: 1.2,
-                            }}
+                            className={styles.dashboardJobClient}
                           >
                             {serviceRequests.find((r) => r.id === job.serviceRequestId)?.client || 'Unknown'}
                           </Typography>
@@ -979,11 +694,11 @@ export default function ThreePanelPage() {
           </Box>
 
           {/* Instructions */}
-          <Box sx={{ mt: 2, p: 1.5, backgroundColor: '#e3f2fd', borderRadius: 1, borderLeft: '4px solid #2196f3' }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, color: '#1565c0', fontSize: '0.8rem' }}>
+          <Box className={styles.dashboardGuide}>
+            <Typography variant="body2" className={styles.dashboardGuideTitle}>
               💡 Quick Guide
             </Typography>
-            <Typography variant="caption" sx={{ color: '#1976d2', fontSize: '0.7rem' }}>
+            <Typography variant="caption" className={styles.dashboardGuideCopy}>
               • Click on service requests in the left queue to view details
               <br />
               • Drag requests from the queue to technician time slots to schedule
@@ -997,50 +712,43 @@ export default function ThreePanelPage() {
 
       {/* Right Panel - Detail Inspection Drawer (400px) */}
       <Box
-        sx={{
-          width: rightPanelOpen ? '400px' : '0px',
-          minWidth: rightPanelOpen ? '400px' : '0px',
-          height: '100%',
-          backgroundColor: '#ffffff',
-          borderLeft: rightPanelOpen ? '1px solid #e0e0e0' : 'none',
-          transition: 'width 0.3s ease-in-out, min-width 0.3s ease-in-out',
-          overflow: 'hidden',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
+        className={`${styles.dashboardSidePanel} ${styles.dashboardRightPanel} ${
+          rightPanelOpen
+            ? styles.dashboardRightPanelOpen
+            : styles.dashboardRightPanelClosed
+        }`}
       >
         {rightPanelOpen && (
           <>
             {/* Header */}
-            <Box sx={{ p: 1.5, borderBottom: '2px solid #e0e0e0', backgroundColor: '#fafafa' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '0.9rem', lineHeight: 1.2 }}>
+            <Box className={styles.dashboardPanelHeader}>
+              <Box className={`${styles.dashboardRowBetween} ${styles.dashboardRequestHeader}`}>
+                <Typography variant="h6" className={styles.dashboardTitle}>
                   Work Order Details
                 </Typography>
               </Box>
-              <Typography variant="caption" sx={{ color: '#666', fontSize: '0.68rem', lineHeight: 1.2 }}>
+              <Typography variant="caption" className={styles.dashboardCaption}>
                 {selectedRequest || 'No request selected'}
               </Typography>
                        {/* Details Content */}
-            <Box sx={{ flex: 1, overflow: 'auto', p: 1.5 }}>
+            <Box className={styles.dashboardDetailsContent}>
               {clLoading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                <Box className={styles.dashboardLoadingBox}>
                   <CircularProgress size={40} />
                 </Box>
               ) : !selectedServiceReq ? (
-                <Typography variant="body2" sx={{ color: '#999', textAlign: 'center', py: 2 }}>
+                <Typography variant="body2" className={styles.dashboardEmptyText}>
                   Select a service request to view details
                 </Typography>
               ) : (
                 <>
                   {/* Work Order Settings (Editable) */}
-                  <Box sx={{ mb: 2.5 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.25, color: '#1a1a1a', fontSize: '0.8rem', lineHeight: 1.2 }}>
+                  <Box className={styles.dashboardDetailsSection}>
+                    <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
                       Work Order Settings
                     </Typography>
                     
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+                    <Box className={styles.dashboardFormStack}>
                       <TextField
                         label="Service Description"
                         value={editService}
@@ -1048,7 +756,7 @@ export default function ThreePanelPage() {
                         fullWidth
                         size="small"
                         disabled={isSaving}
-                        sx={compactFieldSx}
+                        className={styles.dashboardCompactField}
                       />
 
                       <TextField
@@ -1058,18 +766,18 @@ export default function ThreePanelPage() {
                         fullWidth
                         size="small"
                         disabled={isSaving}
-                        sx={compactFieldSx}
+                        className={styles.dashboardCompactField}
                       />
 
-                      <Box sx={{ display: 'flex', gap: 1.25 }}>
+                      <Box className={styles.dashboardFormRow}>
                         <FormControl fullWidth size="small">
-                          <InputLabel sx={compactInputLabelSx}>Priority</InputLabel>
+                          <InputLabel className={styles.dashboardCompactLabel}>Priority</InputLabel>
                           <Select
                             value={editPriority}
                             label="Priority"
                             onChange={(e) => setEditPriority(e.target.value)}
                             disabled={isSaving}
-                            sx={compactSelectSx}
+                            className={styles.dashboardCompactSelect}
                           >
                             <MenuItem value="low">Low</MenuItem>
                             <MenuItem value="medium">Medium</MenuItem>
@@ -1078,13 +786,13 @@ export default function ThreePanelPage() {
                         </FormControl>
 
                         <FormControl fullWidth size="small">
-                          <InputLabel sx={compactInputLabelSx}>Request Type</InputLabel>
+                          <InputLabel className={styles.dashboardCompactLabel}>Request Type</InputLabel>
                           <Select
                             value={editType}
                             label="Request Type"
                             onChange={(e) => setEditType(e.target.value)}
                             disabled={isSaving}
-                            sx={compactSelectSx}
+                            className={styles.dashboardCompactSelect}
                           >
                             <MenuItem value="Emergency">Emergency</MenuItem>
                             <MenuItem value="WebRequest">Web Request</MenuItem>
@@ -1094,13 +802,13 @@ export default function ThreePanelPage() {
                       </Box>
 
                       <FormControl fullWidth size="small">
-                        <InputLabel sx={compactInputLabelSx}>Status</InputLabel>
+                        <InputLabel className={styles.dashboardCompactLabel}>Status</InputLabel>
                         <Select
                           value={editStatus}
                           label="Status"
                           onChange={(e) => setEditStatus(e.target.value)}
                           disabled={isSaving}
-                          sx={compactSelectSx}
+                          className={styles.dashboardCompactSelect}
                         >
                           <MenuItem value="Unassigned">Unassigned</MenuItem>
                           <MenuItem value="Assigned">Assigned</MenuItem>
@@ -1118,61 +826,68 @@ export default function ThreePanelPage() {
                         rows={2}
                         size="small"
                         disabled={isSaving}
-                        sx={compactFieldSx}
+                        className={styles.dashboardCompactField}
                       />
                     </Box>
                   </Box>
 
-                  <Divider sx={{ my: 2 }} />
+                  <Divider className={styles.dashboardDividerLg} />
 
                   {/* Client Info (Read-only Contact Info) */}
                   {selectedClient ? (
                     <>
-                      <Box sx={{ mb: 2.5 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.8rem', lineHeight: 1.2 }}>
+                      <Box className={styles.dashboardContactSection}>
+                        <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
                           Contact Information
                         </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                          <Avatar sx={{ width: 30, height: 30, mr: 1.25, backgroundColor: '#1976d2', fontSize: '0.72rem' }}>
+                        <Box className={styles.dashboardContactRow}>
+                          <Avatar className={styles.dashboardClientAvatar}>
                             {getAvatarInitials(selectedClient.name || 'C')}
                           </Avatar>
                           <Box>
-                            <Typography variant="body1" sx={{ fontWeight: 700, fontSize: '0.82rem', lineHeight: 1.2 }}>
+                            <Typography variant="body1" className={styles.dashboardClientName}>
                               {selectedClient.name}
                             </Typography>
-                            <Chip label="Client" size="small" sx={{ height: 18, borderRadius: '6px', fontSize: '0.62rem', mt: 0.3, '& .MuiChip-label': { px: 0.75 } }} />
+                            <Chip label="Client" size="small" className={styles.dashboardClientChip} />
                           </Box>
                         </Box>
-                        <Divider sx={{ my: 1 }} />
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.8 }}>
-                          <PhoneIcon sx={{ fontSize: 14, mr: 0.8, color: '#666' }} />
-                          <Typography variant="body2" sx={{ color: '#333', fontSize: '0.74rem', lineHeight: 1.3 }}>
+                        <Divider className={styles.dashboardContactDivider} />
+                        <Box className={styles.dashboardContactRow}>
+                          <PhoneIcon className={styles.dashboardContactIcon} />
+                          <Typography variant="body2" className={styles.dashboardContactText}>
                             {selectedClient.phone || 'N/A'}
                           </Typography>
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 0.8 }}>
-                          <LocationOnIcon sx={{ fontSize: 14, mr: 0.8, color: '#666', mt: 0.2 }} />
-                          <Typography variant="body2" sx={{ color: '#333', flex: 1, fontSize: '0.74rem', lineHeight: 1.3 }}>
+                        <Box className={`${styles.dashboardContactRow} ${styles.dashboardContactRowStart}`}>
+                          <LocationOnIcon className={`${styles.dashboardContactIcon} ${styles.dashboardContactIconStart}`} />
+                          <Typography variant="body2" className={`${styles.dashboardContactText} ${styles.dashboardContactTextFlex}`}>
                             {selectedClient.address || 'N/A'}
                           </Typography>
                         </Box>
                       </Box>
 
                       {/* Account Status */}
-                      <Box sx={{ mb: 2.5 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.8rem', lineHeight: 1.2 }}>
+                      <Box className={styles.dashboardContactSection}>
+                        <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
                           Account Status
                         </Typography>
-                        <Card sx={{ backgroundColor: selectedClient.outstandingBalance ? '#fff3e0' : '#e8f5e9' }}>
-                          <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <AttachMoneyIcon sx={{ fontSize: 18, mr: 0.8, color: selectedClient.outstandingBalance ? '#ff9800' : '#4caf50' }} />
-                                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.74rem', lineHeight: 1.3 }}>
+                        <Card className={selectedClient.outstandingBalance ? styles.dashboardBalanceCardDue : styles.dashboardBalanceCardClear}>
+                          <CardContent className={styles.dashboardBalanceContent}>
+                            <Box className={styles.dashboardRowBetween}>
+                              <Box className={styles.dashboardContactRow}>
+                                <AttachMoneyIcon className={`${styles.dashboardBalanceIcon} ${
+                                  selectedClient.outstandingBalance ? styles.dashboardBalanceIconDue : styles.dashboardBalanceIconClear
+                                }`} />
+                                <Typography variant="body2" className={styles.dashboardBalanceLabel}>
                                   Outstanding Balance
                                 </Typography>
                               </Box>
-                              <Typography variant="h6" sx={{ fontWeight: 700, color: selectedClient.outstandingBalance ? '#ff9800' : '#4caf50', fontSize: '0.9rem', lineHeight: 1.2 }}>
+                              <Typography
+                                variant="h6"
+                                className={`${styles.dashboardBalanceValue} ${
+                                  selectedClient.outstandingBalance ? styles.dashboardBalanceValueDue : styles.dashboardBalanceValueClear
+                                }`}
+                              >
                                 ${selectedClient.outstandingBalance || 0}
                               </Typography>
                             </Box>
@@ -1182,13 +897,13 @@ export default function ThreePanelPage() {
 
                       {/* Preferences */}
                       {selectedClient.preferenceNotes && (
-                        <Box sx={{ mb: 2 }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.8rem', lineHeight: 1.2 }}>
+                        <Box className={styles.dashboardPreferenceSection}>
+                          <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
                             Customer Preferences
                           </Typography>
-                          <Card sx={{ backgroundColor: '#f3e5f5' }}>
-                            <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
-                              <Typography variant="body2" sx={{ color: '#333', fontSize: '0.74rem', lineHeight: 1.35 }}>
+                          <Card className={styles.dashboardPreferenceCard}>
+                            <CardContent className={styles.dashboardBalanceContent}>
+                              <Typography variant="body2" className={styles.dashboardPreferenceCopy}>
                                 {selectedClient.preferenceNotes}
                               </Typography>
                             </CardContent>
@@ -1196,25 +911,25 @@ export default function ThreePanelPage() {
                         </Box>
                       )}
 
-                      <Divider sx={{ my: 2 }} />
+                      <Divider className={styles.dashboardDividerLg} />
                     </>
                   ) : (
-                    <Box sx={{ mb: 2.5 }}>
-                      <Alert severity="warning" sx={{ fontSize: '0.72rem', py: 0.5 }}>
+                    <Box className={styles.dashboardWarningBox}>
+                      <Alert severity="warning" className={styles.dashboardWarningAlert}>
                         No associated client profile found for "{selectedServiceReq.client}".
                       </Alert>
                     </Box>
                   )}
 
                   {/* Actions (Save / Delete) */}
-                  <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box className={styles.dashboardActions}>
                     <Button
                       variant="contained"
                       onClick={handleSave}
                       disabled={isSaving}
-                      startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <SaveIcon sx={{ fontSize: '1rem' }} />}
+                      startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
                       fullWidth
-                      sx={compactPrimaryButtonSx}
+                      className={styles.dashboardPrimaryButton}
                     >
                       {isSaving ? 'Saving...' : 'Save Work Order'}
                     </Button>
@@ -1224,34 +939,21 @@ export default function ThreePanelPage() {
                       color="error"
                       onClick={handleDelete}
                       disabled={isSaving}
-                      startIcon={<DeleteIcon sx={{ fontSize: '1rem' }} />}
+                      startIcon={<DeleteIcon />}
                       fullWidth
-                      sx={{
-                        ...compactPrimaryButtonSx,
-                        color: '#be123c',
-                        borderColor: '#fecaca',
-                      }}
+                      className={`${styles.dashboardPrimaryButton} ${styles.dashboardDangerButton}`}
                     >
                       Delete Work Order
                     </Button>
                   </Box>
 
                   {/* Map Preview Placeholder */}
-                  <Box sx={{ mt: 2.5 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a', fontSize: '0.8rem', lineHeight: 1.2 }}>
+                  <Box className={styles.dashboardRoutePreview}>
+                    <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
                       Route Preview
                     </Typography>
-                    <Box
-                      sx={{
-                        height: 104,
-                        backgroundColor: '#e0e0e0',
-                        borderRadius: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ color: '#666', fontSize: '0.74rem', lineHeight: 1.3 }}>
+                    <Box className={styles.dashboardMapPreview}>
+                      <Typography variant="body2" className={styles.dashboardMapCopy}>
                         🗺️ Map Preview
                       </Typography>
                     </Box>
@@ -1266,47 +968,21 @@ export default function ThreePanelPage() {
       {/* Left Panel Toggle Button - Outside container to remain always accessible */}
       <IconButton
         onClick={() => setLeftPanelOpen(!leftPanelOpen)}
-        sx={{
-          position: 'absolute',
-          left: leftPanelOpen ? 'calc(320px - 15px)' : '8px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          backgroundColor: 'white',
-          border: '1px solid #e0e0e0',
-          zIndex: 1001,
-          width: 30,
-          height: 30,
-          p: 0,
-          transition: 'left 0.3s ease-in-out',
-          '&:hover': {
-            backgroundColor: '#f5f5f5',
-          },
-        }}
+        className={`${styles.dashboardToggle} ${styles.dashboardToggleLeft} ${
+          leftPanelOpen ? styles.dashboardToggleLeftOpen : styles.dashboardToggleLeftClosed
+        }`}
       >
-        {leftPanelOpen ? <ChevronLeftIcon sx={{ fontSize: '1rem' }} /> : <ChevronRightIcon sx={{ fontSize: '1rem' }} />}
+        {leftPanelOpen ? <ChevronLeftIcon className={styles.dashboardToggleIcon} /> : <ChevronRightIcon className={styles.dashboardToggleIcon} />}
       </IconButton>
 
       {/* Right Panel Toggle Button - Outside container to remain always accessible */}
       <IconButton
         onClick={() => setRightPanelOpen(!rightPanelOpen)}
-        sx={{
-          position: 'absolute',
-          right: rightPanelOpen ? 'calc(400px - 15px)' : '8px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          backgroundColor: 'white',
-          border: '1px solid #e0e0e0',
-          zIndex: 1001,
-          width: 30,
-          height: 30,
-          p: 0,
-          transition: 'right 0.3s ease-in-out',
-          '&:hover': {
-            backgroundColor: '#f5f5f5',
-          },
-        }}
+        className={`${styles.dashboardToggle} ${styles.dashboardToggleRight} ${
+          rightPanelOpen ? styles.dashboardToggleRightOpen : styles.dashboardToggleRightClosed
+        }`}
       >
-        {rightPanelOpen ? <ChevronRightIcon sx={{ fontSize: '1rem' }} /> : <ChevronLeftIcon sx={{ fontSize: '1rem' }} />}
+        {rightPanelOpen ? <ChevronRightIcon className={styles.dashboardToggleIcon} /> : <ChevronLeftIcon className={styles.dashboardToggleIcon} />}
       </IconButton>
 
       {/* Notification Toast */}
@@ -1319,7 +995,7 @@ export default function ThreePanelPage() {
         <Alert
           onClose={() => setShowNotification(false)}
           severity={notificationType}
-          sx={{ width: '100%', fontSize: '0.78rem' }}
+          className={styles.dashboardToastAlert}
         >
           {notificationMessage}
         </Alert>
