@@ -1,0 +1,689 @@
+.userboardRoot {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  width: 100%;
+  padding-bottom: 32px;
+  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+}
+
+.userHeader {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  padding-right: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.userHeaderContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: auto;
+}
+
+.userHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userBackButton {
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+  color: #64748b !important;
+
+  &:hover {
+    background-color: #f1f5f9 !important;
+  }
+}
+
+.userBackIcon {
+  font-size: 1rem !important;
+}
+
+@media (min-width: 900px) {
+  .userHeader {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .userHeaderContent {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+  }
+}
+
+.userManagementTitle {
+  font-weight: 750 !important;
+  color: #0f172a;
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+}
+
+.userManagementSubtitle {
+  color: #64748b;
+  display: block;
+  margin-top: 1px;
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+}
+
+.userManagementNavActions {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+  width: 100%;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.userManagementNavButton {
+  text-transform: none !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 0.72rem !important;
+
+  .MuiButton-startIcon {
+    margin-right: 4px;
+  }
+}
+
+.userManagementNavIcon {
+  font-size: 0.95rem !important;
+}
+
+@media (min-width: 900px) {
+  .userManagementNavActions {
+    margin-top: 0;
+    width: auto;
+    justify-content: flex-end;
+  }
+}
+
+.statsContainer { 
+    max-width: 1320px !important;
+    margin: 16px auto 0 !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.statsCard {
+  color: #ffffff !important;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.totalUsers {
+  background-image: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+  box-shadow: 0 2px 8px rgba(30, 60, 114, 0.16) !important;
+}
+
+.activeTechs {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%) !important;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.16) !important;
+}
+
+.activeDispatchers {
+  background: linear-gradient(135deg, #b45309 0%, #d97706 100%) !important;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.16) !important;
+}
+
+.registeredTokens {
+  background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%) !important;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.16) !important;
+}
+
+.cardContent {
+  padding: 12px !important;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardTitle {
+  font-weight: 600 !important;
+  opacity: 0.8;
+  letter-spacing: 0.3px !important;
+  text-transform: uppercase;
+  font-size: 0.62rem !important;
+  line-height: 1.15 !important;
+}
+
+.cardIcon {
+  opacity: 0.8;
+  font-size: 1.15rem !important;
+}
+
+.cardValue {
+  font-weight: 800 !important;
+  margin-top: 4px !important;
+  font-size: 1.65rem !important;
+  line-height: 1.05 !important;
+}
+
+.cardDescription {
+  opacity: 0.7;
+  font-size: 0.66rem !important;
+  margin-top: 4px !important;
+  display: block !important;
+  line-height: 1.2 !important;
+}
+
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-top: 16px;
+}
+
+@media (max-width: 899px) {
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 599px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dataPaper {
+  border-radius: 8px;
+  box-shadow:
+    0 2px 5px -1px rgba(0, 0, 0, 0.05),
+    0 1px 3px -1px rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid #f1f5f9 !important;
+  overflow: hidden;
+}
+
+.controlsBar {
+  padding: 10px !important;
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+@media (min-width: 900px) {
+  .controlsBar {
+    padding: 12px;
+  }
+}
+
+.controlsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.searchIcon {
+  color: #94a3b8 !important;
+}
+
+/* Filter controls */
+.filterControl {
+  min-width: 0 !important;
+}
+
+.filterLabel {
+  font-size: 0.75rem !important;
+  transform: translate(14px, 8px) scale(1);
+
+  &.MuiInputLabel-shrink {
+    transform: translate(14px, -7px) scale(0.75);
+  }
+}
+
+.filterSelect {
+  height: 34px !important;
+  border-radius: 8px;
+  font-size: 0.78rem !important;
+
+  & .MuiSelect-select {
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-right: 28px !important;
+    padding-left: 10px;
+    min-height: 0 !important;
+    line-height: 34px;
+  }
+}
+
+/* Create User button container */
+.createButtonContainer {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.createButton {
+  text-transform: none !important;
+  border-radius: 8px;
+  font-weight: 600 !important;
+  min-height: 34px !important;
+  height: 34px !important;
+  width: 100%;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 0.78rem !important;
+  background-color: #2563eb;
+
+  &:hover {
+    background-color: #1d4ed8;
+  }
+
+  & .MuiButton-startIcon {
+    margin-right: 6px;
+
+    & svg {
+      font-size: 1rem;
+    }
+  }
+}
+
+/* Tablet */
+@media (min-width: 600px) {
+  .controlsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Desktop */
+@media (min-width: 900px) {
+  .controlsGrid {
+    grid-template-columns:
+      minmax(220px, 1.4fr)
+      minmax(116px, 0.55fr)
+      minmax(126px, 0.65fr)
+      auto;
+  }
+
+  .createButtonContainer {
+    justify-content: flex-end;
+  }
+
+  .createButton {
+    width: auto;
+    min-width: 118px;
+  }
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 180px !important;
+  gap: 8px;
+}
+
+.loadingText {
+  color: #64748b !important;
+  font-size: 0.78rem !important;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 180px !important;
+  gap: 6px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.emptyStateTitle {
+  font-weight: 650 !important;
+  color: #334155 !important;
+  font-size: 0.92rem !important;
+}
+
+.emptyStateDescription {
+  color: #64748b !important;
+  text-align: center;
+  max-width: 400px !important;
+  font-size: 0.76rem !important;
+}
+
+/* =========================
+   User Registry Table
+   ========================= */
+
+.userTable {
+  min-width: 760px;
+
+  & .MuiTableCell-root {
+    padding-left: 12px;
+    padding-right: 12px;
+    border-bottom-color: #eef2f7;
+  }
+
+  & .MuiChip-root {
+    height: 22px;
+    border-radius: 6px;
+    font-size: 0.66rem;
+  }
+
+  & .MuiChip-label {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  & .MuiChip-icon {
+    margin-left: 4px;
+    margin-right: -2px;
+  }
+}
+
+.tableHeader {
+  background-color: #f8fafc;
+}
+
+.tableHeaderCell {
+  font-weight: 700;
+  color: #475569;
+  font-size: 0.66rem;
+  padding-top: 7.2px;
+  padding-bottom: 7.2px;
+}
+
+.tableRow {
+  &:last-child {
+    & td,
+    & th {
+      border: 0;
+    }
+  }
+}
+
+.tableCell {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* =========================
+   User / Avatar
+   ========================= */
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.userAvatar {
+  width: 30px;
+  height: 30px;
+  font-size: 0.72rem;
+}
+
+.userDetails {
+  min-width: 0;
+}
+
+.userNameRow {
+  display: flex;
+  align-items: center;
+  gap: 4.8px;
+}
+
+.userName {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.userContact {
+  color: #64748b;
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
+.activeIndicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+/* =========================
+   Specialty
+   ========================= */
+
+.specialty {
+  font-weight: 550;
+  color: #334155;
+  font-size: 0.74rem;
+}
+
+.notApplicable {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 0.68rem;
+}
+
+/* =========================
+   Role Chips
+   ========================= */
+
+.dispatcherChip {
+  background-color: #fef3c7;
+  color: #b45309;
+  font-weight: 700;
+  border: 1px solid #fde68a;
+}
+
+.dispatcherChipIcon {
+  font-size: 11px !important;
+  color: #b45309 !important;
+}
+
+.technicianChip {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 700;
+  border: 1px solid #bfdbfe;
+}
+
+.technicianChipIcon {
+  font-size: 11px !important;
+  color: #1d4ed8 !important;
+}
+
+/* =========================
+   Status Chips
+   ========================= */
+
+.activeChip {
+  background-color: #ecfdf5;
+  color: #047857;
+  font-weight: 700;
+  border: 1px solid #a7f3d0;
+}
+
+.inactiveChip {
+  background-color: #f1f5f9;
+  color: #64748b;
+  font-weight: 700;
+  border: 1px solid #e2e8f0;
+}
+
+/* =========================
+   Push Token
+   ========================= */
+
+.pushTokenContainer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.registeredChip {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 700;
+  border: 1px solid #dbeafe;
+}
+
+.notRegisteredChip {
+  background-color: #fff1f2;
+  color: #be123c;
+  font-weight: 700;
+  border: 1px solid #ffe4e6;
+}
+
+.tokenButton {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  color: #2563eb;
+
+  &:hover {
+    background-color: #eff6ff;
+  }
+}
+
+.tokenButtonIcon {
+  font-size: 13px !important;
+}
+
+.registerButton {
+  text-transform: none;
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 0;
+  min-width: 0;
+  color: #be123c;
+  text-decoration: underline;
+
+  &:hover {
+    background-color: transparent;
+    color: #9f1239;
+  }
+}
+
+/* =========================
+   Actions
+   ========================= */
+
+.actionsContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.editButton {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  color: #475569;
+
+  &:hover {
+    background-color: #f1f5f9;
+  }
+}
+
+.statusToggleButton {
+  width: 34px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid;
+  border-radius: 6px;
+
+  &.active {
+    border-color: #fecaca;
+    background-color: #fef2f2;
+
+    &:hover {
+      background-color: #fee2e2;
+    }
+  }
+
+  &.inactive {
+    border-color: #a7f3d0;
+    background-color: #f0fdf4;
+
+    &:hover {
+      background-color: #dcfce7;
+    }
+  }
+}
+
+.statusSwitch {
+  pointer-events: none;
+  transform: scale(0.74);
+}
+
+

@@ -51,6 +51,7 @@ import KeyIcon from '@mui/icons-material/Key';
 import PeopleIcon from '@mui/icons-material/People';
 import SmartphoneIcon from '@mui/icons-material/Smartphone';
 import SpeedIcon from '@mui/icons-material/Speed';
+import styles from '../../styles/UI/UserManagement.module.scss';
 
 import { technicianAPI } from '../../services/api';
 
@@ -164,92 +165,6 @@ export default function UserManagement() {
   });
 
   const navigate = useNavigate();
-
-  // Load user data combined with technician store
-  // useEffect(() => {
-  //   async function loadData() {
-  //     try {
-  //       setLoading(true);
-  //       // Get list of technicians from standard DB
-  //       const techs = await technicianAPI.listTechnicians();
-        
-  //       // Check if users exist in LocalStorage
-  //       const cachedUsersRaw = localStorage.getItem('mock_users');
-        
-  //       let initialUsers: UserAccount[] = [];
-        
-  //       if (cachedUsersRaw) {
-  //         initialUsers = JSON.parse(cachedUsersRaw);
-  //       } else {
-  //         // Map existing technicians to users
-  //         const mappedTechs: UserAccount[] = techs.map((t) => {
-  //           // Register tokens for active default techs
-  //           const hasToken = t.id === 'tech-1' || t.id === 'tech-2';
-  //           return {
-  //             id: t.id!,
-  //             name: t.name,
-  //             email: t.email || `${t.name.toLowerCase().replace(' ', '')}@contractorsaas.com`,
-  //             phone: t.phone || '555-0100',
-  //             role: 'Technician',
-  //             status: t.isAvailable ? 'Active' : 'Inactive',
-  //             devicePushToken: hasToken ? `fcm-push-token-${t.id}-${Math.floor(100000 + Math.random() * 900000)}` : null,
-  //             deviceType: hasToken ? (t.id === 'tech-1' ? 'iOS' : 'Android') : null,
-  //             deviceRegisteredAt: hasToken ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() : null,
-  //             permissions: [...ROLE_PRESETS.Technician],
-  //             specialty: (t.specialty as any) || 'General',
-  //             createdAt: t.createdAt || new Date().toISOString(),
-  //             updatedAt: t.updatedAt || new Date().toISOString(),
-  //           };
-  //         });
-
-  //         // Add default dispatchers
-  //         const defaultDispatchers: UserAccount[] = [
-  //           {
-  //             id: 'disp-1',
-  //             name: 'Jane Doe',
-  //             email: 'jane@contractorsaas.com',
-  //             phone: '555-9090',
-  //             role: 'Dispatcher',
-  //             status: 'Active',
-  //             devicePushToken: 'web-push-token-jane-8837190',
-  //             deviceType: 'Web',
-  //             deviceRegisteredAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-  //             permissions: [...ROLE_PRESETS.Dispatcher],
-  //             createdAt: new Date().toISOString(),
-  //             updatedAt: new Date().toISOString(),
-  //           },
-  //           {
-  //             id: 'disp-2',
-  //             name: 'Alex Rivera',
-  //             email: 'alex.rivera@contractorsaas.com',
-  //             phone: '555-8080',
-  //             role: 'Dispatcher',
-  //             status: 'Active',
-  //             devicePushToken: null,
-  //             deviceType: null,
-  //             deviceRegisteredAt: null,
-  //             permissions: [...ROLE_PRESETS.Dispatcher],
-  //             createdAt: new Date().toISOString(),
-  //             updatedAt: new Date().toISOString(),
-  //           }
-  //         ];
-
-  //         initialUsers = [...mappedTechs, ...defaultDispatchers];
-  //         localStorage.setItem('mock_users', JSON.stringify(initialUsers));
-  //       }
-
-  //       // Keep local techs synchronized in case users list updated while offline
-  //       setUsers(initialUsers);
-  //     } catch (err) {
-  //       console.error('Failed to load users:', err);
-  //       showSnackbar('Error reading user records', 'error');
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
-
-  //   loadData();
-  // }, []);
 
   // Helper to trigger alert notifications
   const showSnackbar = useCallback(
@@ -612,116 +527,45 @@ export default function UserManagement() {
   };
 
   return (
-    <Box
-      sx={{
-        backgroundColor: '#f8fafc',
-        minHeight: '100vh',
-        width: '100%',
-        pb: 4,
-        fontFamily: 'Inter, sans-serif',
-      }}
-    >
+    <Box className={styles.userboardRoot}>
       {/* Header Status Bar */}
-      <Box
-        component="header"
-        sx={{
-          backgroundColor: '#ffffff',
-          borderBottom: '1px solid #e2e8f0',
-          py: { xs: 1, md: 0.75 },
-          px: { xs: 1.5, md: 2 },
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            alignItems: { xs: 'flex-start', md: 'center' },
-            justifyContent: 'space-between',
-            gap: { xs: 1, md: 1.25 },
-            minHeight: { md: 44 },
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Box className={styles.userHeader} component="header">
+        <Box className={styles.userHeaderContent}>
+          <Box className={styles.userHeaderLeft}>
             <IconButton
-              // onClick={() => (window.location.href = '/')}
+              className={styles.userBackButton}
               onClick={() => navigate(-1)}
-              sx={{
-                border: '1px solid #cbd5e1',
-                borderRadius: '6px',
-                width: 30,
-                height: 30,
-                p: 0,
-                color: '#64748b',
-                '&:hover': { backgroundColor: '#f1f5f9' },
-              }}
               aria-label="Back to dashboard"
             >
-              <ArrowBackIcon sx={{ fontSize: '1rem' }} />
+              <ArrowBackIcon className={styles.userBackIcon} />
             </IconButton>
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 750, color: '#0f172a', fontSize: '1rem', lineHeight: 1.2 }}>
+              <Typography variant="h5" className={styles.userManagementTitle}>
                 User Account Management
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.1, fontSize: '0.68rem', lineHeight: 1.2 }}>
+              <Typography variant="caption" className={styles.userManagementSubtitle}>
                 Admin Portal / Technicians and Dispatchers Directory
               </Typography>
             </Box>
           </Box>
 
           {/* Top navigation shortcuts */}
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 0.75,
-              mt: { xs: 0.25, md: 0 },
-              width: { xs: '100%', md: 'auto' },
-              justifyContent: { xs: 'flex-start', md: 'flex-end' },
-              flexWrap: 'wrap',
-            }}
-          >
+          <Box className={styles.userManagementNavActions}>
             <Button
               variant="outlined"
               size="small"
-              startIcon={<SpeedIcon sx={{ fontSize: '0.95rem' }} />}
+              startIcon={<SpeedIcon className={styles.userManagementNavIcon} />}
               onClick={() => (window.location.href = '/')}
-              sx={{
-                textTransform: 'none',
-                borderRadius: '6px',
-                fontWeight: 600,
-                color: '#475569',
-                borderColor: '#cbd5e1',
-                minHeight: 28,
-                height: 28,
-                px: 1,
-                py: 0,
-                fontSize: '0.72rem',
-                '& .MuiButton-startIcon': { mr: 0.5 },
-              }}
+              className={styles.userManagementNavButton}
             >
               Dispatch Board
             </Button>
             <Button
               variant="outlined"
               size="small"
-              startIcon={<PeopleIcon sx={{ fontSize: '0.95rem' }} />}
+              startIcon={<PeopleIcon className={styles.userManagementNavIcon} />}
               onClick={() => (window.location.href = '/crm')}
-              sx={{
-                textTransform: 'none',
-                borderRadius: '6px',
-                fontWeight: 600,
-                color: '#475569',
-                borderColor: '#cbd5e1',
-                minHeight: 28,
-                height: 28,
-                px: 1,
-                py: 0,
-                fontSize: '0.72rem',
-                '& .MuiButton-startIcon': { mr: 0.5 },
-              }}
+              className={styles.userManagementNavButton}
             >
               CRM Record
             </Button>
@@ -730,119 +574,76 @@ export default function UserManagement() {
       </Box>
 
       {/* Main Container */}
-      <Box sx={{ maxWidth: '1320px', margin: '0 auto', px: { xs: 1.5, md: 2 }, mt: { xs: 1.5, md: 2 } }}>
+      <Box className={styles.statsContainer}>
         {/* STATS OVERVIEW CARDS */}
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' },
-            gap: { xs: 1.25, md: 1.5 },
-            mb: { xs: 1.5, md: 2 },
-          }}
-        >
+        <Box className={styles.statsGrid}>
           {/* Card 1: Total Users */}
-          <Card
-            sx={{
-              background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-              color: '#ffffff',
-              boxShadow: '0 2px 8px rgba(30, 60, 114, 0.16)',
-              borderRadius: '8px',
-              transition: 'transform 0.2s',
-              '&:hover': { transform: 'translateY(-2px)' },
-            }}
-          >
-            <CardContent sx={{ p: '12px !important' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, opacity: 0.8, letterSpacing: '0.3px', textTransform: 'uppercase', fontSize: '0.62rem', lineHeight: 1.15 }}>
+          <Card className={`${styles.statsCard} ${styles.totalUsers}`}>
+            <CardContent className={styles.cardContent}>
+              <Box className={styles.cardHeader}>
+                <Typography className={styles.cardTitle}>
                   Total Managed Accounts
                 </Typography>
-                <PeopleIcon sx={{ opacity: 0.8, fontSize: '1.15rem' }} />
+                <PeopleIcon className={styles.cardIcon} />
               </Box>
-              <Typography variant="h3" sx={{ fontWeight: 800, mt: 0.5, fontSize: '1.65rem', lineHeight: 1.05 }}>
+              <Typography className={styles.cardValue}>
                 {stats.total}
               </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.66rem', mt: 0.5, display: 'block', lineHeight: 1.2 }}>
+              <Typography className={styles.cardDescription}>
                 Registered staff profile records
               </Typography>
             </CardContent>
           </Card>
 
           {/* Card 2: Active Techs */}
-          <Card
-            sx={{
-              background: 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)',
-              color: '#ffffff',
-              boxShadow: '0 2px 8px rgba(13, 148, 136, 0.16)',
-              borderRadius: '8px',
-              transition: 'transform 0.2s',
-              '&:hover': { transform: 'translateY(-2px)' },
-            }}
-          >
-            <CardContent sx={{ p: '12px !important' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, opacity: 0.8, letterSpacing: '0.3px', textTransform: 'uppercase', fontSize: '0.62rem', lineHeight: 1.15 }}>
+          <Card className={`${styles.statsCard} ${styles.activeTechs}`}>
+            <CardContent className={styles.cardContent}>
+              <Box className={styles.cardHeader}>
+                <Typography className={styles.cardTitle}>
                   Active Technicians
                 </Typography>
-                <EngineeringIcon sx={{ opacity: 0.8, fontSize: '1.15rem' }} />
+                <EngineeringIcon className={styles.cardIcon} />
               </Box>
-              <Typography variant="h3" sx={{ fontWeight: 800, mt: 0.5, fontSize: '1.65rem', lineHeight: 1.05 }}>
+              <Typography className={styles.cardValue}>
                 {stats.activeTechs}
               </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.66rem', mt: 0.5, display: 'block', lineHeight: 1.2 }}>
+              <Typography className={styles.cardDescription}>
                 Technicians available for timeline jobs
               </Typography>
             </CardContent>
           </Card>
 
           {/* Card 3: Active Dispatchers */}
-          <Card
-            sx={{
-              background: 'linear-gradient(135deg, #b45309 0%, #d97706 100%)',
-              color: '#ffffff',
-              boxShadow: '0 2px 8px rgba(217, 119, 6, 0.16)',
-              borderRadius: '8px',
-              transition: 'transform 0.2s',
-              '&:hover': { transform: 'translateY(-2px)' },
-            }}
-          >
-            <CardContent sx={{ p: '12px !important' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, opacity: 0.8, letterSpacing: '0.3px', textTransform: 'uppercase', fontSize: '0.62rem', lineHeight: 1.15 }}>
+          <Card className={`${styles.statsCard} ${styles.activeDispatchers}`}>
+            <CardContent className={styles.cardContent}>
+              <Box className={styles.cardHeader}>
+                <Typography className={styles.cardTitle}>
                   Active Dispatchers
                 </Typography>
-                <AdminPanelSettingsIcon sx={{ opacity: 0.8, fontSize: '1.15rem' }} />
+                <AdminPanelSettingsIcon className={styles.cardIcon} />
               </Box>
-              <Typography variant="h3" sx={{ fontWeight: 800, mt: 0.5, fontSize: '1.65rem', lineHeight: 1.05 }}>
+              <Typography className={styles.cardValue}>
                 {stats.activeDispatchers}
               </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.66rem', mt: 0.5, display: 'block', lineHeight: 1.2 }}>
+              <Typography className={styles.cardDescription}>
                 Admin accounts with system access
               </Typography>
             </CardContent>
           </Card>
 
           {/* Card 4: Registered Tokens */}
-          <Card
-            sx={{
-              background: 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)',
-              color: '#ffffff',
-              boxShadow: '0 2px 8px rgba(124, 58, 237, 0.16)',
-              borderRadius: '8px',
-              transition: 'transform 0.2s',
-              '&:hover': { transform: 'translateY(-2px)' },
-            }}
-          >
-            <CardContent sx={{ p: '12px !important' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, opacity: 0.8, letterSpacing: '0.3px', textTransform: 'uppercase', fontSize: '0.62rem', lineHeight: 1.15 }}>
+          <Card className={`${styles.statsCard} ${styles.registeredTokens}`}>
+            <CardContent className={styles.cardContent}>
+              <Box className={styles.cardHeader}>
+                <Typography className={styles.cardTitle}>
                   Push Registered Devices
                 </Typography>
-                <SmartphoneIcon sx={{ opacity: 0.8, fontSize: '1.15rem' }} />
+                <SmartphoneIcon className={styles.cardIcon} />
               </Box>
-              <Typography variant="h3" sx={{ fontWeight: 800, mt: 0.5, fontSize: '1.65rem', lineHeight: 1.05 }}>
+              <Typography className={styles.cardValue}>
                 {stats.registeredTokens}
               </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.66rem', mt: 0.5, display: 'block', lineHeight: 1.2 }}>
+              <Typography className={styles.cardDescription}>
                 Live mobile push-notification setups
               </Typography>
             </CardContent>
@@ -850,28 +651,10 @@ export default function UserManagement() {
         </Box>
 
         {/* CONTROLS AND DIRECTORY GRID */}
-        <Paper
-          sx={{
-            borderRadius: '8px',
-            boxShadow: '0 2px 5px -1px rgba(0,0,0,0.05), 0 1px 3px -1px rgba(0,0,0,0.03)',
-            border: '1px solid #f1f5f9',
-            overflow: 'hidden',
-          }}
-        >
+        <Paper className={styles.dataPaper}>
           {/* Controls Bar */}
-          <Box sx={{ p: { xs: 1.25, md: 1.5 }, backgroundColor: '#ffffff', borderBottom: '1px solid #f1f5f9' }}>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr',
-                  sm: '1fr 1fr',
-                  md: 'minmax(220px, 1.4fr) minmax(116px, 0.55fr) minmax(126px, 0.65fr) auto',
-                },
-                gap: 1.25,
-                alignItems: 'center',
-              }}
-            >
+          <Box className={styles.controlsBar}>
+            <Box className={styles.controlsGrid}>
               <Box>
                 <TextField
                   fullWidth
@@ -884,11 +667,12 @@ export default function UserManagement() {
                     input: {
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon fontSize="small" sx={{ color: '#94a3b8' }} />
+                          <SearchIcon fontSize="small" className={styles.searchIcon} />
                         </InputAdornment>
                       ),
                     }
                   }}
+                  className={styles.searchField}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       height: 34,
@@ -908,17 +692,10 @@ export default function UserManagement() {
               </Box>
 
               <Box>
-                <FormControl fullWidth size="small" sx={{ minWidth: 0 }}>
+                <FormControl fullWidth size="small" className={styles.filterControl}>
                   <InputLabel
                     id="role-filter-label"
-                    sx={{
-                      fontSize: '0.75rem',
-                      transform: 'translate(14px, 8px) scale(1)',
-                      '&.MuiInputLabel-shrink': {
-                        transform: 'translate(14px, -7px) scale(0.75)',
-                      },
-                    }}
-                  >
+                    className={styles.filterLabel}>
                     Filter Role
                   </InputLabel>
                   <Select
@@ -926,19 +703,7 @@ export default function UserManagement() {
                     value={roleFilter}
                     label="Filter Role"
                     onChange={(e) => setRoleFilter(e.target.value)}
-                    sx={{
-                      height: 34,
-                      borderRadius: '8px',
-                      fontSize: '0.78rem',
-                      '& .MuiSelect-select': {
-                        py: 0,
-                        pr: '28px !important',
-                        pl: 1.25,
-                        minHeight: '0 !important',
-                        lineHeight: '34px',
-                      },
-                    }}
-                  >
+                    className={styles.filterSelect}>
                     <MenuItem value="All">All Roles</MenuItem>
                     <MenuItem value="Technician">Technicians</MenuItem>
                     <MenuItem value="Dispatcher">Dispatchers</MenuItem>
@@ -947,16 +712,10 @@ export default function UserManagement() {
               </Box>
 
               <Box>
-                <FormControl fullWidth size="small" sx={{ minWidth: 0 }}>
+                <FormControl fullWidth size="small" className={styles.filterControl}>
                   <InputLabel
                     id="status-filter-label"
-                    sx={{
-                      fontSize: '0.75rem',
-                      transform: 'translate(14px, 8px) scale(1)',
-                      '&.MuiInputLabel-shrink': {
-                        transform: 'translate(14px, -7px) scale(0.75)',
-                      },
-                    }}
+                    className={styles.filterLabel}
                   >
                     Filter Status
                   </InputLabel>
@@ -965,18 +724,7 @@ export default function UserManagement() {
                     value={statusFilter}
                     label="Filter Status"
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    sx={{
-                      height: 34,
-                      borderRadius: '8px',
-                      fontSize: '0.78rem',
-                      '& .MuiSelect-select': {
-                        py: 0,
-                        pr: '28px !important',
-                        pl: 1.25,
-                        minHeight: '0 !important',
-                        lineHeight: '34px',
-                      },
-                    }}
+                    className={styles.filterSelect}
                   >
                     <MenuItem value="All">All Statuses</MenuItem>
                     <MenuItem value="Active">Active Accounts</MenuItem>
@@ -985,30 +733,13 @@ export default function UserManagement() {
                 </FormControl>
               </Box>
 
-              <Box sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
+              <Box className={styles.createButtonContainer}>
                 <Button
                   variant="contained"
                   color="primary"
                   startIcon={<PersonAddIcon />}
                   onClick={handleOpenAddModal}
-                  sx={{
-                    textTransform: 'none',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    minHeight: 34,
-                    height: 34,
-                    width: { xs: '100%', md: 'auto' },
-                    minWidth: { md: 118 },
-                    px: 1.5,
-                    py: 0,
-                    fontSize: '0.78rem',
-                    backgroundColor: '#2563eb',
-                    '& .MuiButton-startIcon': {
-                      mr: 0.75,
-                      '& svg': { fontSize: '1rem' },
-                    },
-                    '&:hover': { backgroundColor: '#1d4ed8' },
-                  }}
+                  className={styles.createButton}
                 >
                   Create User
                 </Button>
@@ -1019,23 +750,23 @@ export default function UserManagement() {
           {/* Users List Table */}
           <TableContainer>
             {loading ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 180, gap: 1 }}>
+              <Box className={styles.loadingState}>
                 <CircularProgress size={28} />
-                <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.78rem' }}>
+                <Typography className={styles.loadingText}>
                   Loading user registry directory...
                 </Typography>
               </Box>
             ) : filteredUsers.length === 0 ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 180, gap: 0.75, px: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 650, color: '#334155', fontSize: '0.92rem' }}>
+              <Box className={styles.emptyState}>
+                <Typography className={styles.emptyStateTitle}>
                   No accounts found matching search filters
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#64748b', textAlign: 'center', maxWidth: '400px', fontSize: '0.76rem' }}>
+                <Typography className={styles.emptyStateDescription}>
                   Try adjusting your text search terms or modifying the role/status filter settings.
                 </Typography>
               </Box>
             ) : (
-              <Table
+              <Table 
                 sx={{
                   minWidth: 760,
                   '& .MuiTableCell-root': {

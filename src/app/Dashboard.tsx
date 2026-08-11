@@ -16,7 +16,7 @@ import EngineeringIcon from '@mui/icons-material/Engineering';
 import GroupsIcon from '@mui/icons-material/Groups';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import Tooltip from '@mui/material/Tooltip';
-import styles from '../styles/dashboard/Dashboard.module.scss';
+import styles from '../styles/UI/Dashboard.module.scss';
 
 // Hours for the schedule grid (7 AM to 7 PM)
 const hours = Array.from({ length: 12 }, (_, i) => i + 7);
