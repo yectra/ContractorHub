@@ -130,7 +130,7 @@
 
 .dashboardCompactField .MuiOutlinedInput-root,
 .dashboardCompactSelect {
-  height: 28px;
+  height: 36px;
   border-radius: 8px;
   font-size: 0.78rem;
 }
@@ -156,24 +156,27 @@
   line-height: 1.35;
 }
 
-.dashboardCompactField .MuiInputLabel-root,
+.dashboardCompactField :global(.MuiInputLabel-root),
 .dashboardCompactLabel {
   font-size: 0.75rem !important;
   transform: translate(14px, 5px) scale(1) !important;
 }
 
-.dashboardCompactField .MuiInputLabel-root.MuiInputLabel-shrink,
-.dashboardCompactLabel.MuiInputLabel-shrink {
+.dashboardCompactField :global(.MuiInputLabel-root.MuiInputLabel-shrink),
+.dashboardCompactLabel:global(.MuiInputLabel-shrink) {
   transform: translate(14px, -7px) scale(0.75) !important;
 }
 
-.dashboardCompactSelect .MuiSelect-select {
-  padding-top: 0;
-  padding-bottom: 0;
+.dashboardCompactSelect :global(.MuiSelect-select) {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding-top: 12px;
+  padding-bottom: 4px;
   padding-right: 28px !important;
   padding-left: 10px;
   min-height: 0 !important;
-  line-height: 28px;
+  line-height: 18px;
 }
 
 .dashboardTitle {

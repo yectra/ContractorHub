@@ -265,6 +265,7 @@ export default function FieldExecution() {
         const notesObj = {
           checklist: updatedChecklist,
           comment: comment,
+          photos: uploadedPhotos,
         };
         await updateScheduledJob(effectiveSelectedJobId, {
           notes: JSON.stringify(notesObj),
@@ -332,6 +333,7 @@ export default function FieldExecution() {
               } else {
                 reject(new Error('Blob generation failed'));
               }
+
             },
             'image/jpeg',
             0.7
@@ -423,6 +425,21 @@ export default function FieldExecution() {
         const updatedPhotos = [...uploadedPhotos, newPhoto];
         setUploadedPhotos(updatedPhotos);
         localStorage.setItem(`photos_job_${effectiveSelectedJobId}`, JSON.stringify(updatedPhotos));
+
+        // Sync with Amplify database
+        try {
+          const notesObj = {
+            checklist,
+            comment,
+            photos: updatedPhotos,
+          };
+          await updateScheduledJob(effectiveSelectedJobId, {
+            notes: JSON.stringify(notesObj),
+          });
+        } catch (err) {
+          console.error('Failed to sync uploaded photo to backend:', err);
+        }
+
         setSuccessAlert('Photo uploaded successfully!');
         setTimeout(() => setSuccessAlert(null), 3000);
       }
@@ -463,10 +480,23 @@ export default function FieldExecution() {
       setUploadedPhotos(successfulPhotos);
       localStorage.setItem(`photos_job_${effectiveSelectedJobId}`, JSON.stringify(successfulPhotos));
 
+      // Sync offline queue sync with backend
+      try {
+        const notesObj = {
+          checklist,
+          comment,
+          photos: successfulPhotos,
+        };
+        await updateScheduledJob(effectiveSelectedJobId, {
+          notes: JSON.stringify(notesObj),
+        });
+      } catch (err) {
+        console.error('Failed to sync synced photos to backend:', err);
+      }
+
       setUploadQueue(failedUploads);
       if (failedUploads.length > 0) {
         localStorage.setItem(`upload_queue_${effectiveSelectedJobId}`, JSON.stringify(failedUploads));
-        setErrorAlert('Some queued photo uploads failed to sync.');
         setErrorAlert('Some queued photo uploads failed to sync.');
       } else {
         localStorage.removeItem(`upload_queue_${effectiveSelectedJobId}`);
@@ -488,6 +518,15 @@ export default function FieldExecution() {
 
     if (isOnline) {
       try {
+        const notesObj = {
+          checklist,
+          comment,
+          photos: updatedPhotos,
+        };
+        await updateScheduledJob(effectiveSelectedJobId, {
+          notes: JSON.stringify(notesObj),
+        });
+
         const storageModule = await import('aws-amplify/storage');
         if (storageModule && typeof storageModule.remove === 'function') {
           let path = photo.url;
@@ -532,6 +571,7 @@ export default function FieldExecution() {
         const notesObj = {
           checklist: checklist,
           comment: comment,
+          photos: uploadedPhotos,
         };
         await updateScheduledJob(effectiveSelectedJobId, {
           notes: JSON.stringify(notesObj),
