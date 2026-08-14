@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Box, IconButton, Card, CardContent, Typography, Chip, Avatar, Divider, Alert, Snackbar, Button, CircularProgress, TextField, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, IconButton, Card, CardContent, Typography, Chip, Avatar, Divider, Alert, Snackbar, Button, CircularProgress, TextField, Select, MenuItem, FormControl, InputLabel, Dialog, OutlinedInput, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
@@ -10,6 +10,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import SaveIcon from '@mui/icons-material/Save';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import CloseIcon from '@mui/icons-material/Close';
 import { useServiceRequests, useTechnicians, useScheduledJobs, useClients } from '../hooks/useDispatchData';
 import { isAmplifyConfigured } from '../services/api';
 import EngineeringIcon from '@mui/icons-material/Engineering';
@@ -20,6 +21,32 @@ import styles from '../styles/UI/Dashboard.module.scss';
 
 // Hours for the schedule grid (7 AM to 7 PM)
 const hours = Array.from({ length: 12 }, (_, i) => i + 7);
+
+const compactSelectLabelSx = {
+  backgroundColor: '#ffffff',
+  lineHeight: 1.2,
+  px: 0.5,
+  transform: 'translate(14px, -7px) scale(0.75)',
+  '&.MuiInputLabel-shrink': {
+    transform: 'translate(14px, -7px) scale(0.75)',
+  },
+};
+
+const compactSelectSx = {
+  height: 36,
+  alignItems: 'center',
+  '& .MuiSelect-select': {
+    boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'center',
+    minHeight: '20px !important',
+    paddingTop: '12px',
+    paddingBottom: '4px',
+    paddingLeft: '10px',
+    paddingRight: '28px !important',
+    lineHeight: '18px',
+  },
+};
 
 const getTodayString = () => {
   const d = new Date();
@@ -46,6 +73,7 @@ export default function ThreePanelPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   // ── Dispatcher Checklist Modal state ────────────────────────────────────────
   const [checklistModalOpen, setChecklistModalOpen] = useState(false);
@@ -127,6 +155,26 @@ export default function ThreePanelPage() {
   } else if (!selectedServiceReq && syncedServiceReqKey) {
     setSyncedServiceReqKey(null);
   }
+
+  // Find associated scheduled job if it exists for the selected service request
+  const associatedJob = useMemo(() => {
+    if (!selectedServiceReq) return null;
+    return scheduledJobs.find((job) => job.serviceRequestId === selectedServiceReq.id);
+  }, [selectedServiceReq, scheduledJobs]);
+
+  // Parse notes to get technician comment and photos
+  const techFeedback = useMemo(() => {
+    if (!associatedJob || !associatedJob.notes) return null;
+    try {
+      const parsed = JSON.parse(associatedJob.notes);
+      return {
+        comment: typeof parsed.comment === 'string' ? parsed.comment : '',
+        photos: Array.isArray(parsed.photos) ? parsed.photos : [],
+      };
+    } catch {
+      return null;
+    }
+  }, [associatedJob]);
 
   // Get selected client details
   const selectedClient = useMemo(() => {
@@ -856,13 +904,16 @@ export default function ThreePanelPage() {
 
                       <Box className={styles.dashboardFormRow}>
                         <FormControl fullWidth size="small">
-                          <InputLabel className={styles.dashboardCompactLabel}>Priority</InputLabel>
+                          <InputLabel shrink className={styles.dashboardCompactLabel} sx={compactSelectLabelSx}>Priority</InputLabel>
                           <Select
+                            displayEmpty
                             value={editPriority}
                             label="Priority"
+                            input={<OutlinedInput label="Priority" notched />}
                             onChange={(e) => setEditPriority(e.target.value)}
                             disabled={isSaving}
                             className={styles.dashboardCompactSelect}
+                            sx={compactSelectSx}
                           >
                             <MenuItem value="low">Low</MenuItem>
                             <MenuItem value="medium">Medium</MenuItem>
@@ -871,13 +922,16 @@ export default function ThreePanelPage() {
                         </FormControl>
 
                         <FormControl fullWidth size="small">
-                          <InputLabel className={styles.dashboardCompactLabel}>Request Type</InputLabel>
+                          <InputLabel shrink className={styles.dashboardCompactLabel} sx={compactSelectLabelSx}>Request Type</InputLabel>
                           <Select
+                            displayEmpty
                             value={editType}
                             label="Request Type"
+                            input={<OutlinedInput label="Request Type" notched />}
                             onChange={(e) => setEditType(e.target.value)}
                             disabled={isSaving}
                             className={styles.dashboardCompactSelect}
+                            sx={compactSelectSx}
                           >
                             <MenuItem value="Emergency">Emergency</MenuItem>
                             <MenuItem value="WebRequest">Web Request</MenuItem>
@@ -887,13 +941,16 @@ export default function ThreePanelPage() {
                       </Box>
 
                       <FormControl fullWidth size="small">
-                        <InputLabel className={styles.dashboardCompactLabel}>Status</InputLabel>
+                        <InputLabel shrink className={styles.dashboardCompactLabel} sx={compactSelectLabelSx}>Status</InputLabel>
                         <Select
+                          displayEmpty
                           value={editStatus}
                           label="Status"
+                          input={<OutlinedInput label="Status" notched />}
                           onChange={(e) => setEditStatus(e.target.value)}
                           disabled={isSaving}
                           className={styles.dashboardCompactSelect}
+                          sx={compactSelectSx}
                         >
                           <MenuItem value="Unassigned">Unassigned</MenuItem>
                           <MenuItem value="Assigned">Assigned</MenuItem>
@@ -1004,6 +1061,84 @@ export default function ThreePanelPage() {
                         No associated client profile found for "{selectedServiceReq.client}".
                       </Alert>
                     </Box>
+                  )}
+
+                  {/* Technician Feedback Section (Conditional) */}
+                  {techFeedback && (techFeedback.comment || (techFeedback.photos && techFeedback.photos.length > 0)) && (
+                    <>
+                      <Box className={styles.dashboardDetailsSection}>
+                        <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
+                          Technician Feedback
+                        </Typography>
+
+                        {/* Technician Comment */}
+                        {techFeedback.comment && (
+                          <Box sx={{ mb: 1.5 }}>
+                            <Typography variant="caption" sx={{ display: 'block', fontWeight: 600, mb: 0.5, color: '#666' }}>
+                              Technician Notes
+                            </Typography>
+                            <textarea
+                              value={techFeedback.comment}
+                              readOnly
+                              style={{
+                                width: '100%',
+                                minHeight: '40px',
+                                maxHeight: '120px',
+                                backgroundColor: '#f9f9f9',
+                                color: '#333333',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '6px',
+                                padding: '4px 8px', // compact padding
+                                fontSize: '0.72rem',
+                                fontFamily: 'inherit',
+                                boxSizing: 'border-box',
+                                resize: 'vertical',
+                                outline: 'none',
+                                lineHeight: '1.2',
+                              }}
+                            />
+                          </Box>
+                        )}
+
+                        {/* Technician Photos */}
+                        {techFeedback.photos && techFeedback.photos.length > 0 && (
+                          <Box>
+                            <Typography variant="caption" sx={{ display: 'block', fontWeight: 600, mb: 0.5, color: '#666' }}>
+                              Job Photos ({techFeedback.photos.length})
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                              {techFeedback.photos.map((photo: { id: string; url: string; name: string }, index: number) => (
+                                <Box
+                                  key={photo.id || index}
+                                  onClick={() => setPreviewImageUrl(photo.url)}
+                                  sx={{
+                                    width: '60px',
+                                    height: '60px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #ddd',
+                                    overflow: 'hidden',
+                                    cursor: 'pointer',
+                                    position: 'relative',
+                                    transition: 'transform 0.1s',
+                                    '&:hover': {
+                                      transform: 'scale(1.05)',
+                                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                    }
+                                  }}
+                                >
+                                  <img
+                                    src={photo.url}
+                                    alt={photo.name}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  />
+                                </Box>
+                              ))}
+                            </Box>
+                          </Box>
+                        )}
+                      </Box>
+                      <Divider className={styles.dashboardDividerLg} />
+                    </>
                   )}
 
                   {/* Actions (Save / Delete) */}
@@ -1250,6 +1385,50 @@ export default function ThreePanelPage() {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Image Preview Modal */}
+      {previewImageUrl && (
+        <Dialog
+          open={!!previewImageUrl}
+          onClose={() => setPreviewImageUrl(null)}
+          maxWidth="md"
+          sx={{
+            '& .MuiPaper-root': {
+              backgroundColor: 'transparent',
+              boxShadow: 'none',
+              overflow: 'hidden',
+            }
+          }}
+        >
+          <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <img
+              src={previewImageUrl}
+              alt="Enlarged job preview"
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                borderRadius: '8px',
+                objectFit: 'contain',
+                boxShadow: '0 5px 25px rgba(0,0,0,0.5)',
+              }}
+            />
+            <IconButton
+              onClick={() => setPreviewImageUrl(null)}
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                color: '#fff',
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                '&:hover': {
+                  backgroundColor: 'rgba(0,0,0,0.7)',
+                }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </Dialog>
+      )}
     </Box>
   );
 }
