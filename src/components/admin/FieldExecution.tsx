@@ -42,6 +42,13 @@ const CloudIcon = ({ offline }: { offline?: boolean }) => (
   </svg>
 );
 
+const TrashIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </svg>
+);
+
 interface ChecklistItem {
   id: string;
   text: string;
@@ -143,6 +150,27 @@ const getChecklistForJob = (jobId: string, notes?: string | null): ChecklistItem
   return DEFAULT_STEPS;
 };
 
+const getCommentForJob = (jobId: string, notes?: string | null): string => {
+  const cached = localStorage.getItem(`comment_job_${jobId}`);
+  if (cached !== null) return cached;
+
+  if (notes) {
+    if (notes.startsWith('CHECKLIST:')) {
+      return '';
+    }
+    try {
+      const parsed = JSON.parse(notes);
+      if (parsed && typeof parsed.comment === 'string') {
+        return parsed.comment;
+      }
+    } catch {
+      // Ignored
+    }
+  }
+
+  return '';
+};
+
 export default function FieldExecution() {
   // Connectivity state
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
@@ -166,6 +194,10 @@ export default function FieldExecution() {
 
   // Checklist state
   const [checklist, setChecklist] = useState<ChecklistItem[]>(DEFAULT_STEPS);
+
+  // Comment state
+  const [comment, setComment] = useState<string>('');
+  const [isSavingComment, setIsSavingComment] = useState<boolean>(false);
 
   // Photo state
   const [uploadQueue, setUploadQueue] = useState<QueuedUpload[]>([]);
@@ -239,6 +271,7 @@ export default function FieldExecution() {
   if (effectiveSelectedJobId && selectedJobCacheKey !== loadedJobCacheKey) {
     setLoadedJobCacheKey(selectedJobCacheKey);
     setChecklist(getChecklistForJob(effectiveSelectedJobId, selectedJob?.notes));
+    setComment(getCommentForJob(effectiveSelectedJobId, selectedJob?.notes));
     setUploadQueue(readCachedArray<QueuedUpload>(`upload_queue_${effectiveSelectedJobId}`, []));
     setUploadedPhotos(readCachedArray<UploadedPhoto>(`photos_job_${effectiveSelectedJobId}`, []));
   } else if (!effectiveSelectedJobId && loadedJobCacheKey) {
@@ -256,8 +289,12 @@ export default function FieldExecution() {
     // Try to sync with Amplify backend if online
     if (isOnline) {
       try {
+        const notesObj = {
+          checklist: updatedChecklist,
+          comment: comment,
+        };
         await updateScheduledJob(effectiveSelectedJobId, {
-          notes: `CHECKLIST:${checklistStr}`,
+          notes: JSON.stringify(notesObj),
         });
       } catch (err) {
         console.error('Failed to sync checklist update to backend:', err);
@@ -271,8 +308,6 @@ export default function FieldExecution() {
     );
     saveChecklist(updated);
   };
-
-  // Compute live progress percentage
   const progressPercentage = useMemo(() => {
     if (checklist.length === 0) return 0;
     const completedCount = checklist.filter((item) => item.checked).length;
@@ -459,6 +494,7 @@ export default function FieldExecution() {
       if (failedUploads.length > 0) {
         localStorage.setItem(`upload_queue_${effectiveSelectedJobId}`, JSON.stringify(failedUploads));
         setErrorAlert('Some queued photo uploads failed to sync.');
+        setErrorAlert('Some queued photo uploads failed to sync.');
       } else {
         localStorage.removeItem(`upload_queue_${effectiveSelectedJobId}`);
         setSuccessAlert('All offline photo uploads synced successfully!');
@@ -469,6 +505,74 @@ export default function FieldExecution() {
 
     processQueue();
   }, [isOnline, uploadQueue, effectiveSelectedJobId, uploadedPhotos]);
+
+  const handleDeleteUploadedPhoto = async (photo: UploadedPhoto) => {
+    if (!effectiveSelectedJobId) return;
+
+    const updatedPhotos = uploadedPhotos.filter((p) => p.id !== photo.id);
+    setUploadedPhotos(updatedPhotos);
+    localStorage.setItem(`photos_job_${effectiveSelectedJobId}`, JSON.stringify(updatedPhotos));
+
+    if (isOnline) {
+      try {
+        const storageModule = await import('aws-amplify/storage');
+        if (storageModule && typeof storageModule.remove === 'function') {
+          let path = photo.url;
+          if (path.startsWith('http')) {
+            const match = path.match(/jobs\/.+/);
+            if (match) {
+              path = match[0];
+            }
+          }
+          await storageModule.remove({
+            path: path
+          });
+        }
+      } catch (err) {
+        console.error('Failed to delete photo from storage:', err);
+      }
+    }
+    setSuccessAlert('Photo deleted successfully.');
+    setTimeout(() => setSuccessAlert(null), 3000);
+  };
+
+  const handleDeleteQueuedPhoto = (item: QueuedUpload) => {
+    if (!effectiveSelectedJobId) return;
+
+    const updatedQueue = uploadQueue.filter((q) => q.id !== item.id);
+    setUploadQueue(updatedQueue);
+    localStorage.setItem(`upload_queue_${effectiveSelectedJobId}`, JSON.stringify(updatedQueue));
+
+    setSuccessAlert('Queued photo removed.');
+    setTimeout(() => setSuccessAlert(null), 3000);
+  };
+
+  const handleSaveComment = async () => {
+    if (!effectiveSelectedJobId) return;
+
+    setIsSavingComment(true);
+    setErrorAlert(null);
+    try {
+      localStorage.setItem(`comment_job_${effectiveSelectedJobId}`, comment);
+
+      if (isOnline) {
+        const notesObj = {
+          checklist: checklist,
+          comment: comment,
+        };
+        await updateScheduledJob(effectiveSelectedJobId, {
+          notes: JSON.stringify(notesObj),
+        });
+      }
+      setSuccessAlert('Notes submitted and saved successfully!');
+      setTimeout(() => setSuccessAlert(null), 3000);
+    } catch (err) {
+      console.error('Failed to save comment:', err);
+      setErrorAlert('Failed to save notes to server. Notes are saved locally.');
+    } finally {
+      setIsSavingComment(false);
+    }
+  };
 
   // Complete Job & Invoice flow
   const handleCompleteJob = async () => {
@@ -490,9 +594,10 @@ export default function FieldExecution() {
         });
       }
 
-      // 3. Clear cached checklist and queue (keep photos for completed job history)
+      // 3. Clear cached checklist, comments and queue (keep photos for completed job history)
       localStorage.removeItem(`checklist_job_${effectiveSelectedJobId}`);
       localStorage.removeItem(`upload_queue_${effectiveSelectedJobId}`);
+      localStorage.removeItem(`comment_job_${effectiveSelectedJobId}`);
 
       setSuccessAlert('🎉 JOB COMPLETED & INVOICE SENT! Status set to completed.');
       setTimeout(() => setSuccessAlert(null), 5000);
@@ -953,6 +1058,29 @@ export default function FieldExecution() {
                       alt="Queued photo" 
                       style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }} 
                     />
+                    <button
+                      onClick={() => handleDeleteQueuedPhoto(item)}
+                      title="Delete offline photo"
+                      style={{
+                        position: 'absolute',
+                        top: 3,
+                        left: 3,
+                        backgroundColor: 'rgba(211, 47, 47, 0.85)',
+                        border: 'none',
+                        color: '#fff',
+                        borderRadius: '4px',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        padding: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      <TrashIcon />
+                    </button>
                     <div style={{
                       position: 'absolute',
                       bottom: 0,
@@ -985,6 +1113,32 @@ export default function FieldExecution() {
                       alt={photo.name} 
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     />
+                    <button
+                      onClick={() => handleDeleteUploadedPhoto(photo)}
+                      title="Delete photo"
+                      style={{
+                        position: 'absolute',
+                        top: 3,
+                        left: 3,
+                        backgroundColor: 'rgba(211, 47, 47, 0.85)',
+                        border: 'none',
+                        color: '#fff',
+                        borderRadius: '4px',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        padding: 0,
+                        zIndex: 10,
+                        transition: 'background-color 0.2s',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d32f2f'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(211, 47, 47, 0.85)'}
+                    >
+                      <TrashIcon />
+                    </button>
                     <div style={{
                       position: 'absolute',
                       top: 3,
@@ -1015,6 +1169,78 @@ export default function FieldExecution() {
                 No photos uploaded yet for this job.
               </div>
             )}
+          </section>
+
+          {/* Comments Section */}
+          <section style={{
+            backgroundColor: '#1e1e1e',
+            borderRadius: '8px',
+            border: '1px solid #2e2e2e',
+            padding: '10px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+          }}>
+            <h2 style={{
+              margin: '0 0 6px 0',
+              fontSize: '9px',
+              fontWeight: 800,
+              color: '#ff9800',
+              textTransform: 'uppercase',
+              letterSpacing: '0.6px',
+              paddingBottom: '5px',
+              borderBottom: '1px solid #2e2e2e',
+            }}>
+              Technician Notes / Comments
+            </h2>
+            <textarea
+              value={comment}
+              onChange={(e) => {
+                setComment(e.target.value);
+                localStorage.setItem(`comment_job_${effectiveSelectedJobId}`, e.target.value);
+              }}
+              placeholder="Enter notes or comments regarding this job..."
+              style={{
+                width: '100%',
+                minHeight: '80px',
+                backgroundColor: '#2a2a2a',
+                color: '#ffffff',
+                border: '1px solid #444',
+                borderRadius: '6px',
+                padding: '8px 10px',
+                fontSize: '12px',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box',
+                resize: 'vertical',
+                outline: 'none',
+                marginTop: '8px',
+                marginBottom: '8px',
+              }}
+            />
+            <button
+              onClick={handleSaveComment}
+              disabled={isSavingComment}
+              style={{
+                width: '100%',
+                backgroundColor: '#ff9800',
+                color: '#000000',
+                border: 'none',
+                borderRadius: '6px',
+                fontWeight: 800,
+                fontSize: '11px',
+                letterSpacing: '0.35px',
+                cursor: isSavingComment ? 'not-allowed' : 'pointer',
+                minHeight: '38px',
+                boxShadow: '0 2px 6px rgba(255, 152, 0, 0.28)',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                if (!isSavingComment) e.currentTarget.style.backgroundColor = '#f58c00';
+              }}
+              onMouseLeave={(e) => {
+                if (!isSavingComment) e.currentTarget.style.backgroundColor = '#ff9800';
+              }}
+            >
+              {isSavingComment ? 'SAVING...' : 'SUBMIT NOTES'}
+            </button>
           </section>
         </main>
       )}
