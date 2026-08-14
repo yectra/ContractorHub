@@ -84,25 +84,62 @@ const readCachedArray = <T,>(key: string, fallback: T[]): T[] => {
 };
 
 const getChecklistForJob = (jobId: string, notes?: string | null): ChecklistItem[] => {
+  // ── Step 1: Parse dispatcher's template from job notes ────────────────────
+  let dispatcherTemplate: ChecklistItem[] | null = null;
+  if (notes?.startsWith('CHECKLIST:')) {
+    try {
+      const parsed = JSON.parse(notes.replace('CHECKLIST:', ''));
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Normalise field names: dispatcher uses 'checked', legacy may use 'completed'
+        dispatcherTemplate = parsed.map((item: any) => ({
+          id: String(item.id ?? `step-${Math.random()}`),
+          text: String(item.text ?? ''),
+          checked: Boolean(item.checked ?? item.completed ?? false),
+        }));
+      }
+    } catch {
+      // Malformed JSON — skip
+    }
+  }
+
+  // ── Step 2: Load cached technician progress ───────────────────────────────
+  let cachedItems: ChecklistItem[] | null = null;
   const cached = localStorage.getItem(`checklist_job_${jobId}`);
   if (cached) {
     try {
       const parsed = JSON.parse(cached);
-      return Array.isArray(parsed) ? parsed : DEFAULT_STEPS;
+      if (Array.isArray(parsed)) cachedItems = parsed;
     } catch {
-      return DEFAULT_STEPS;
+      // Corrupted cache — ignore
     }
   }
 
-  if (notes?.startsWith('CHECKLIST:')) {
-    try {
-      const parsed = JSON.parse(notes.replace('CHECKLIST:', ''));
-      return Array.isArray(parsed) ? parsed : DEFAULT_STEPS;
-    } catch {
-      return DEFAULT_STEPS;
+  // ── Step 3 & 4: Merge dispatcher template with technician's checked progress
+  if (dispatcherTemplate) {
+    if (!cachedItems) {
+      // No local progress yet — return the dispatcher's template (all unchecked)
+      return dispatcherTemplate;
     }
+
+    // Detect structural change: compare sorted item ID sets
+    const templateIds = dispatcherTemplate.map((i) => i.id).sort().join(',');
+    const cachedIds   = cachedItems.map((i) => i.id).sort().join(',');
+
+    if (templateIds === cachedIds) {
+      // Same structure → honour technician's checked progress from localStorage
+      return cachedItems;
+    }
+
+    // Dispatcher updated the template → merge, preserving checked state for matching IDs
+    const checkedMap = new Map(cachedItems.map((i) => [i.id, i.checked]));
+    return dispatcherTemplate.map((item) => ({
+      ...item,
+      checked: checkedMap.has(item.id) ? checkedMap.get(item.id)! : item.checked,
+    }));
   }
 
+  // ── Step 5: No dispatcher template — fall back to cache or static defaults ─
+  if (cachedItems) return cachedItems;
   return DEFAULT_STEPS;
 };
 
