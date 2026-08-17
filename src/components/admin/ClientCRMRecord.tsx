@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useClients, useServiceRequests } from '../../hooks/useDispatchData';
+import styles from '../../styles/UI/ClientRecord.module.scss';
+import { IconButton, Tooltip } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 // Inline SVG Icons for zero-dependency consistency with FieldExecution
 const BackIcon = () => (
@@ -69,7 +72,7 @@ const CheckIcon = () => (
 
 export default function ClientCRMRecord() {
   const { clients, updateClient, createClient, loading: loadingClients } = useClients();
-  const { serviceRequests, createServiceRequest, loading: loadingRequests } = useServiceRequests();
+  const { serviceRequests, createServiceRequest, updateServiceRequest, deleteServiceRequest, loading: loadingRequests } = useServiceRequests();
 
   // State
   const [selectedClientId, setSelectedClientId] = useState<string>('');
@@ -81,6 +84,10 @@ export default function ClientCRMRecord() {
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [showNewJobModal, setShowNewJobModal] = useState<boolean>(false);
   const [showNewClientModal, setShowNewClientModal] = useState<boolean>(false);
+  const [showEditJobModal, setShowEditJobModal] = useState<boolean>(false);
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState<boolean>(false);
+  const [jobToDelete, setJobToDelete] = useState<any>(null);
 
   const navigate = useNavigate();
   
@@ -100,6 +107,13 @@ export default function ClientCRMRecord() {
   });
 
   const [newJobForm, setNewJobForm] = useState({
+    service: '',
+    type: 'Scheduled' as 'Scheduled' | 'Emergency' | 'WebRequest',
+    priority: 'low' as 'high' | 'medium' | 'low',
+    notes: '',
+  });
+
+  const [editJobForm, setEditJobForm] = useState({
     service: '',
     type: 'Scheduled' as 'Scheduled' | 'Emergency' | 'WebRequest',
     priority: 'low' as 'high' | 'medium' | 'low',
@@ -308,6 +322,61 @@ export default function ClientCRMRecord() {
     }
   };
 
+  // Handle Edit Job Click
+  const handleEditJobClick = (job: any) => {
+    setSelectedJob(job);
+    setEditJobForm({
+      service: job.service || '',
+      type: job.type || 'Scheduled',
+      priority: job.priority || 'low',
+      notes: job.notes || '',
+    });
+    setShowEditJobModal(true);
+  };
+
+  // Handle Edit Job Submit
+  const handleEditJobSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedJob || !selectedJob.id) return;
+    try {
+      await updateServiceRequest(selectedJob.id, {
+        service: editJobForm.service,
+        type: editJobForm.type,
+        priority: editJobForm.priority,
+        notes: editJobForm.notes,
+      });
+      setSuccessAlert('Job updated successfully!');
+      setShowEditJobModal(false);
+      setTimeout(() => setSuccessAlert(null), 4000);
+    } catch (err) {
+      console.error(err);
+      setErrorAlert('Failed to update job.');
+      setTimeout(() => setErrorAlert(null), 4000);
+    }
+  };
+
+  // Handle Delete Job Click
+  const handleDeleteJobClick = (job: any) => {
+    setJobToDelete(job);
+    setShowDeleteConfirmModal(true);
+  };
+
+  // Handle Delete Job Confirm
+  const handleDeleteJobConfirm = async () => {
+    if (!jobToDelete || !jobToDelete.id) return;
+    try {
+      await deleteServiceRequest(jobToDelete.id);
+      setSuccessAlert('Job deleted successfully!');
+      setShowDeleteConfirmModal(false);
+      setJobToDelete(null);
+      setTimeout(() => setSuccessAlert(null), 4000);
+    } catch (err) {
+      console.error(err);
+      setErrorAlert('Failed to delete job.');
+      setTimeout(() => setErrorAlert(null), 4000);
+    }
+  };
+
   // Handle Create Client
   const handleCreateClientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -366,462 +435,31 @@ export default function ClientCRMRecord() {
     return `$${((sum % 450) + 75).toFixed(2)}`;
   };
 
-  // Inline Style Declarations (Directly matching FieldExecution.tsx style methodologies)
-  const styles = {
-    container: {
-      backgroundColor: '#121212',
-      color: '#ffffff',
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column' as const,
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-      boxSizing: 'border-box' as const,
-      paddingBottom: '28px',
-    },
-    header: {
-      backgroundColor: '#1a1a1a',
-      borderBottom: '1px solid #333',
-      padding: '8px 14px',
-      position: 'sticky' as const,
-      top: 0,
-      zIndex: 100,
-      boxShadow: '0 2px 12px rgba(0,0,0,0.6)',
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '6px',
-    },
-    headerRow: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    backButton: {
-      backgroundColor: 'transparent',
-      border: 'none',
-      color: '#ff9800',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '0',
-      borderRadius: '6px',
-      minWidth: '30px',
-      minHeight: '30px',
-      width: '30px',
-      height: '30px',
-      transition: 'background-color 0.2s',
-    },
-    clientSelect: {
-      backgroundColor: '#2a2a2a',
-      color: '#ffffff',
-      border: '1px solid #444',
-      borderRadius: '6px',
-      padding: '0 10px',
-      fontSize: '0.74rem',
-      fontWeight: 600,
-      minHeight: '32px',
-      height: '32px',
-      outline: 'none',
-      cursor: 'pointer',
-    },
-    newClientBtn: {
-      backgroundColor: '#2a2a2a',
-      color: '#00e676',
-      border: '1px solid #00e676',
-      borderRadius: '6px',
-      padding: '0 10px',
-      fontSize: '0.7rem',
-      fontWeight: 800,
-      minHeight: '32px',
-      height: '32px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '5px',
-      cursor: 'pointer',
-      transition: 'all 0.2s',
-    },
-    headerTitle: {
-      margin: 0,
-      fontSize: '1rem',
-      fontWeight: 800,
-      color: '#ffffff',
-      letterSpacing: '0.3px',
-    },
-    contentArea: {
-      padding: '10px 12px',
-      flex: 1,
-      display: 'flex',
-      flexDirection: isMobile ? ('column' as const) : ('row' as const),
-      gap: '10px',
-      maxWidth: '1320px',
-      width: '100%',
-      margin: '0 auto',
-      boxSizing: 'border-box' as const,
-    },
-    mainSection: {
-      flex: isMobile ? 'none' : '3 1 0',
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '10px',
-      minWidth: 0, // Prevent flex items from overflowing
-    },
-    sidebarSection: {
-      flex: isMobile ? 'none' : '1.1 1 0',
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '10px',
-      minWidth: '250px',
-    },
-    card: {
-      backgroundColor: '#1e1e1e',
-      borderRadius: '8px',
-      border: '1px solid #2e2e2e',
-      padding: '10px 12px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.24)',
-      boxSizing: 'border-box' as const,
-    },
-    sectionTitle: {
-      margin: '0 0 8px 0',
-      fontSize: '10px',
-      fontWeight: 800,
-      color: '#ff9800',
-      textTransform: 'uppercase' as const,
-      letterSpacing: '0.7px',
-      paddingBottom: '6px',
-      borderBottom: '1px solid #2e2e2e',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    profileDetail: {
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '8px',
-    },
-    detailItem: {
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '3px',
-    },
-    detailLabel: {
-      fontSize: '10px',
-      color: '#888',
-      fontWeight: 700,
-      textTransform: 'uppercase' as const,
-    },
-    detailValue: {
-      fontSize: '12px',
-      color: '#ffffff',
-      fontWeight: 600,
-      lineHeight: 1.3,
-    },
-    phoneLink: {
-      color: '#00e676',
-      textDecoration: 'none',
-      fontWeight: 800,
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '5px',
-    },
-    mapLink: {
-      color: '#82b1ff',
-      textDecoration: 'none',
-      fontWeight: 800,
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '5px',
-    },
-    buttonPrimary: {
-      backgroundColor: '#ff9800',
-      color: '#000000',
-      border: 'none',
-      borderRadius: '6px',
-      fontWeight: 800,
-      fontSize: '11px',
-      letterSpacing: '0.35px',
-      padding: '0 12px',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '6px',
-      boxShadow: '0 2px 6px rgba(255, 152, 0, 0.28)',
-      width: '100%',
-      minHeight: '34px',
-      height: '34px',
-      boxSizing: 'border-box' as const,
-      transition: 'background-color 0.2s',
-    },
-    buttonOutline: {
-      backgroundColor: 'transparent',
-      color: '#ff9800',
-      border: '1.5px solid #ff9800',
-      borderRadius: '6px',
-      fontWeight: 800,
-      fontSize: '11px',
-      padding: '0 12px',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '5px',
-      minHeight: '34px',
-      height: '34px',
-      width: '100%',
-      boxSizing: 'border-box' as const,
-      transition: 'all 0.2s',
-    },
-    metricGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: '8px',
-    },
-    metricCard: {
-      backgroundColor: '#242424',
-      borderRadius: '6px',
-      border: '1px solid #333',
-      padding: '10px',
-      textAlign: 'center' as const,
-      display: 'flex',
-      flexDirection: 'column' as const,
-      justifyContent: 'center',
-      minHeight: '72px',
-    },
-    metricValue: {
-      fontSize: '16px',
-      fontWeight: 900,
-      color: '#ffffff',
-      margin: '2px 0',
-    },
-    tableControls: {
-      display: 'flex',
-      flexDirection: isMobile ? ('column' as const) : ('row' as const),
-      gap: '8px',
-      marginBottom: '10px',
-    },
-    searchInputWrapper: {
-      flex: 1,
-      position: 'relative' as const,
-    },
-    searchInput: {
-      width: '100%',
-      backgroundColor: '#2a2a2a',
-      color: '#ffffff',
-      border: '1px solid #444',
-      borderRadius: '6px',
-      padding: '0 10px 0 30px',
-      fontSize: '0.74rem',
-      outline: 'none',
-      minHeight: '32px',
-      height: '32px',
-      boxSizing: 'border-box' as const,
-    },
-    searchIconPos: {
-      position: 'absolute' as const,
-      left: '10px',
-      top: '50%',
-      transform: 'translateY(-50%)',
-      color: '#888',
-      display: 'flex',
-      alignItems: 'center',
-    },
-    filterSelect: {
-      backgroundColor: '#2a2a2a',
-      color: '#ffffff',
-      border: '1px solid #444',
-      borderRadius: '6px',
-      padding: '0 10px',
-      fontSize: '0.74rem',
-      outline: 'none',
-      minHeight: '32px',
-      height: '32px',
-      minWidth: '128px',
-      cursor: 'pointer',
-    },
-    tableWrapper: {
-      overflowX: 'auto' as const,
-      borderRadius: '6px',
-      border: '1px solid #2e2e2e',
-    },
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse' as const,
-      fontSize: '12px',
-      textAlign: 'left' as const,
-    },
-    th: {
-      backgroundColor: '#242424',
-      color: '#888',
-      fontWeight: 800,
-      padding: '8px 10px',
-      textTransform: 'uppercase' as const,
-      fontSize: '9px',
-      letterSpacing: '0.5px',
-      borderBottom: '1px solid #2e2e2e',
-    },
-    td: {
-      padding: '8px 10px',
-      borderBottom: '1px solid #2e2e2e',
-      color: '#e0e0e0',
-    },
-    trHover: {
-      transition: 'background-color 0.15s',
-      cursor: 'pointer',
-    },
-    pill: (bg: string, fg: string) => ({
-      backgroundColor: bg,
-      color: fg,
-      padding: '2px 6px',
-      borderRadius: '4px',
-      fontSize: '9px',
-      fontWeight: 900,
-      textTransform: 'uppercase' as const,
-      display: 'inline-block',
-      letterSpacing: '0.4px',
-    }),
-    modalOverlay: {
-      position: 'fixed' as const,
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.85)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '10px 12px',
-      backdropFilter: 'blur(4px)',
-      boxSizing: 'border-box' as const,
-    },
-    modalContent: {
-      backgroundColor: '#1e1e1e',
-      borderRadius: '8px',
-      border: '1px solid #333',
-      width: '100%',
-      maxWidth: '500px',
-      maxHeight: '90vh',
-      overflowY: 'auto' as const,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-      boxSizing: 'border-box' as const,
-    },
-    modalHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '12px',
-      borderBottom: '1px solid #2e2e2e',
-    },
-    modalTitle: {
-      margin: 0,
-      fontSize: '12px',
-      fontWeight: 800,
-      color: '#ff9800',
-      textTransform: 'uppercase' as const,
-      letterSpacing: '0.5px',
-    },
-    closeBtn: {
-      backgroundColor: 'transparent',
-      border: 'none',
-      color: '#888',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '2px',
-      borderRadius: '50%',
-      transition: 'color 0.2s',
-    },
-    modalBody: {
-      padding: '10px 12px',
-    },
-    formGroup: {
-      marginBottom: '10px',
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '5px',
-    },
-    formLabel: {
-      fontSize: '10px',
-      color: '#ff9800',
-      fontWeight: 800,
-      textTransform: 'uppercase' as const,
-      letterSpacing: '0.5px',
-    },
-    formInput: {
-      backgroundColor: '#2a2a2a',
-      color: '#ffffff',
-      border: '1px solid #444',
-      borderRadius: '6px',
-      padding: '7px 10px',
-      fontSize: '0.76rem',
-      outline: 'none',
-      width: '100%',
-      boxSizing: 'border-box' as const,
-    },
-    formTextArea: {
-      backgroundColor: '#2a2a2a',
-      color: '#ffffff',
-      border: '1px solid #444',
-      borderRadius: '6px',
-      padding: '7px 10px',
-      fontSize: '0.76rem',
-      outline: 'none',
-      width: '100%',
-      minHeight: '68px',
-      resize: 'vertical' as const,
-      boxSizing: 'border-box' as const,
-    },
-    formSelect: {
-      backgroundColor: '#2a2a2a',
-      color: '#ffffff',
-      border: '1px solid #444',
-      borderRadius: '6px',
-      padding: '7px 10px',
-      fontSize: '0.76rem',
-      outline: 'none',
-      width: '100%',
-      cursor: 'pointer',
-      boxSizing: 'border-box' as const,
-    },
-    alertBanner: (isSuccess: boolean) => ({
-      backgroundColor: isSuccess ? 'rgba(0, 230, 118, 0.1)' : 'rgba(211, 47, 47, 0.12)',
-      color: isSuccess ? '#00e676' : '#ff6b6b',
-      borderLeft: `4px solid ${isSuccess ? '#00e676' : '#d32f2f'}`,
-      margin: '12px 16px 0 16px',
-      padding: '10px 14px',
-      borderRadius: '6px',
-      fontSize: '12px',
-      fontWeight: 700,
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    }),
-  };
+
 
   return (
-    <div style={styles.container}>
+    <div className={styles.container}>
       {/* Header Status Bar */}
-      <header style={styles.header}>
-        <div style={styles.headerRow}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <header className={styles.header}>
+        <div className={styles.headerRow}>
+          <div className={styles.flexGap8}>
             <button
               onClick={() => navigate(-1)}
-              style={styles.backButton}
+              className={styles.backButton}
               aria-label="Back to dashboard"
             >
               <BackIcon />
             </button>
-            <h1 style={styles.headerTitle}>Client CRM Dashboard</h1>
+            <h1 className={styles.headerTitle}>Client CRM Dashboard</h1>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div className={styles.flexGap8}>
             {/* Client Selector dropdown */}
             {!loadingClients && clients.length > 0 && (
               <select
                 value={effectiveSelectedClientId}
                 onChange={(e) => setSelectedClientId(e.target.value)}
-                style={styles.clientSelect}
+                className={styles.clientSelect}
               >
                 {clients.map((c, index) => (
                   <option key={c.id || index} value={c.id || ''}>
@@ -834,7 +472,7 @@ export default function ClientCRMRecord() {
             {/* Quick add client button */}
             <button 
               onClick={() => setShowNewClientModal(true)} 
-              style={styles.newClientBtn}
+              className={styles.newClientBtn}
             >
               <PlusIcon />
               {!isMobile && 'NEW CLIENT'}
@@ -843,11 +481,7 @@ export default function ClientCRMRecord() {
             {/* User Management button */}
             <button
               onClick={() => window.location.href = '/admin/users'}
-              style={{
-                ...styles.newClientBtn,
-                color: '#82b1ff',
-                borderColor: '#82b1ff',
-              }}
+              className={styles.usersBtn}
               title="Open User Management"
             >
               <UsersIcon />
@@ -859,95 +493,95 @@ export default function ClientCRMRecord() {
 
       {/* Alert Banners */}
       {successAlert && (
-        <div style={styles.alertBanner(true)}>
+        <div className={styles.alertSuccess}>
           <span>{successAlert}</span>
-          <button style={{ background: 'none', border: 'none', color: '#00e676', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setSuccessAlert(null)}>×</button>
+          <button onClick={() => setSuccessAlert(null)}>×</button>
         </div>
       )}
       {errorAlert && (
-        <div style={styles.alertBanner(false)}>
+        <div className={styles.alertError}>
           <span>{errorAlert}</span>
-          <button style={{ background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setErrorAlert(null)}>×</button>
+          <button onClick={() => setErrorAlert(null)}>×</button>
         </div>
       )}
 
       {/* Main CRM Workspace */}
       {loadingClients ? (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: '12px', height: '220px' }}>
+        <div className={styles.workspaceLoading}>
           Loading CRM records...
         </div>
       ) : clients.length === 0 ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 18px', textAlign: 'center', gap: '10px' }}>
+        <div className={styles.noRecordsContainer}>
           <UsersIcon />
-          <h2 style={{ fontSize: '1rem', color: '#ff9800', margin: 0 }}>No CRM Records Found</h2>
-          <p style={{ color: '#aaa', fontSize: '0.76rem', maxWidth: '360px', margin: 0, lineHeight: 1.35 }}>
+          <h2>No CRM Records Found</h2>
+          <p>
             There are currently no clients registered in the system. Get started by adding your first client record.
           </p>
           <button
             onClick={() => setShowNewClientModal(true)}
-            style={{ ...styles.buttonPrimary, width: 'auto', padding: '0 16px' }}
+            className={`${styles.buttonPrimary} ${styles.auto}`}
           >
             <PlusIcon /> Add First Client
           </button>
         </div>
       ) : !selectedClient ? (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: '12px', height: '220px' }}>
+        <div className={styles.workspaceLoading}>
           Please select a client from the dropdown menu.
         </div>
       ) : (
-        <div style={styles.contentArea}>
+        <div className={styles.contentArea}>
           {/* Main Panel Area: Metrics & Job History */}
-          <div style={styles.mainSection}>
+          <div className={styles.mainSection}>
             {/* Financial Summary metrics panel */}
-            <div style={styles.card}>
-              <div style={styles.sectionTitle}>
+            <div className={styles.card}>
+              <div className={styles.sectionTitle}>
                 <span>Financial Summary Panel</span>
-                <span style={{ fontSize: '10px', color: '#aaa' }}>Live billing data</span>
+                <span className={styles.sectionSubtitle}>Live billing data</span>
               </div>
-              <div style={styles.metricGrid}>
-                <div style={styles.metricCard}>
-                  <div style={styles.detailLabel}>Outstanding Invoices</div>
-                  <div style={{ ...styles.metricValue, color: outstandingInvoicesCount > 0 ? '#ff9800' : '#ffffff' }}>
+              <div className={styles.metricGrid}>
+                <div className={styles.metricCard}>
+                  <div className={styles.detailLabel}>Outstanding Invoices</div>
+                  <div className={`${styles.metricValue} ${outstandingInvoicesCount > 0 ? styles.orange : ''}`}>
                     {outstandingInvoicesCount}
                   </div>
-                  <div style={{ fontSize: '9px', color: '#888' }}>Unpaid Work Orders</div>
+                  <div className={styles.fontSize9Muted}>Unpaid Work Orders</div>
                 </div>
 
-                <div style={styles.metricCard}>
-                  <div style={styles.detailLabel}>Overdue Balance</div>
-                  <div style={{ ...styles.metricValue, color: totalOutstanding > 0 ? '#ff6b6b' : '#00e676' }}>
+                <div className={styles.metricCard}>
+                  <div className={styles.detailLabel}>Overdue Balance</div>
+                  <div className={`${styles.metricValue} ${totalOutstanding > 0 ? styles.red : styles.green}`}>
                     ${totalOutstanding.toFixed(2)}
                   </div>
-                  <div style={{ fontSize: '9px', color: '#888' }}>Billing Balance</div>
+                  <div className={styles.fontSize9Muted}>Billing Balance</div>
                 </div>
 
-                <div style={styles.metricCard}>
-                  <div style={styles.detailLabel}>Payment Status</div>
-                  <div style={{ marginTop: '4px' }}>
+                <div className={styles.metricCard}>
+                  <div className={styles.detailLabel}>Payment Status</div>
+                  <div className={styles.marginTop4}>
                     {paymentStatus === 'PAID' ? (
-                      <span style={styles.pill('rgba(0, 230, 118, 0.15)', '#00e676')}>PAID / GOOD</span>
+                      <span className={styles.pillPaid}>PAID / GOOD</span>
                     ) : paymentStatus === 'OVERDUE' ? (
-                      <span style={styles.pill('rgba(211, 47, 47, 0.15)', '#ff6b6b')}>OVERDUE</span>
+                      <span className={styles.pillOverdue}>OVERDUE</span>
                     ) : (
-                      <span style={styles.pill('rgba(255, 152, 0, 0.15)', '#ff9800')}>PENDING ({outstandingInvoicesCount})</span>
+                      <span className={styles.pillPending}>PENDING ({outstandingInvoicesCount})</span>
                     )}
                   </div>
-                  <div style={{ fontSize: '9px', color: '#888', marginTop: '4px' }}>Account Standing</div>
+                  <div className={styles.fontSize9Muted}>Account Standing</div>
                 </div>
               </div>
             </div>
 
             {/* Job History Table */}
-            <div style={styles.card}>
-              <div style={styles.sectionTitle}>
+            <div className={styles.card}>
+              <div className={styles.sectionTitle}>
                 <span>Job History Table</span>
-                <span style={styles.pill('#242424', '#ff9800')}>{clientJobs.length} Jobs Total</span>
+                <span className={styles.pillCount}>{clientJobs.length} Jobs Total</span>
               </div>
-
+ 
               {/* Search & filters bar */}
-              <div style={styles.tableControls}>
-                <div style={styles.searchInputWrapper}>
-                  <div style={styles.searchIconPos}>
+              <div className={styles.tableControls}>
+                <div className={styles.searchInputWrapper}>
+                  <div className={styles.searchIconPos}>
                     <SearchIcon />
                   </div>
                   <input
@@ -955,40 +589,41 @@ export default function ClientCRMRecord() {
                     placeholder="Search by job ID, description, or notes..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    style={styles.searchInput}
+                    className={styles.searchInput}
                   />
                 </div>
-
+ 
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  style={styles.filterSelect}
+                  className={styles.filterSelect}
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="ACTIVE">Active (Assigned/InProgress)</option>
                   <option value="COMPLETED">Completed Only</option>
                 </select>
               </div>
-
+ 
               {/* Table wrapper */}
-              <div style={styles.tableWrapper}>
+              <div className={styles.tableWrapper}>
                 {loadingRequests ? (
-                  <div style={{ padding: '22px', textAlign: 'center', color: '#888', fontSize: '12px' }}>
+                  <div className={styles.textCenterMuted12}>
                     Syncing job details...
                   </div>
                 ) : filteredJobs.length === 0 ? (
-                  <div style={{ padding: '28px 16px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
+                  <div className={styles.textCenterMuted12Wide}>
                     No matching jobs found for this search/filter selection.
                   </div>
                 ) : (
-                  <table style={styles.table}>
+                  <table className={styles.table}>
                     <thead>
                       <tr>
-                        <th style={styles.th}>Job Number</th>
-                        <th style={styles.th}>Date</th>
-                        <th style={styles.th}>Service Type / Desc</th>
-                        <th style={styles.th}>Status</th>
-                        <th style={styles.th}>Total Amount</th>
+                        <th className={styles.th}>Job Number</th>
+                        <th className={styles.th}>Date</th>
+                        <th className={styles.th}>Service Type / Desc</th>
+                        <th className={styles.th}>Status</th>
+                        <th className={styles.th}>Total Amount</th>
+                        <th className={styles.th}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -998,28 +633,61 @@ export default function ClientCRMRecord() {
                         const formattedDate = job.createdAt 
                           ? new Date(job.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
                           : 'Recent';
-
+ 
                         return (
                           <tr 
                             key={job.id || index} 
-                            style={styles.trHover}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            className={styles.trHover}
                           >
-                            <td style={{ ...styles.td, fontWeight: 700, color: '#ff9800' }}>{job.id || 'N/A'}</td>
-                            <td style={styles.td}>{formattedDate}</td>
-                            <td style={{ ...styles.td, fontWeight: 600 }}>{job.service}</td>
-                            <td style={styles.td}>
+                            <td className={`${styles.td} ${styles.jobNumber}`}>{job.id || 'N/A'}</td>
+                            <td className={styles.td}>{formattedDate}</td>
+                            <td className={`${styles.td} ${styles.service}`}>{job.service}</td>
+                            <td className={styles.td}>
                               {isCompleted ? (
-                                <span style={styles.pill('rgba(0, 230, 118, 0.12)', '#00e676')}>COMPLETED</span>
+                                <span className={styles.pillCompleted}>COMPLETED</span>
                               ) : isActive ? (
-                                <span style={styles.pill('rgba(130, 177, 255, 0.15)', '#82b1ff')}>ACTIVE</span>
+                                <span className={styles.pillActive}>ACTIVE</span>
                               ) : (
-                                <span style={styles.pill('rgba(255, 152, 0, 0.12)', '#ff9800')}>UNASSIGNED</span>
+                                <span className={styles.pillUnassigned}>UNASSIGNED</span>
                               )}
                             </td>
-                            <td style={{ ...styles.td, fontWeight: 700 }}>
+                            <td className={`${styles.td} ${styles.amount}`}>
                               {getJobAmount(job.id || '', job.service)}
+                            </td>
+                            <td className={styles.td}>
+                              <div className={styles.actionButtons}>
+                                <Tooltip title="Edit" arrow>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditJobClick(job);
+                                    }}
+                                    className={styles.actionBtnEdit}
+                                    sx={{
+                                      color: '#4fc3f7', /* Soft blue for high contrast on dark backgrounds */
+                                      '&:hover': {
+                                        color: '#81d4fa',
+                                        backgroundColor: 'rgba(79, 195, 247, 0.08)',
+                                      },
+                                    }}
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete" arrow>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteJobClick(job);
+                                    }}
+                                    className={styles.actionBtnDelete}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -1030,43 +698,35 @@ export default function ClientCRMRecord() {
               </div>
             </div>
           </div>
-
+ 
           {/* Sidebar Area: Profile Information & Quick Actions */}
-          <div style={styles.sidebarSection}>
+          <div className={styles.sidebarSection}>
             {/* Client Profile Card */}
-            <div style={styles.card}>
-              <div style={styles.sectionTitle}>
+            <div className={styles.card}>
+              <div className={styles.sectionTitle}>
                 <span>Client Profile Card</span>
                 <button
                   onClick={() => setShowEditModal(true)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#ff9800',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '2px',
-                  }}
+                  className={styles.editProfileBtn}
                   title="Edit Profile"
                 >
                   <EditIcon />
                 </button>
               </div>
-
-              <div style={styles.profileDetail}>
-                <div style={styles.detailItem}>
-                  <span style={styles.detailLabel}>Client Name</span>
-                  <span style={{ ...styles.detailValue, fontSize: '13px', fontWeight: 750 }}>
+ 
+              <div className={styles.profileDetail}>
+                <div className={styles.detailItem}>
+                  <span className={styles.detailLabel}>Client Name</span>
+                  <span className={`${styles.detailValue} ${styles.large}`}>
                     {selectedClient.name}
                   </span>
                 </div>
-
-                <div style={styles.detailItem}>
-                  <span style={styles.detailLabel}>Phone Number</span>
-                  <span style={styles.detailValue}>
+ 
+                <div className={styles.detailItem}>
+                  <span className={styles.detailLabel}>Phone Number</span>
+                  <span className={styles.detailValue}>
                     {selectedClient.phone ? (
-                      <a href={`tel:${selectedClient.phone}`} style={styles.phoneLink}>
+                      <a href={`tel:${selectedClient.phone}`} className={styles.phoneLink}>
                         <PhoneIcon />
                         {selectedClient.phone}
                       </a>
@@ -1075,12 +735,12 @@ export default function ClientCRMRecord() {
                     )}
                   </span>
                 </div>
-
-                <div style={styles.detailItem}>
-                  <span style={styles.detailLabel}>Email Address</span>
-                  <span style={styles.detailValue}>
+ 
+                <div className={styles.detailItem}>
+                  <span className={styles.detailLabel}>Email Address</span>
+                  <span className={styles.detailValue}>
                     {selectedClient.email ? (
-                      <a href={`mailto:${selectedClient.email}`} style={{ color: '#82b1ff', textDecoration: 'none' }}>
+                      <a href={`mailto:${selectedClient.email}`} className={styles.emailLink}>
                         {selectedClient.email}
                       </a>
                     ) : (
@@ -1088,10 +748,10 @@ export default function ClientCRMRecord() {
                     )}
                   </span>
                 </div>
-
-                <div style={styles.detailItem}>
-                  <span style={styles.detailLabel}>Billing & Site Address</span>
-                  <span style={{ ...styles.detailValue, color: '#e0e0e0' }}>
+ 
+                <div className={styles.detailItem}>
+                  <span className={styles.detailLabel}>Billing & Site Address</span>
+                  <span className={`${styles.detailValue} ${styles.muted}`}>
                     {[
                       selectedClient.address,
                       selectedClient.city,
@@ -1100,60 +760,52 @@ export default function ClientCRMRecord() {
                     ].filter(Boolean).join(', ') || 'No address specified'}
                   </span>
                 </div>
-
-                <div style={styles.detailItem}>
-                  <span style={styles.detailLabel}>GPS Coordinates</span>
-                  <span style={styles.detailValue}>
+ 
+                <div className={styles.detailItem}>
+                  <span className={styles.detailLabel}>GPS Coordinates</span>
+                  <span className={styles.detailValue}>
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parsedGPS)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={styles.mapLink}
+                      className={styles.mapLink}
                     >
                       <MapIcon />
                       {parsedGPS}
                     </a>
                   </span>
                 </div>
-
+ 
                 {selectedClient.preferenceNotes && (
-                  <div style={styles.detailItem}>
-                    <span style={styles.detailLabel}>Preference Notes</span>
-                    <div style={{
-                      backgroundColor: 'rgba(255, 152, 0, 0.05)',
-                      border: '1px solid rgba(255, 152, 0, 0.15)',
-                      borderRadius: '6px',
-                      padding: '6px 8px',
-                      fontSize: '11px',
-                      color: '#ff9800',
-                      lineHeight: 1.4,
-                    }}>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Preference Notes</span>
+                    <div className={styles.preferenceNotesContainer}>
                       {selectedClient.preferenceNotes}
                     </div>
                   </div>
                 )}
-
+ 
                 <button
                   onClick={() => setShowEditModal(true)}
-                  style={{ ...styles.buttonOutline, marginTop: '4px' }}
+                  className={`${styles.buttonOutline} ${styles.marginTop4}`}
                 >
                   <EditIcon /> EDIT PROFILE DETAILS
                 </button>
               </div>
             </div>
-
+ 
             {/* Quick Actions Sidebar Card */}
-            <div style={styles.card}>
-              <div style={styles.sectionTitle}>
+            <div className={styles.card}>
+              <div className={styles.sectionTitle}>
                 <span>Quick-Actions Menu</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <p style={{ color: '#aaa', fontSize: '11px', margin: '0 0 2px 0', lineHeight: 1.3 }}>
+              <div className={styles.flexColumnGap8}>
+                <p className={styles.pMuted}>
                   Instantly dispatch or schedule service requests for this client using the pre-populated template below.
                 </p>
                 <button
                   onClick={() => setShowNewJobModal(true)}
-                  style={styles.buttonPrimary}
+                  className={styles.buttonPrimary}
                 >
                   <PlusIcon /> QUICK-CREATE NEW JOB
                 </button>
@@ -1165,141 +817,141 @@ export default function ClientCRMRecord() {
 
       {/* MODAL 1: Edit Profile details */}
       {showEditModal && selectedClient && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>Edit Client Profile</h2>
-              <button onClick={() => setShowEditModal(false)} style={styles.closeBtn} aria-label="Close modal">
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Edit Client Profile</h2>
+              <button onClick={() => setShowEditModal(false)} className={styles.closeBtn} aria-label="Close modal">
                 <CloseIcon />
               </button>
             </div>
-            <form onSubmit={handleEditProfileSubmit} style={styles.modalBody}>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Client Name *</label>
+            <form onSubmit={handleEditProfileSubmit} className={styles.modalBody}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Client Name *</label>
                 <input
                   type="text"
                   required
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  style={styles.formInput}
+                  className={styles.formInput}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <div style={{ ...styles.formGroup, flex: 1 }}>
-                  <label style={styles.formLabel}>Phone Number</label>
+              <div className={styles.flexGap10}>
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>Phone Number</label>
                   <input
                     type="tel"
                     value={editForm.phone}
                     onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
-                <div style={{ ...styles.formGroup, flex: 1 }}>
-                  <label style={styles.formLabel}>Email Address</label>
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>Email Address</label>
                   <input
                     type="email"
                     value={editForm.email}
                     onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
               </div>
 
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Street Address</label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Street Address</label>
                 <input
                   type="text"
                   value={editForm.address}
                   onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                  style={styles.formInput}
+                  className={styles.formInput}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <div style={{ ...styles.formGroup, flex: 2 }}>
-                  <label style={styles.formLabel}>City</label>
+              <div className={styles.flexGap10}>
+                <div className={styles.formGroupFlex2}>
+                  <label className={styles.formLabel}>City</label>
                   <input
                     type="text"
                     value={editForm.city}
                     onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
-                <div style={{ ...styles.formGroup, flex: 1 }}>
-                  <label style={styles.formLabel}>State</label>
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>State</label>
                   <input
                     type="text"
                     value={editForm.state}
                     onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
-                <div style={{ ...styles.formGroup, flex: 1.5 }}>
-                  <label style={styles.formLabel}>Zip Code</label>
+                <div className={styles.formGroupFlex1_5}>
+                  <label className={styles.formLabel}>Zip Code</label>
                   <input
                     type="text"
                     value={editForm.zipCode}
                     onChange={(e) => setEditForm({ ...editForm, zipCode: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <div style={{ ...styles.formGroup, flex: 1.5 }}>
-                  <label style={styles.formLabel}>GPS Coordinates (Lat, Lng)</label>
+              <div className={styles.flexGap10}>
+                <div className={styles.formGroupFlex1_5}>
+                  <label className={styles.formLabel}>GPS Coordinates (Lat, Lng)</label>
                   <input
                     type="text"
                     placeholder="e.g. 37.7749, -122.4194"
                     value={editForm.gps}
                     onChange={(e) => setEditForm({ ...editForm, gps: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
-                <div style={{ ...styles.formGroup, flex: 1 }}>
-                  <label style={styles.formLabel}>Outstanding Balance ($)</label>
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>Outstanding Balance ($)</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
                     value={editForm.outstandingBalance}
                     onChange={(e) => setEditForm({ ...editForm, outstandingBalance: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
               </div>
 
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Preference Notes (Invoicing requirements, etc.)</label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Preference Notes (Invoicing requirements, etc.)</label>
                 <textarea
                   value={editForm.preferenceNotes}
                   onChange={(e) => setEditForm({ ...editForm, preferenceNotes: e.target.value })}
-                  style={styles.formTextArea}
+                  className={styles.formTextArea}
                 />
               </div>
 
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>General Admin Notes</label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>General Admin Notes</label>
                 <textarea
                   value={editForm.notes}
                   onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
                   placeholder="Additional customer file notes..."
-                  style={styles.formTextArea}
+                  className={styles.formTextArea}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+              <div className={`${styles.flexGap10} ${styles.marginTop16}`}>
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  style={{ ...styles.buttonOutline, flex: 1, minHeight: '48px' }}
+                  className={styles.buttonOutlineLarge}
                 >
                   CANCEL
                 </button>
                 <button
                   type="submit"
-                  style={{ ...styles.buttonPrimary, flex: 1, minHeight: '48px' }}
+                  className={styles.buttonPrimaryLarge}
                 >
                   <CheckIcon /> SAVE CHANGES
                 </button>
@@ -1311,27 +963,27 @@ export default function ClientCRMRecord() {
 
       {/* MODAL 2: Quick-Create New Job pre-populated */}
       {showNewJobModal && selectedClient && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>Quick-Create New Job</h2>
-              <button onClick={() => setShowNewJobModal(false)} style={styles.closeBtn} aria-label="Close modal">
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Quick-Create New Job</h2>
+              <button onClick={() => setShowNewJobModal(false)} className={styles.closeBtn} aria-label="Close modal">
                 <CloseIcon />
               </button>
             </div>
-            <form onSubmit={handleCreateJobSubmit} style={styles.modalBody}>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Client Name (Pre-populated)</label>
+            <form onSubmit={handleCreateJobSubmit} className={styles.modalBody}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Client Name (Pre-populated)</label>
                 <input
                   type="text"
                   disabled
                   value={selectedClient.name}
-                  style={{ ...styles.formInput, backgroundColor: '#181818', color: '#888', cursor: 'not-allowed' }}
+                  className={styles.formInputDisabled}
                 />
               </div>
 
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Site Address (Pre-populated)</label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Site Address (Pre-populated)</label>
                 <input
                   type="text"
                   disabled
@@ -1341,29 +993,29 @@ export default function ClientCRMRecord() {
                     selectedClient.state,
                     selectedClient.zipCode
                   ].filter(Boolean).join(', ') || 'No address specified'}
-                  style={{ ...styles.formInput, backgroundColor: '#181818', color: '#888', cursor: 'not-allowed' }}
+                  className={styles.formInputDisabled}
                 />
               </div>
 
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Service Type / Description *</label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Service Type / Description *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. AC Compressor Diagnostic, Main Drain Line Clog"
                   value={newJobForm.service}
                   onChange={(e) => setNewJobForm({ ...newJobForm, service: e.target.value })}
-                  style={styles.formInput}
+                  className={styles.formInput}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <div style={{ ...styles.formGroup, flex: 1 }}>
-                  <label style={styles.formLabel}>Order Type</label>
+              <div className={styles.flexGap10}>
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>Order Type</label>
                   <select
                     value={newJobForm.type}
-                    onChange={(e) => setNewJobForm({ ...newJobForm, type: e.target.value as 'Scheduled' | 'Emergency' | 'WebRequest' })}
-                    style={styles.formSelect}
+                    onChange={(e) => setNewJobForm({ ...newJobForm, type: e.target.value as any })}
+                    className={styles.formSelect}
                   >
                     <option value="Scheduled">Scheduled</option>
                     <option value="Emergency">Emergency</option>
@@ -1371,12 +1023,12 @@ export default function ClientCRMRecord() {
                   </select>
                 </div>
 
-                <div style={{ ...styles.formGroup, flex: 1 }}>
-                  <label style={styles.formLabel}>Priority Level</label>
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>Priority Level</label>
                   <select
                     value={newJobForm.priority}
-                    onChange={(e) => setNewJobForm({ ...newJobForm, priority: e.target.value as 'high' | 'medium' | 'low' })}
-                    style={styles.formSelect}
+                    onChange={(e) => setNewJobForm({ ...newJobForm, priority: e.target.value as any })}
+                    className={styles.formSelect}
                   >
                     <option value="low">Low Priority</option>
                     <option value="medium">Medium Priority</option>
@@ -1385,27 +1037,27 @@ export default function ClientCRMRecord() {
                 </div>
               </div>
 
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Job Notes / Special Instructions</label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Job Notes / Special Instructions</label>
                 <textarea
                   value={newJobForm.notes}
                   onChange={(e) => setNewJobForm({ ...newJobForm, notes: e.target.value })}
                   placeholder="Check in at front desk, code is #1234, watch for golden retriever..."
-                  style={styles.formTextArea}
+                  className={styles.formTextArea}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+              <div className={`${styles.flexGap10} ${styles.marginTop16}`}>
                 <button
                   type="button"
                   onClick={() => setShowNewJobModal(false)}
-                  style={{ ...styles.buttonOutline, flex: 1, minHeight: '48px' }}
+                  className={styles.buttonOutlineLarge}
                 >
                   CANCEL
                 </button>
                 <button
                   type="submit"
-                  style={{ ...styles.buttonPrimary, flex: 1, minHeight: '48px' }}
+                  className={styles.buttonPrimaryLarge}
                 >
                   <CheckIcon /> CREATE NEW JOB
                 </button>
@@ -1417,144 +1069,285 @@ export default function ClientCRMRecord() {
 
       {/* MODAL 3: Create New Client */}
       {showNewClientModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>Add New Client</h2>
-              <button onClick={() => setShowNewClientModal(false)} style={styles.closeBtn} aria-label="Close modal">
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Add New Client</h2>
+              <button onClick={() => setShowNewClientModal(false)} className={styles.closeBtn} aria-label="Close modal">
                 <CloseIcon />
               </button>
             </div>
-            <form onSubmit={handleCreateClientSubmit} style={styles.modalBody}>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Client Name *</label>
+            <form onSubmit={handleCreateClientSubmit} className={styles.modalBody}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Client Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Wayne Enterprises"
                   value={newClientForm.name}
                   onChange={(e) => setNewClientForm({ ...newClientForm, name: e.target.value })}
-                  style={styles.formInput}
+                  className={styles.formInput}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <div style={{ ...styles.formGroup, flex: 1 }}>
-                  <label style={styles.formLabel}>Phone Number</label>
+              <div className={styles.flexGap10}>
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>Phone Number</label>
                   <input
                     type="tel"
                     placeholder="e.g. 555-0155"
                     value={newClientForm.phone}
                     onChange={(e) => setNewClientForm({ ...newClientForm, phone: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
-                <div style={{ ...styles.formGroup, flex: 1 }}>
-                  <label style={styles.formLabel}>Email Address</label>
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>Email Address</label>
                   <input
                     type="email"
                     placeholder="e.g. billing@wayne.com"
                     value={newClientForm.email}
                     onChange={(e) => setNewClientForm({ ...newClientForm, email: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
               </div>
 
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Street Address</label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Street Address</label>
                 <input
                   type="text"
                   placeholder="e.g. 1007 Mountain Drive"
                   value={newClientForm.address}
                   onChange={(e) => setNewClientForm({ ...newClientForm, address: e.target.value })}
-                  style={styles.formInput}
+                  className={styles.formInput}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <div style={{ ...styles.formGroup, flex: 2 }}>
-                  <label style={styles.formLabel}>City</label>
+              <div className={styles.flexGap10}>
+                <div className={styles.formGroupFlex2}>
+                  <label className={styles.formLabel}>City</label>
                   <input
                     type="text"
                     placeholder="Gotham"
                     value={newClientForm.city}
                     onChange={(e) => setNewClientForm({ ...newClientForm, city: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
-                <div style={{ ...styles.formGroup, flex: 1 }}>
-                  <label style={styles.formLabel}>State</label>
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>State</label>
                   <input
                     type="text"
                     placeholder="NJ"
                     value={newClientForm.state}
                     onChange={(e) => setNewClientForm({ ...newClientForm, state: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
-                <div style={{ ...styles.formGroup, flex: 1.5 }}>
-                  <label style={styles.formLabel}>Zip Code</label>
+                <div className={styles.formGroupFlex1_5}>
+                  <label className={styles.formLabel}>Zip Code</label>
                   <input
                     type="text"
                     placeholder="07001"
                     value={newClientForm.zipCode}
                     onChange={(e) => setNewClientForm({ ...newClientForm, zipCode: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <div style={{ ...styles.formGroup, flex: 1.5 }}>
-                  <label style={styles.formLabel}>GPS Coordinates (Lat, Lng)</label>
+              <div className={styles.flexGap10}>
+                <div className={styles.formGroupFlex1_5}>
+                  <label className={styles.formLabel}>GPS Coordinates (Lat, Lng)</label>
                   <input
                     type="text"
                     placeholder="37.7749, -122.4194"
                     value={newClientForm.gps}
                     onChange={(e) => setNewClientForm({ ...newClientForm, gps: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
-                <div style={{ ...styles.formGroup, flex: 1 }}>
-                  <label style={styles.formLabel}>Opening Balance ($)</label>
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>Opening Balance ($)</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
                     value={newClientForm.outstandingBalance}
                     onChange={(e) => setNewClientForm({ ...newClientForm, outstandingBalance: e.target.value })}
-                    style={styles.formInput}
+                    className={styles.formInput}
                   />
                 </div>
               </div>
 
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Preference Notes (Invoicing requirements, etc.)</label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Preference Notes (Invoicing requirements, etc.)</label>
                 <textarea
                   placeholder="e.g. Email billing details instantly upon completion..."
                   value={newClientForm.preferenceNotes}
                   onChange={(e) => setNewClientForm({ ...newClientForm, preferenceNotes: e.target.value })}
-                  style={styles.formTextArea}
+                  className={styles.formTextArea}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+              <div className={`${styles.flexGap10} ${styles.marginTop16}`}>
                 <button
                   type="button"
                   onClick={() => setShowNewClientModal(false)}
-                  style={{ ...styles.buttonOutline, flex: 1, minHeight: '48px' }}
+                  className={styles.buttonOutlineLarge}
                 >
                   CANCEL
                 </button>
                 <button
                   type="submit"
-                  style={{ ...styles.buttonPrimary, flex: 1, minHeight: '48px' }}
+                  className={styles.buttonPrimaryLarge}
                 >
                   <CheckIcon /> CREATE CLIENT
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: Edit Job pre-populated */}
+      {showEditJobModal && selectedClient && selectedJob && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Edit Job Details</h2>
+              <button onClick={() => setShowEditJobModal(false)} className={styles.closeBtn} aria-label="Close modal">
+                <CloseIcon />
+              </button>
+            </div>
+            <form onSubmit={handleEditJobSubmit} className={styles.modalBody}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Client Name (Pre-populated)</label>
+                <input
+                  type="text"
+                  disabled
+                  value={selectedClient.name}
+                  className={styles.formInputDisabled}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Site Address (Pre-populated)</label>
+                <input
+                  type="text"
+                  disabled
+                  value={[
+                    selectedClient.address,
+                    selectedClient.city,
+                    selectedClient.state,
+                    selectedClient.zipCode
+                  ].filter(Boolean).join(', ') || 'No address specified'}
+                  className={styles.formInputDisabled}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Service Type / Description *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. AC Compressor Diagnostic, Main Drain Line Clog"
+                  value={editJobForm.service}
+                  onChange={(e) => setEditJobForm({ ...editJobForm, service: e.target.value })}
+                  className={styles.formInput}
+                />
+              </div>
+
+              <div className={styles.flexGap10}>
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>Order Type</label>
+                  <select
+                    value={editJobForm.type}
+                    onChange={(e) => setEditJobForm({ ...editJobForm, type: e.target.value as any })}
+                    className={styles.formSelect}
+                  >
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Emergency">Emergency</option>
+                    <option value="WebRequest">Web Request</option>
+                  </select>
+                </div>
+
+                <div className={styles.formGroupFlex1}>
+                  <label className={styles.formLabel}>Priority Level</label>
+                  <select
+                    value={editJobForm.priority}
+                    onChange={(e) => setEditJobForm({ ...editJobForm, priority: e.target.value as any })}
+                    className={styles.formSelect}
+                  >
+                    <option value="low">Low Priority</option>
+                    <option value="medium">Medium Priority</option>
+                    <option value="high">High Priority</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Job Notes / Special Instructions</label>
+                <textarea
+                  value={editJobForm.notes}
+                  onChange={(e) => setEditJobForm({ ...editJobForm, notes: e.target.value })}
+                  placeholder="Check in at front desk, code is #1234, watch for golden retriever..."
+                  className={styles.formTextArea}
+                />
+              </div>
+
+              <div className={`${styles.flexGap10} ${styles.marginTop16}`}>
+                <button
+                  type="button"
+                  onClick={() => setShowEditJobModal(false)}
+                  className={styles.buttonOutlineLarge}
+                >
+                  CANCEL
+                </button>
+                <button
+                  type="submit"
+                  className={styles.buttonPrimaryLarge}
+                >
+                  <CheckIcon /> SAVE CHANGES
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: Confirm Delete Job */}
+      {showDeleteConfirmModal && jobToDelete && (
+        <div className={styles.modalOverlay}>
+          <div className={`${styles.modalContent} ${styles.confirm}`}>
+            <div className={styles.modalHeader}>
+              <h2 className={`${styles.modalTitle} ${styles.confirm}`}>Confirm Delete</h2>
+              <button onClick={() => setShowDeleteConfirmModal(false)} className={styles.closeBtn} aria-label="Close modal">
+                <CloseIcon />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.pConfirm}>
+                Are you sure you want to delete the job <strong>{jobToDelete.id || 'N/A'}</strong> ({jobToDelete.service})? This action cannot be undone.
+              </p>
+              <div className={styles.flexGap10}>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirmModal(false)}
+                  className={styles.buttonOutline}
+                >
+                  CANCEL
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteJobConfirm}
+                  className={styles.btnConfirmDelete}
+                >
+                  DELETE
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
