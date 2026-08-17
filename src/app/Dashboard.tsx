@@ -1064,6 +1064,36 @@ export default function ThreePanelPage() {
                     </Box>
                   )}
 
+                  {/* ── Dispatcher Checklist Manager ─────────────────────── */}
+                  {rightPanelJob && (
+                    <Box className={styles.dashboardDetailsSection}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 1 }}>
+                        <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
+                          Job Checklist
+                        </Typography>
+                        <Chip
+                          label={`${parseChecklistFromNotes(rightPanelJob.notes).length || 'Default'} steps`}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                        />
+                      </Box>
+                      <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', mb: 1, lineHeight: 1.4 }}>
+                        Define the exact steps the technician must tick off before completing this job.
+                      </Typography>
+                      <Button
+                        id="manage-checklist-btn"
+                        variant="outlined"
+                        fullWidth
+                        size="small"
+                        onClick={() => openChecklistModal(rightPanelJob.id!, rightPanelJob.notes)}
+                        className={styles.dashboardPrimaryButton} 
+                      >
+                        📋 Manage Job Checklist
+                      </Button>
+                    </Box>
+                  )}
+
                   {/* Technician Feedback Section (Conditional) */}
                   {techFeedback && (techFeedback.comment || (techFeedback.photos && techFeedback.photos.length > 0)) && (
                     <>
@@ -1142,6 +1172,18 @@ export default function ThreePanelPage() {
                     </>
                   )}
 
+                  {/* Map Preview Placeholder */}
+                  <Box className={styles.dashboardRoutePreview}>
+                    <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
+                      Route Preview
+                    </Typography>
+                    <Box className={styles.dashboardMapPreview}>
+                      <Typography variant="body2" className={styles.dashboardMapCopy}>
+                        🗺️ Map Preview
+                      </Typography>
+                    </Box>
+                  </Box>
+
                   {/* Actions (Save / Delete) */}
                   <Box className={styles.dashboardActions}>
                     <Button
@@ -1166,48 +1208,6 @@ export default function ThreePanelPage() {
                     >
                       Delete Work Order
                     </Button>
-                  </Box>
-
-                  {/* ── Dispatcher Checklist Manager ─────────────────────── */}
-                  {rightPanelJob && (
-                    <Box className={styles.dashboardDetailsSection}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 1 }}>
-                        <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
-                          Job Checklist
-                        </Typography>
-                        <Chip
-                          label={`${parseChecklistFromNotes(rightPanelJob.notes).length || 'Default'} steps`}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                      </Box>
-                      <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', mb: 1, lineHeight: 1.4 }}>
-                        Define the exact steps the technician must tick off before completing this job.
-                      </Typography>
-                      <Button
-                        id="manage-checklist-btn"
-                        variant="outlined"
-                        fullWidth
-                        size="small"
-                        onClick={() => openChecklistModal(rightPanelJob.id!, rightPanelJob.notes)}
-                        className={styles.dashboardPrimaryButton} 
-                      >
-                        📋 Manage Job Checklist
-                      </Button>
-                    </Box>
-                  )}
-
-                  {/* Map Preview Placeholder */}
-                  <Box className={styles.dashboardRoutePreview}>
-                    <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
-                      Route Preview
-                    </Typography>
-                    <Box className={styles.dashboardMapPreview}>
-                      <Typography variant="body2" className={styles.dashboardMapCopy}>
-                        🗺️ Map Preview
-                      </Typography>
-                    </Box>
                   </Box>
                 </>
               )}
