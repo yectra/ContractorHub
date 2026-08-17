@@ -626,59 +626,59 @@ export default function ThreePanelPage() {
             </Alert>
           )}*/}
            {/* Navigation Buttons */}
-              <Box className={styles.dashboardNavRow}>
-{/*                 <Tooltip title="Open Technician View" arrow>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<EngineeringIcon className={styles.dashboardNavIcon} />}
-                    onClick={() => {
-                      sessionStorage.setItem('previousView', 'ADMIN');
-                      window.location.href = '/technician';
-                    }}
-                    className={styles.dashboardCompactButton}
-                  >
-                    Tech
-                  </Button>
-                </Tooltip> */}
+          <Box className={styles.dashboardNavRow}>
+          {/* <Tooltip title="Open Technician View" arrow>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<EngineeringIcon className={styles.dashboardNavIcon} />}
+                  onClick={() => {
+                    sessionStorage.setItem('previousView', 'ADMIN');
+                    window.location.href = '/technician';
+                  }}
+                  className={styles.dashboardCompactButton}
+                >
+                  Tech
+                </Button>
+              </Tooltip> */}
 
-                <Tooltip title="Open Client CRM" arrow>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<GroupsIcon className={styles.dashboardNavIcon} />}
-                    onClick={() => (window.location.href = '/crm')}
-                    className={styles.dashboardCompactButton}
-                  >
-                    Client
-                  </Button>
-                </Tooltip>
+              <Tooltip title="Open Client CRM" arrow>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<GroupsIcon className={styles.dashboardNavIcon} />}
+                  onClick={() => (window.location.href = '/crm')}
+                  className={styles.dashboardCompactButton}
+                >
+                  Client
+                </Button>
+              </Tooltip>
 
-                <Tooltip title="Open Technician Dashboard" arrow>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<DashboardIcon className={styles.dashboardNavIcon} />}
-                    onClick={() => (window.location.href = '/tech-dashboard')}
-                    className={styles.dashboardCompactButton}
-                  >
-                    Dashboard
-                  </Button>
-                </Tooltip>
+              <Tooltip title="Open Technician Dashboard" arrow>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<DashboardIcon className={styles.dashboardNavIcon} />}
+                  onClick={() => (window.location.href = '/tech-dashboard')}
+                  className={styles.dashboardCompactButton}
+                >
+                  Dashboard
+                </Button>
+              </Tooltip>
 
-                <Tooltip title="Open User Management" arrow>
-                  <Button
-                    id="user-management-nav-btn"
-                    variant="outlined"
-                    size="small"
-                    startIcon={<PersonAddIcon className={styles.dashboardNavIcon} />}
-                    onClick={() => (window.location.href = '/admin/users')}
-                    className={styles.dashboardCompactButton}
-                  >
-                    Users
-                  </Button>
-                </Tooltip>
-              </Box>
+              <Tooltip title="Open User Management" arrow>
+                <Button
+                  id="user-management-nav-btn"
+                  variant="outlined"
+                  size="small"
+                  startIcon={<PersonAddIcon className={styles.dashboardNavIcon} />}
+                  onClick={() => (window.location.href = '/admin/users')}
+                  className={styles.dashboardCompactButton}
+                >
+                  Users
+                </Button>
+              </Tooltip>
+          </Box>    
           <Box className={`${styles.dashboardRowBetween} ${styles.dashboardCenterTitleRow}`}>
             <Typography variant="h5" className={styles.dashboardCenterTitle}>
               Dispatch Command Center
