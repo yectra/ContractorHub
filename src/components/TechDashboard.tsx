@@ -1,10 +1,29 @@
 import { useState, useMemo } from 'react';
-import { useServiceRequests, useScheduledJobs } from '../hooks/useDispatchData';
+import {
+  Box,
+  Button,
+  Typography,
+  Chip,
+  CircularProgress,
+  Tooltip,
+  Select,
+  MenuItem,
+  IconButton,
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import GroupsIcon from '@mui/icons-material/Groups';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import TodayIcon from '@mui/icons-material/Today';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { useServiceRequests, useScheduledJobs, useTechnicians } from '../hooks/useDispatchData';
+import styles from '../styles/UI/TechDashboard.module.scss';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-/** Time columns: 7 AM → 6 PM (11 one-hour slots) */
-const HOUR_COLUMNS = Array.from({ length: 11 }, (_, i) => i + 7);
+/** Time columns: 7 AM → 6 PM (12 one-hour slots, matching Admin Dashboard) */
+const HOUR_COLUMNS = Array.from({ length: 12 }, (_, i) => i + 7);
 
 // ─── Date Utility Helpers ─────────────────────────────────────────────────────
 
@@ -77,16 +96,15 @@ function buildLabel(cursor: Date, viewMode: 'week' | 'month'): string {
     d.toLocaleDateString(undefined, opts);
 
   const startDay = fmt(monday, { day: '2-digit' });
-  const startMonth = fmt(monday, { month: 'long' });
+  const startMonth = fmt(monday, { month: 'short' });
   const endDay = fmt(sunday, { day: '2-digit' });
-  const endMonth = fmt(sunday, { month: 'long' });
+  const endMonth = fmt(sunday, { month: 'short' });
   const endYear = sunday.getFullYear();
 
-  // Same-month? → "26 – 01 July, 2026"  Cross-month? → "26 July – 01 August, 2026"
   if (monday.getMonth() === sunday.getMonth()) {
-    return `${startDay} – ${endDay} ${endMonth}, ${endYear}`;
+    return `${startDay} – ${endDay} ${endMonth} ${endYear}`;
   }
-  return `${startDay} ${startMonth} – ${endDay} ${endMonth}, ${endYear}`;
+  return `${startDay} ${startMonth} – ${endDay} ${endMonth} ${endYear}`;
 }
 
 /** Format a YYYY-MM-DD string into "Mon, Jul 9" */
@@ -100,115 +118,44 @@ function formatDateLabel(dateStr: string): string {
   });
 }
 
-/** Format an integer hour into "7:00 AM" / "1:00 PM" */
+/** Format an integer hour into "7:00 AM" / "1:00 PM" matching Admin Dashboard */
 function formatHour(hour: number): string {
   if (hour === 12) return '12:00 PM';
   if (hour > 12) return `${hour - 12}:00 PM`;
   return `${hour}:00 AM`;
 }
 
-// ─── TaskChip Sub-component ───────────────────────────────────────────────────
+// ─── ScheduledJobCard Sub-component (Mirrors Dashboard.tsx Scheduled Job) ───────
 
-interface TaskChipProps {
+interface ScheduledJobCardProps {
   jobId: string;
   srId: string;
   client: string;
   service: string;
+  techColor?: string;
   onClick: () => void;
 }
 
-function TaskChip({ srId, client, service, onClick }: TaskChipProps) {
-  const [hovered, setHovered] = useState(false);
-
+function ScheduledJobCard({ srId, client, service, techColor, onClick }: ScheduledJobCardProps) {
   return (
-    <div
+    <Box
+      className={styles.techScheduledJob}
+      sx={{
+        backgroundColor: techColor || '#2196f3',
+      }}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       title={`${srId} — ${client}: ${service}`}
-      style={{
-        backgroundColor: hovered ? '#1565c0' : '#1976d2',
-        color: '#ffffff',
-        borderRadius: '6px',
-        padding: '4px 7px',
-        fontSize: '0.68rem',
-        fontWeight: 700,
-        cursor: 'pointer',
-        marginBottom: '3px',
-        boxShadow: hovered
-          ? '0 3px 10px rgba(25,118,210,0.55)'
-          : '0 1px 4px rgba(25,118,210,0.3)',
-        transform: hovered ? 'translateY(-1px)' : 'none',
-        transition: 'all 0.15s ease',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        maxWidth: '100%',
-        borderLeft: '3px solid #90caf9',
-        userSelect: 'none',
-      }}
     >
-      <span style={{ opacity: 0.8, marginRight: '3px' }}>{srId}</span>
-      <span style={{ opacity: 0.65, fontWeight: 400, fontSize: '0.62rem' }}>
-        {client.length > 14 ? client.slice(0, 14) + '…' : client}
-      </span>
-    </div>
-  );
-}
-
-// ─── Nav Arrow Button Sub-component ──────────────────────────────────────────
-
-interface NavArrowProps {
-  direction: 'left' | 'right';
-  onClick: () => void;
-  label: string;
-}
-
-function NavArrow({ direction, onClick, label }: NavArrowProps) {
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <button
-      aria-label={label}
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '34px',
-        height: '34px',
-        borderRadius: '50%',
-        border: '1.5px solid rgba(255,255,255,0.35)',
-        backgroundColor: hovered ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.12)',
-        color: '#ffffff',
-        cursor: 'pointer',
-        transition: 'all 0.15s ease',
-        flexShrink: 0,
-        boxShadow: hovered ? '0 0 0 3px rgba(255,255,255,0.12)' : 'none',
-      }}
-    >
-      <svg
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        {direction === 'left' ? (
-          <polyline points="15 18 9 12 15 6" />
-        ) : (
-          <polyline points="9 18 15 12 9 6" />
-        )}
-      </svg>
-    </button>
+      <Typography variant="caption" className={styles.techJobId}>
+        {srId}
+      </Typography>
+      <Typography variant="caption" className={styles.techJobClient}>
+        {client || 'Unknown'}
+      </Typography>
+    </Box>
   );
 }
 
@@ -219,9 +166,9 @@ type ViewMode = 'week' | 'month';
 export default function TechDashboard() {
   const { serviceRequests, loading: srLoading } = useServiceRequests();
   const { scheduledJobs, loading: jobsLoading } = useScheduledJobs();
+  const { technicians } = useTechnicians();
 
   // ── Navigation state ──────────────────────────────────────────────────────
-  // `currentDate` acts as the cursor. All date computation derives from it.
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [viewMode, setViewMode] = useState<ViewMode>('week');
 
@@ -232,9 +179,8 @@ export default function TechDashboard() {
       if (viewMode === 'week') {
         d.setDate(d.getDate() + (direction === 'next' ? 7 : -7));
       } else {
-        // Month view: shift by exactly 1 calendar month, preserving clamped day
         const targetMonth = d.getMonth() + (direction === 'next' ? 1 : -1);
-        d.setDate(1);              // prevent day-overflow when changing months
+        d.setDate(1);
         d.setMonth(targetMonth);
       }
       return d;
@@ -262,6 +208,7 @@ export default function TechDashboard() {
     srId: string;
     client: string;
     service: string;
+    techColor: string;
   };
 
   const jobGrid = useMemo(() => {
@@ -276,18 +223,22 @@ export default function TechDashboard() {
       if (!calendarDates.includes(date)) return;
 
       const sr = serviceRequests.find((r) => r.id === job.serviceRequestId);
+      const tech = technicians.find((t) => t.id === job.techId);
+      const cardColor = tech?.color || '#2196f3';
       const key = `${date}::${hour}`;
+
       if (!grid[key]) grid[key] = [];
       grid[key].push({
         jobId: job.id || '',
         srId: job.serviceRequestId || job.id || '',
         client: sr?.client || 'Unknown',
         service: sr?.service || 'Service',
+        techColor: cardColor,
       });
     });
 
     return grid;
-  }, [scheduledJobs, serviceRequests, calendarDates]);
+  }, [scheduledJobs, serviceRequests, technicians, calendarDates]);
 
   // ── Navigate to FieldExecution with context ───────────────────────────────
   const handleChipClick = (jobId: string, srId: string) => {
@@ -299,492 +250,210 @@ export default function TechDashboard() {
 
   const isLoading = srLoading || jobsLoading;
 
-  // ── Layout constants ──────────────────────────────────────────────────────
-  const rowLabelWidth = 130;
-  const colMinWidth = 100;
-
-  // Compact row height for month view so all days stay visible without excessive scroll
-  const rowMinHeight = viewMode === 'month' ? 44 : 60;
-
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: '#f0f2f5',
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {/* ════════════════════════════════════════════════════════════════════
-          UNIFIED CONTROL HEADER
-          Left  │  [Back btn]  [Title]
-          Center │  [←]  [Date Range Label]  [→]
-          Right  │  [View Mode ▾]
-      ════════════════════════════════════════════════════════════════════ */}
-      <header
-        style={{
-          backgroundColor: '#1565c0',
-          color: '#ffffff',
-          padding: '0 20px',
-          height: '68px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.28)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 200,
-          flexShrink: 0,
-          gap: '12px',
-        }}
-      >
-        {/* ── LEFT: Back button + Title ──────────────────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
-          <button
-            id="tech-dashboard-back-btn"
-            onClick={() => (window.location.href = '/')}
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                'rgba(255,255,255,0.25)')
-            }
-            onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                'rgba(255,255,255,0.12)')
-            }
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '7px',
-              backgroundColor: 'rgba(255,255,255,0.12)',
-              border: '1.5px solid rgba(255,255,255,0.3)',
-              borderRadius: '8px',
-              color: '#ffffff',
-              fontWeight: 700,
-              fontSize: '0.78rem',
-              padding: '7px 14px',
-              cursor: 'pointer',
-              letterSpacing: '0.25px',
-              transition: 'background-color 0.15s',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            Back to Admin Master View
-          </button>
+    <Box className={styles.techDashboardRoot}>
+      <Box className={styles.techDashboardPanel}>
+        {/* ════════════════════════════════════════════════════════════════════
+            TOP HEADER BANNER (Synchronized with Admin Dashboard Header)
+        ════════════════════════════════════════════════════════════════════ */}
+        <Box className={styles.techDashboardHeader}>
+          {/* Top Navigation Row */}
+          <Box className={styles.techDashboardNavRow}>
+            <Box className={styles.techDashboardNavGroup}>
+              <Tooltip title="Back to Admin Master View" arrow>
+                <Button
+                  id="tech-dashboard-back-btn"
+                  variant="outlined"
+                  size="small"
+                  startIcon={<ArrowBackIcon className={styles.techDashboardNavIcon} />}
+                  onClick={() => (window.location.href = '/')}
+                  className={styles.techDashboardCompactButton}
+                >
+                  Admin Master View
+                </Button>
+              </Tooltip>
+            </Box>
 
-          {/* Title block */}
-          <div style={{ lineHeight: 1.25 }}>
-            <div style={{ fontSize: '0.98rem', fontWeight: 800, letterSpacing: '0.15px' }}>
-              Technician Calendar
-            </div>
-            <div style={{ fontSize: '0.67rem', opacity: 0.7, marginTop: '1px' }}>
-              {scheduledJobs.length} jobs loaded
-            </div>
-          </div>
-        </div>
+            {/* Period Navigation Controls */}
+            <Box className={styles.techDashboardControls}>
+              <Tooltip title="Previous Period" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() => navigate('prev')}
+                  className={styles.techDashboardArrowBtn}
+                  aria-label="Previous period"
+                >
+                  <ChevronLeftIcon />
+                </IconButton>
+              </Tooltip>
 
-        {/* ── CENTER: Navigation ribbon ──────────────────────────────────── */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            flex: 1,
-            justifyContent: 'center',
-            minWidth: 0,
-          }}
-        >
-          <NavArrow direction="left" onClick={() => navigate('prev')} label="Previous period" />
+              <Box className={styles.techDashboardPeriodPill}>
+                {centerLabel}
+              </Box>
 
-          {/* Date range label pill */}
-          <div
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.14)',
-              border: '1.5px solid rgba(255,255,255,0.28)',
-              borderRadius: '999px',         // full pill shape
-              padding: '6px 20px',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-              letterSpacing: '0.2px',
-              textAlign: 'center',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              maxWidth: '360px',
-              minWidth: '180px',
-              color: '#ffffff',
-              userSelect: 'none',
-            }}
-          >
-            {centerLabel}
-          </div>
+              <Tooltip title="Next Period" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() => navigate('next')}
+                  className={styles.techDashboardArrowBtn}
+                  aria-label="Next period"
+                >
+                  <ChevronRightIcon />
+                </IconButton>
+              </Tooltip>
 
-          <NavArrow direction="right" onClick={() => navigate('next')} label="Next period" />
-
-          {/* Today shortcut */}
-          <button
-            onClick={() => setCurrentDate(new Date())}
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                'rgba(255,255,255,0.22)')
-            }
-            onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                'rgba(255,255,255,0.1)')
-            }
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              border: '1.5px solid rgba(255,255,255,0.28)',
-              borderRadius: '6px',
-              color: '#ffffff',
-              fontSize: '0.72rem',
-              fontWeight: 700,
-              padding: '5px 12px',
-              cursor: 'pointer',
-              letterSpacing: '0.3px',
-              transition: 'background-color 0.15s',
-              whiteSpace: 'nowrap',
-              flexShrink: 0,
-            }}
-          >
-            Today
-          </button>
-        </div>
-
-        {/* ── RIGHT: View Mode dropdown ──────────────────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-          <label
-            htmlFor="view-mode-select"
-            style={{
-              fontSize: '0.62rem',
-              fontWeight: 700,
-              opacity: 0.65,
-              letterSpacing: '0.6px',
-              textTransform: 'uppercase',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            View Mode
-          </label>
-          <div style={{ position: 'relative' }}>
-            {/* Custom-styled wrapper so the caret sits nicely */}
-            <select
-              id="view-mode-select"
-              value={viewMode}
-              onChange={(e) => setViewMode(e.target.value as ViewMode)}
-              style={{
-                appearance: 'none',
-                WebkitAppearance: 'none',
-                backgroundColor: 'rgba(255,255,255,0.14)',
-                border: '1.5px solid rgba(255,255,255,0.32)',
-                borderRadius: '8px',
-                color: '#ffffff',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                padding: '7px 36px 7px 14px',
-                cursor: 'pointer',
-                outline: 'none',
-                minWidth: '130px',
-                transition: 'background-color 0.15s',
-              }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLSelectElement).style.backgroundColor =
-                  'rgba(255,255,255,0.22)')
-              }
-              onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLSelectElement).style.backgroundColor =
-                  'rgba(255,255,255,0.14)')
-              }
-            >
-              <option value="week" style={{ backgroundColor: '#1565c0', color: '#fff' }}>
-                Week View
-              </option>
-              <option value="month" style={{ backgroundColor: '#1565c0', color: '#fff' }}>
-                Month View
-              </option>
-            </select>
-            {/* Custom dropdown caret */}
-            <span
-              style={{
-                position: 'absolute',
-                right: '11px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                pointerEvents: 'none',
-                color: 'rgba(255,255,255,0.75)',
-                fontSize: '0.7rem',
-              }}
-            >
-              ▾
-            </span>
-          </div>
-        </div>
-      </header>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          LOADING SPINNER
-      ════════════════════════════════════════════════════════════════════ */}
-      {isLoading ? (
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '16px',
-            color: '#666',
-          }}
-        >
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              border: '4px solid #e0e0e0',
-              borderTop: '4px solid #1976d2',
-              borderRadius: '50%',
-              animation: 'spin 0.9s linear infinite',
-            }}
-          />
-          <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Loading schedule data…</span>
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        </div>
-      ) : (
-        /* ════════════════════════════════════════════════════════════════
-            CALENDAR GRID
-        ════════════════════════════════════════════════════════════════ */
-        <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '10px',
-              border: '1px solid #e0e0e0',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
-              overflow: 'hidden',
-              minWidth: `${rowLabelWidth + HOUR_COLUMNS.length * colMinWidth}px`,
-            }}
-          >
-            {/* ── Column Header Row (Time Labels) ────────────────────────── */}
-            <div
-              style={{
-                display: 'flex',
-                borderBottom: '2px solid #e0e0e0',
-                backgroundColor: '#fafafa',
-                position: 'sticky',
-                top: 0,
-                zIndex: 10,
-              }}
-            >
-              {/* Corner cell */}
-              <div
-                style={{
-                  width: `${rowLabelWidth}px`,
-                  minWidth: `${rowLabelWidth}px`,
-                  flexShrink: 0,
-                  padding: '10px 12px',
-                  borderRight: '2px solid #e0e0e0',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<TodayIcon className={styles.techDashboardNavIcon} />}
+                onClick={() => setCurrentDate(new Date())}
+                className={styles.techDashboardCompactButton}
               >
-                <span
-                  style={{
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                    color: '#1565c0',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}
-                >
+                Today
+              </Button>
+
+              <Select
+                value={viewMode}
+                size="small"
+                onChange={(e) => setViewMode(e.target.value as ViewMode)}
+                className={styles.techDashboardViewSelect}
+              >
+                <MenuItem value="week" sx={{ fontSize: '0.74rem', fontWeight: 600 }}>Week View</MenuItem>
+                <MenuItem value="month" sx={{ fontSize: '0.74rem', fontWeight: 600 }}>Month View</MenuItem>
+              </Select>
+            </Box>
+          </Box>
+
+          {/* Title Row */}
+          <Box className={styles.techDashboardTitleRow}>
+            <Box className={styles.techDashboardTitleLeft}>
+              <Typography variant="h5" className={styles.techDashboardCenterTitle}>
+                Technician Calendar
+              </Typography>
+              <Chip
+                label={centerLabel}
+                color="primary"
+                variant="outlined"
+                size="small"
+                className={styles.techDashboardDateChip}
+              />
+              <Chip
+                label={`${scheduledJobs.length} Jobs Scheduled`}
+                size="small"
+                className={styles.techDashboardJobsChip}
+              />
+            </Box>
+          </Box>
+
+          <Typography variant="body2" className={styles.techDashboardSubtitle}>
+            Interactive multi-day chronological technician schedule & task overview
+          </Typography>
+        </Box>
+
+        {/* ════════════════════════════════════════════════════════════════════
+            CALENDAR GRID / HORIZONTAL TIME ROW
+        ════════════════════════════════════════════════════════════════════ */}
+        {isLoading ? (
+          <Box className={styles.techDashboardLoadingBox}>
+            <CircularProgress size={40} />
+            <Typography className={styles.techDashboardLoadingText}>
+              Loading schedule data…
+            </Typography>
+          </Box>
+        ) : (
+          <Box className={styles.techDashboardGridScroll}>
+            <Box className={styles.techDashboardGridInner}>
+              {/* ── Time Header Row (Sticky Horizontal Hourly Headers) ────────── */}
+              <Box className={styles.techDashboardTimeHeaderRow}>
+                <Box className={styles.techDashboardSpacer}>
                   {viewMode === 'week' ? 'Week Day' : 'Day'}
-                </span>
-              </div>
-
-              {/* Time column headers */}
-              {HOUR_COLUMNS.map((hour) => (
-                <div
-                  key={hour}
-                  style={{
-                    flex: 1,
-                    minWidth: `${colMinWidth}px`,
-                    padding: '10px 4px',
-                    textAlign: 'center',
-                    borderRight: '1px solid #e8e8e8',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#1565c0' }}>
+                </Box>
+                {HOUR_COLUMNS.map((hour) => (
+                  <Box key={hour} className={styles.techDashboardTimeHeaderCell}>
                     {formatHour(hour)}
-                  </span>
-                </div>
-              ))}
-            </div>
+                  </Box>
+                ))}
+              </Box>
 
-            {/* ── Date Rows ──────────────────────────────────────────────── */}
-            {calendarDates.map((dateStr, rowIdx) => {
-              const isCurrentDay = dateStr === today;
-              const isEvenRow = rowIdx % 2 === 0;
+              {/* ── Date Rows ──────────────────────────────────────────────── */}
+              {calendarDates.map((dateStr) => {
+                const isCurrentDay = dateStr === today;
 
-              return (
-                <div
-                  key={dateStr}
-                  style={{
-                    display: 'flex',
-                    borderBottom:
-                      rowIdx < calendarDates.length - 1 ? '1px solid #eee' : 'none',
-                    backgroundColor: isCurrentDay
-                      ? '#f0f7ff'
-                      : isEvenRow
-                      ? '#ffffff'
-                      : '#fafafa',
-                    minHeight: `${rowMinHeight}px`,
-                    transition: 'background-color 0.12s',
-                  }}
-                >
-                  {/* ── Row Label ──────────────────────────────────────── */}
-                  <div
-                    style={{
-                      width: `${rowLabelWidth}px`,
-                      minWidth: `${rowLabelWidth}px`,
-                      flexShrink: 0,
-                      borderRight: '2px solid #e0e0e0',
-                      padding: '6px 12px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      backgroundColor: isCurrentDay ? '#dbeafe' : 'inherit',
-                    }}
+                return (
+                  <Box
+                    key={dateStr}
+                    className={`${styles.techDashboardRow} ${isCurrentDay ? styles.techDashboardRowToday : ''}`}
                   >
-                    <span
-                      style={{
-                        fontSize: '0.72rem',
-                        fontWeight: isCurrentDay ? 800 : 600,
-                        color: isCurrentDay ? '#1565c0' : '#374151',
-                        lineHeight: 1.3,
-                      }}
+                    {/* Row Date Label */}
+                    <Box
+                      className={`${styles.techDashboardRowLabel} ${isCurrentDay ? styles.techDashboardRowLabelToday : ''}`}
                     >
-                      {formatDateLabel(dateStr)}
-                    </span>
-                    {isCurrentDay && (
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          fontSize: '0.55rem',
-                          fontWeight: 800,
-                          color: '#1d4ed8',
-                          backgroundColor: '#bfdbfe',
-                          borderRadius: '4px',
-                          padding: '1px 5px',
-                          marginTop: '3px',
-                          alignSelf: 'flex-start',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.4px',
-                        }}
+                      <Typography
+                        className={`${styles.techDashboardDateText} ${isCurrentDay ? styles.techDashboardDateTextToday : ''}`}
                       >
-                        Today
-                      </span>
-                    )}
-                  </div>
+                        {formatDateLabel(dateStr)}
+                      </Typography>
+                      {isCurrentDay && (
+                        <span className={styles.techDashboardTodayBadge}>
+                          Today
+                        </span>
+                      )}
+                    </Box>
 
-                  {/* ── Hour Cells ─────────────────────────────────────── */}
-                  {HOUR_COLUMNS.map((hour) => {
-                    const key = `${dateStr}::${hour}`;
-                    const chips = jobGrid[key] || [];
+                    {/* Time Slots */}
+                    <Box className={styles.techDashboardTimeSlots}>
+                      {HOUR_COLUMNS.map((hour) => {
+                        const key = `${dateStr}::${hour}`;
+                        const chips = jobGrid[key] || [];
 
-                    return (
-                      <div
-                        key={hour}
-                        style={{
-                          flex: 1,
-                          minWidth: `${colMinWidth}px`,
-                          borderRight: '1px solid #eee',
-                          padding: '4px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'flex-start',
-                          position: 'relative',
-                          transition: 'background-color 0.1s',
-                        }}
-                        onMouseEnter={(e) => {
-                          if (chips.length === 0)
-                            (e.currentTarget as HTMLDivElement).style.backgroundColor =
-                              '#eff6ff';
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLDivElement).style.backgroundColor =
-                            'transparent';
-                        }}
-                      >
-                        {chips.map((chip) => (
-                          <TaskChip
-                            key={chip.jobId}
-                            jobId={chip.jobId}
-                            srId={chip.srId}
-                            client={chip.client}
-                            service={chip.service}
-                            onClick={() => handleChipClick(chip.jobId, chip.srId)}
-                          />
-                        ))}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
+                        return (
+                          <Box
+                            key={hour}
+                            className={`${styles.techDashboardTimeSlot} ${isCurrentDay ? styles.techDashboardTimeSlotToday : ''}`}
+                          >
+                            {chips.map((chip) => (
+                              <ScheduledJobCard
+                                key={chip.jobId}
+                                jobId={chip.jobId}
+                                srId={chip.srId}
+                                client={chip.client}
+                                service={chip.service}
+                                techColor={chip.techColor}
+                                onClick={() => handleChipClick(chip.jobId, chip.srId)}
+                              />
+                            ))}
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Box>
 
-          {/* ── Legend bar ─────────────────────────────────────────────────── */}
-          <div
-            style={{
-              marginTop: '14px',
-              padding: '10px 16px',
-              backgroundColor: '#eff6ff',
-              borderRadius: '8px',
-              borderLeft: '4px solid #1976d2',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '20px',
-              flexWrap: 'wrap',
-            }}
-          >
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e40af' }}>
-              💡 Quick Guide
-            </span>
-            <span style={{ fontSize: '0.7rem', color: '#1d4ed8' }}>
-              • Blue chips = scheduled jobs — click to open the execution checklist.
-            </span>
-            <span style={{ fontSize: '0.7rem', color: '#1d4ed8' }}>
-              • Highlighted row = Today. Use ← → arrows to navigate between periods.
-            </span>
-            <span style={{ fontSize: '0.7rem', color: '#1d4ed8' }}>
-              • Switch between <strong>Week View</strong> (7 rows) and{' '}
-              <strong>Month View</strong> (28–31 rows) using the top-right dropdown.
-            </span>
-            {scheduledJobs.length === 0 && (
-              <span style={{ fontSize: '0.7rem', color: '#b91c1c', fontWeight: 600 }}>
-                ⚠ No jobs scheduled yet — drag requests from the Admin Dispatch panel onto the
-                timeline grid first.
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+            {/* ── Guide / Quick Info Bar ───────────────────────────────────── */}
+            <Box className={styles.techDashboardGuide}>
+              <Typography className={styles.techDashboardGuideTitle}>
+                <InfoOutlinedIcon fontSize="small" /> Quick Guide
+              </Typography>
+              <Typography className={styles.techDashboardGuideCopy}>
+                • Blue cards represent scheduled jobs — click any card to open the technician execution checklist.
+              </Typography>
+              <Typography className={styles.techDashboardGuideCopy}>
+                • Highlighted row represents Today. Use the period controls to navigate dates.
+              </Typography>
+              <Typography className={styles.techDashboardGuideCopy}>
+                • Switch between <strong>Week View</strong> and <strong>Month View</strong> using the top controls.
+              </Typography>
+              {scheduledJobs.length === 0 && (
+                <Typography className={styles.techDashboardGuideWarn}>
+                  ⚠ No jobs scheduled yet — assign requests from the Admin Dispatch Center onto the timeline.
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        )}
+      </Box>
+    </Box>
   );
 }

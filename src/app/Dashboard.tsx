@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Box, IconButton, Card, CardContent, Typography, Chip, Avatar, Divider, Alert, Snackbar, Button, CircularProgress, TextField, Select, MenuItem, FormControl, InputLabel, Dialog, OutlinedInput, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, IconButton, Card, CardContent, Typography, Chip, Avatar, Divider, Alert, Snackbar, Button, CircularProgress, TextField, Select, MenuItem, FormControl, InputLabel, Dialog, OutlinedInput } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
@@ -18,6 +18,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import Tooltip from '@mui/material/Tooltip';
 import styles from '../styles/UI/Dashboard.module.scss';
+import DispatchCenter from '../components/DispatchCenter';
 
 // Hours for the schedule grid (7 AM to 7 PM)
 const hours = Array.from({ length: 12 }, (_, i) => i + 7);
@@ -79,8 +80,6 @@ export default function ThreePanelPage() {
   const [checklistModalOpen, setChecklistModalOpen] = useState(false);
   const [checklistModalJobId, setChecklistModalJobId] = useState<string | null>(null);
   const [checklistDraftItems, setChecklistDraftItems] = useState<DispatchChecklistItem[]>([]);
-  const [newChecklistItemText, setNewChecklistItemText] = useState('');
-  const [checklistSaving, setChecklistSaving] = useState(false);
 
   const getScheduleByDate = (date: string) => {
     console.log(`Fetching schedule for date: ${date}`);
@@ -338,24 +337,7 @@ export default function ThreePanelPage() {
   const openChecklistModal = (jobId: string, jobNotes?: string | null) => {
     setChecklistDraftItems(parseChecklistFromNotes(jobNotes));
     setChecklistModalJobId(jobId);
-    setNewChecklistItemText('');
     setChecklistModalOpen(true);
-  };
-
-  /** Append the typed item to the draft list. */
-  const handleAddChecklistItem = () => {
-    const text = newChecklistItemText.trim();
-    if (!text) return;
-    setChecklistDraftItems((prev) => [
-      ...prev,
-      { id: `step-${Date.now()}`, text, checked: false },
-    ]);
-    setNewChecklistItemText('');
-  };
-
-  /** Remove a single item from the draft by id. */
-  const handleRemoveChecklistItem = (id: string) => {
-    setChecklistDraftItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   /**
@@ -366,7 +348,6 @@ export default function ThreePanelPage() {
    */
   const handleChecklistSave = async () => {
     if (!checklistModalJobId) return;
-    setChecklistSaving(true);
     try {
       const payload = JSON.stringify(checklistDraftItems);
       await updateScheduledJob(checklistModalJobId, {
@@ -379,8 +360,6 @@ export default function ThreePanelPage() {
     } catch (err) {
       console.error('Failed to save checklist:', err);
       showNotification_('Failed to save checklist. Please try again.', 'error');
-    } finally {
-      setChecklistSaving(false);
     }
   };
 
@@ -1253,139 +1232,18 @@ export default function ThreePanelPage() {
       </Snackbar>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          DISPATCHER CHECKLIST EDITOR MODAL
+          DISPATCHER CHECKLIST EDITOR MODAL (DispatchCenter)
           Allows the dispatcher to define per-job steps that sync to FieldExecution.
       ═══════════════════════════════════════════════════════════════════════ */}
-      <Dialog
+      <DispatchCenter
         open={checklistModalOpen}
-        onClose={() => !checklistSaving && setChecklistModalOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 2 } }}
-      >
-        <DialogTitle sx={{ pb: 0.5 }}>
-          <Typography variant="h6" fontWeight={800} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            📋 Job Checklist Editor
-          </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
-            Define the steps the technician must complete in the field. Changes sync immediately to their mobile view.
-          </Typography>
-        </DialogTitle>
+        onClose={() => setChecklistModalOpen(false)}
+        jobId={checklistModalJobId}
+        items={checklistDraftItems}
+        onItemsChange={setChecklistDraftItems}
+        onSave={handleChecklistSave}
+      />
 
-        <DialogContent dividers>
-          {/* ── Draft items list ─────────────────────────────────────── */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2, minHeight: '80px' }}>
-            {checklistDraftItems.length === 0 ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 3, border: '1.5px dashed', borderColor: 'divider', borderRadius: 1.5 }}>
-                <Typography variant="body2" color="text.secondary" textAlign="center">
-                  No steps yet — add your first step below.
-                </Typography>
-              </Box>
-            ) : (
-              checklistDraftItems.map((item, idx) => (
-                <Box
-                  key={item.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.25,
-                    backgroundColor: 'rgba(25, 118, 210, 0.04)',
-                    border: '1px solid',
-                    borderColor: 'rgba(25, 118, 210, 0.18)',
-                    borderRadius: 1.5,
-                    px: 1.5,
-                    py: 0.9,
-                    transition: 'background-color 0.15s',
-                    '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.08)' },
-                  }}
-                >
-                  {/* Step number badge */}
-                  <Box
-                    sx={{
-                      backgroundColor: '#1976d2',
-                      color: '#fff',
-                      borderRadius: '50%',
-                      width: 22,
-                      height: 22,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 800,
-                      fontSize: '0.6rem',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {idx + 1}
-                  </Box>
-                  <Typography variant="body2" sx={{ flex: 1, lineHeight: 1.35 }}>
-                    {item.text}
-                  </Typography>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleRemoveChecklistItem(item.id)}
-                    disabled={checklistSaving}
-                    sx={{ color: 'error.main', flexShrink: 0 }}
-                    aria-label={`Remove step ${idx + 1}: ${item.text}`}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              ))
-            )}
-          </Box>
-
-          {/* ── Add new item input ───────────────────────────────────── */}
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <TextField
-              id="new-checklist-item-input"
-              value={newChecklistItemText}
-              onChange={(e) => setNewChecklistItemText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') { e.preventDefault(); handleAddChecklistItem(); }
-              }}
-              placeholder="Type a step and press Enter or click + Add"
-              fullWidth
-              size="small"
-              autoComplete="off"
-              disabled={checklistSaving}
-            />
-            <Button
-              id="add-checklist-item-btn"
-              variant="contained"
-              onClick={handleAddChecklistItem}
-              disabled={!newChecklistItemText.trim() || checklistSaving}
-              sx={{ whiteSpace: 'nowrap', minWidth: '80px', fontWeight: 700 }}
-            >
-              + Add
-            </Button>
-          </Box>
-
-          {checklistDraftItems.length > 0 && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, textAlign: 'right' }}>
-              {checklistDraftItems.length} step{checklistDraftItems.length !== 1 ? 's' : ''} defined
-            </Typography>
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
-          <Button
-            onClick={() => setChecklistModalOpen(false)}
-            variant="outlined"
-            disabled={checklistSaving}
-          >
-            Cancel
-          </Button>
-          <Button
-            id="save-checklist-btn"
-            onClick={handleChecklistSave}
-            variant="contained"
-            disabled={checklistSaving}
-            startIcon={checklistSaving ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
-          >
-            {checklistSaving ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </DialogActions>
-      </Dialog>
       {/* Image Preview Modal */}
       {previewImageUrl && (
         <Dialog

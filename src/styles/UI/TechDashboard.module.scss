@@ -1,0 +1,488 @@
+/* =========================================================
+   TechDashboard.module.scss
+   Styles for the Technician Calendar / Dashboard.
+   Layout tokens are synchronized directly from Dashboard.module.scss
+   so both dashboards share identical visual DNA, spacing, borders,
+   typography, and grid structures.
+   ========================================================= */
+
+.techDashboardRoot {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  background-color: #f0f2f5;
+  padding: 8px;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.techDashboardPanel {
+  flex: 1;
+  height: 100%;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: auto;
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Top Header Banner (Mirrors .dashboardCenterHeader) ── */
+
+.techDashboardHeader {
+  padding: 12px 12px 10px;
+  border-bottom: 2px solid #e0e0e0;
+  background-color: #fafafa;
+  flex-shrink: 0;
+}
+
+/* Navigation Row across top of header */
+.techDashboardNavRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 0 -12px 10px;
+  padding: 0 12px 12px;
+  flex-wrap: wrap;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.techDashboardNavGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.techDashboardCompactButton {
+  text-transform: none !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 8px !important;
+  font-size: 0.72rem !important;
+  line-height: 1.2 !important;
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+  background-color: #ffffff !important;
+
+  &:hover {
+    background-color: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+  }
+
+  & .MuiButton-startIcon {
+    margin-right: 4px;
+  }
+
+  & .MuiButton-startIcon svg {
+    font-size: 0.95rem !important;
+  }
+}
+
+.techDashboardPrimaryCompactBtn {
+  text-transform: none !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 0.72rem !important;
+  line-height: 1.2 !important;
+  background-color: #1976d2 !important;
+  color: #ffffff !important;
+
+  &:hover {
+    background-color: #1565c0 !important;
+  }
+
+  & .MuiButton-startIcon {
+    margin-right: 4px;
+  }
+
+  & .MuiButton-startIcon svg {
+    font-size: 0.95rem !important;
+  }
+}
+
+.techDashboardNavIcon {
+  font-size: 0.95rem !important;
+}
+
+/* Title Row */
+.techDashboardTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.techDashboardTitleLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.techDashboardCenterTitle {
+  font-weight: 750 !important;
+  color: #1a1a1a;
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+}
+
+.techDashboardDateChip {
+  font-weight: 700 !important;
+  font-size: 0.66rem !important;
+  height: 22px !important;
+  border-radius: 6px !important;
+
+  & .MuiChip-label {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
+
+.techDashboardJobsChip {
+  font-weight: 700 !important;
+  font-size: 0.66rem !important;
+  height: 22px !important;
+  border-radius: 6px !important;
+  background-color: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+
+  & .MuiChip-label {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
+
+.techDashboardSubtitle {
+  color: #666;
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+}
+
+/* Period Navigation Ribbon */
+.techDashboardControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.techDashboardArrowBtn {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #475569 !important;
+
+  &:hover {
+    background-color: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+  }
+
+  & svg {
+    font-size: 1rem !important;
+  }
+}
+
+.techDashboardPeriodPill {
+  font-weight: 700;
+  font-size: 0.74rem;
+  color: #1e293b;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 12px;
+  min-width: 140px;
+  text-align: center;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.techDashboardViewSelect {
+  height: 28px !important;
+  border-radius: 6px !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  background-color: #ffffff !important;
+  color: #475569 !important;
+
+  & .MuiSelect-select {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    padding-left: 8px !important;
+    padding-right: 24px !important;
+    display: flex;
+    align-items: center;
+    line-height: 1.2 !important;
+  }
+
+  & .MuiOutlinedInput-notchedOutline {
+    border-color: #cbd5e1 !important;
+  }
+
+  &:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #94a3b8 !important;
+  }
+}
+
+/* ── Calendar Grid & Horizontal Time Row (Mirrors .dashboardGridScroll & .dashboardTimeHeaderRow) ── */
+
+.techDashboardGridScroll {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+.techDashboardGridInner {
+  min-width: 900px;
+}
+
+.techDashboardTimeHeaderRow {
+  display: flex;
+  margin-bottom: 4px;
+  position: sticky;
+  top: 0;
+  background-color: #fafafa;
+  z-index: 10;
+  padding-top: 4px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.techDashboardSpacer {
+  width: 150px;
+  min-width: 150px;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 0.66rem;
+  line-height: 1.2;
+  color: #1976d2;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 8px 4px 8px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.techDashboardTimeHeaderCell {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.66rem;
+  line-height: 1.2;
+  color: #666;
+  padding-bottom: 4px;
+  border-right: 1px solid #e8e8e8;
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+/* Date Row (mirrors .dashboardTechRow) */
+.techDashboardRow {
+  display: flex;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  background-color: #fafafa;
+  transition: background-color 0.12s;
+}
+
+.techDashboardRowToday {
+  border-color: #93c5fd !important;
+  background-color: #f0f7ff !important;
+}
+
+.techDashboardRowLabel {
+  width: 150px;
+  min-width: 150px;
+  flex-shrink: 0;
+  padding: 7px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+}
+
+.techDashboardRowLabelToday {
+  background-color: #eff6ff !important;
+  border-right-color: #bfdbfe !important;
+}
+
+.techDashboardDateText {
+  font-weight: 600;
+  font-size: 0.74rem;
+  color: #374151;
+  line-height: 1.25;
+}
+
+.techDashboardDateTextToday {
+  font-weight: 750;
+  color: #1d4ed8;
+}
+
+.techDashboardTodayBadge {
+  display: inline-block;
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: #1d4ed8;
+  background-color: #bfdbfe;
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-top: 3px;
+  align-self: flex-start;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* Time Slots (mirrors .dashboardTimeSlots & .dashboardTimeSlot) */
+.techDashboardTimeSlots {
+  display: flex;
+  flex: 1;
+  position: relative;
+}
+
+.techDashboardTimeSlot {
+  flex: 1;
+  min-width: 80px;
+  min-height: 46px;
+  border-right: 1px solid #e0e0e0;
+  background-color: #ffffff;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  transition: background-color 0.2s;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  &:hover {
+    background-color: #f0f7ff;
+    cursor: pointer;
+  }
+}
+
+.techDashboardTimeSlotToday {
+  background-color: rgba(255, 255, 255, 0.85);
+
+  &:hover {
+    background-color: #e0f2fe;
+  }
+}
+
+/* Scheduled Job Card (Mirrors .dashboardScheduledJob, .dashboardJobId, .dashboardJobClient from Dashboard.module.scss) */
+.techScheduledJob {
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  margin-bottom: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  user-select: none;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.techJobId {
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 0.65rem !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.techJobClient {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 0.6rem !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Loading Box (mirrors .dashboardLoadingBoxLarge) */
+.techDashboardLoadingBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  gap: 12px;
+  color: #666;
+}
+
+.techDashboardLoadingText {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* Quick Guide / Legend (mirrors .dashboardGuide) */
+.techDashboardGuide {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  border-left: 4px solid #2196f3;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.techDashboardGuideTitle {
+  font-weight: 600 !important;
+  color: #1565c0 !important;
+  font-size: 0.8rem !important;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.techDashboardGuideCopy {
+  color: #1976d2 !important;
+  font-size: 0.7rem !important;
+}
+
+.techDashboardGuideWarn {
+  color: #b91c1c !important;
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+}

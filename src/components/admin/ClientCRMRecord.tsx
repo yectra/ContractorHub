@@ -672,7 +672,7 @@ export default function ClientCRMRecord() {
                                       },
                                     }}
                                   >
-                                    <EditIcon fontSize="small" />
+                                    <EditIcon />
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="Delete" arrow>
