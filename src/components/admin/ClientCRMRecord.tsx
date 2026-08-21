@@ -70,6 +70,21 @@ const CheckIcon = () => (
   </svg>
 );
 
+const CancelIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="15" y1="9" x2="9" y2="15" />
+    <line x1="9" y1="9" x2="15" y2="15" />
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </svg>
+);
+
 export default function ClientCRMRecord() {
   const { clients, updateClient, createClient, loading: loadingClients } = useClients();
   const { serviceRequests, createServiceRequest, updateServiceRequest, deleteServiceRequest, loading: loadingRequests } = useServiceRequests();
@@ -664,13 +679,6 @@ export default function ClientCRMRecord() {
                                       handleEditJobClick(job);
                                     }}
                                     className={styles.actionBtnEdit}
-                                    sx={{
-                                      color: '#4fc3f7', /* Soft blue for high contrast on dark backgrounds */
-                                      '&:hover': {
-                                        color: '#81d4fa',
-                                        backgroundColor: 'rgba(79, 195, 247, 0.08)',
-                                      },
-                                    }}
                                   >
                                     <EditIcon />
                                   </IconButton>
@@ -731,7 +739,7 @@ export default function ClientCRMRecord() {
                         {selectedClient.phone}
                       </a>
                     ) : (
-                      <span style={{ color: '#666' }}>No phone listed</span>
+                      <span className={styles.noValueListed}>No phone listed</span>
                     )}
                   </span>
                 </div>
@@ -744,7 +752,7 @@ export default function ClientCRMRecord() {
                         {selectedClient.email}
                       </a>
                     ) : (
-                      <span style={{ color: '#666' }}>No email listed</span>
+                      <span className={styles.noValueListed}>No email listed</span>
                     )}
                   </span>
                 </div>
@@ -947,13 +955,13 @@ export default function ClientCRMRecord() {
                   onClick={() => setShowEditModal(false)}
                   className={styles.buttonOutlineLarge}
                 >
-                  CANCEL
+                  <CancelIcon /> Cancel
                 </button>
                 <button
                   type="submit"
                   className={styles.buttonPrimaryLarge}
                 >
-                  <CheckIcon /> SAVE CHANGES
+                  <CheckIcon /> Save Changes
                 </button>
               </div>
             </form>
@@ -1053,13 +1061,13 @@ export default function ClientCRMRecord() {
                   onClick={() => setShowNewJobModal(false)}
                   className={styles.buttonOutlineLarge}
                 >
-                  CANCEL
+                  <CancelIcon /> Cancel
                 </button>
                 <button
                   type="submit"
                   className={styles.buttonPrimaryLarge}
                 >
-                  <CheckIcon /> CREATE NEW JOB
+                  <CheckIcon /> Create New Job
                 </button>
               </div>
             </form>
@@ -1197,13 +1205,13 @@ export default function ClientCRMRecord() {
                   onClick={() => setShowNewClientModal(false)}
                   className={styles.buttonOutlineLarge}
                 >
-                  CANCEL
+                  <CancelIcon /> Cancel
                 </button>
                 <button
                   type="submit"
                   className={styles.buttonPrimaryLarge}
                 >
-                  <CheckIcon /> CREATE CLIENT
+                  <CheckIcon /> Create Client
                 </button>
               </div>
             </form>
@@ -1303,13 +1311,13 @@ export default function ClientCRMRecord() {
                   onClick={() => setShowEditJobModal(false)}
                   className={styles.buttonOutlineLarge}
                 >
-                  CANCEL
+                  <CancelIcon /> Cancel
                 </button>
                 <button
                   type="submit"
                   className={styles.buttonPrimaryLarge}
                 >
-                  <CheckIcon /> SAVE CHANGES
+                  <CheckIcon /> Save Changes
                 </button>
               </div>
             </form>
@@ -1337,14 +1345,14 @@ export default function ClientCRMRecord() {
                   onClick={() => setShowDeleteConfirmModal(false)}
                   className={styles.buttonOutline}
                 >
-                  CANCEL
+                  <CancelIcon /> Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleDeleteJobConfirm}
                   className={styles.btnConfirmDelete}
                 >
-                  DELETE
+                  <TrashIcon /> Delete
                 </button>
               </div>
             </div>
