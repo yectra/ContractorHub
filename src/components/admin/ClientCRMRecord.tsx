@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useClients, useServiceRequests } from '../../hooks/useDispatchData';
 import styles from '../../styles/UI/ClientRecord.module.scss';
 import { IconButton, Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ClientModal from './modals/ClientModal';
+import JobModal from './modals/JobModal';
+import DeleteConfirmModal from './modals/DeleteConfirmModal';
 
 // Inline SVG Icons for zero-dependency consistency with FieldExecution
 const BackIcon = () => (
@@ -47,41 +50,12 @@ const SearchIcon = () => (
     <line x1="21" y1="21" x2="16.65" y2="16.65" />
   </svg>
 );
-
-const CloseIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
-
 const UsersIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
     <circle cx="9" cy="7" r="4" />
     <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-
-const CancelIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <line x1="15" y1="9" x2="9" y2="15" />
-    <line x1="9" y1="9" x2="15" y2="15" />
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
   </svg>
 );
 
@@ -106,48 +80,6 @@ export default function ClientCRMRecord() {
 
   const navigate = useNavigate();
   
-  // Form states
-  const [editForm, setEditForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    gps: '',
-    outstandingBalance: '',
-    preferenceNotes: '',
-    notes: '',
-  });
-
-  const [newJobForm, setNewJobForm] = useState({
-    service: '',
-    type: 'Scheduled' as 'Scheduled' | 'Emergency' | 'WebRequest',
-    priority: 'low' as 'high' | 'medium' | 'low',
-    notes: '',
-  });
-
-  const [editJobForm, setEditJobForm] = useState({
-    service: '',
-    type: 'Scheduled' as 'Scheduled' | 'Emergency' | 'WebRequest',
-    priority: 'low' as 'high' | 'medium' | 'low',
-    notes: '',
-  });
-
-  const [newClientForm, setNewClientForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    gps: '37.7749, -122.4194',
-    outstandingBalance: '0.00',
-    preferenceNotes: '',
-  });
-
   // Alerts
   const [successAlert, setSuccessAlert] = useState<string | null>(null);
   const [errorAlert, setErrorAlert] = useState<string | null>(null);
@@ -175,47 +107,6 @@ export default function ClientCRMRecord() {
     const match = selectedClient.notes?.match(/GPS:\s*([-\d.]+),\s*([-\d.]+)/);
     return match ? `${match[1]}, ${match[2]}` : '37.7749, -122.4194';
   }, [selectedClient]);
-
-  const [syncedClientKey, setSyncedClientKey] = useState<string | null>(null);
-  const selectedClientKey = selectedClient
-    ? JSON.stringify([
-        selectedClient.id,
-        selectedClient.name,
-        selectedClient.phone,
-        selectedClient.email,
-        selectedClient.address,
-        selectedClient.city,
-        selectedClient.state,
-        selectedClient.zipCode,
-        selectedClient.notes,
-        selectedClient.outstandingBalance,
-        selectedClient.preferenceNotes,
-      ])
-    : null;
-
-  // Populate edit form when selected client changes
-  if (selectedClient && selectedClientKey !== syncedClientKey) {
-    const match = selectedClient.notes?.match(/GPS:\s*([-\d.]+),\s*([-\d.]+)/);
-    const gpsVal = match ? `${match[1]}, ${match[2]}` : '37.7749, -122.4194';
-    const rawNotes = selectedClient.notes?.replace(/GPS:\s*([-\d.]+),\s*([-\d.]+)\s*/g, '').trim() || '';
-
-    setSyncedClientKey(selectedClientKey);
-    setEditForm({
-      name: selectedClient.name || '',
-      phone: selectedClient.phone || '',
-      email: selectedClient.email || '',
-      address: selectedClient.address || '',
-      city: selectedClient.city || '',
-      state: selectedClient.state || '',
-      zipCode: selectedClient.zipCode || '',
-      gps: gpsVal,
-      outstandingBalance: selectedClient.outstandingBalance || '0.00',
-      preferenceNotes: selectedClient.preferenceNotes || '',
-      notes: rawNotes,
-    });
-  } else if (!selectedClient && syncedClientKey) {
-    setSyncedClientKey(null);
-  }
 
   // Filter jobs (service requests) associated with the selected client
   const clientJobs = useMemo(() => {
@@ -265,24 +156,23 @@ export default function ClientCRMRecord() {
   }, [selectedClient]);
 
   // Handle Edit Profile Save
-  const handleEditProfileSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEditProfileSubmit = async (formData: any) => {
     if (!selectedClient || !selectedClient.id) return;
 
     try {
-      const gpsLine = `GPS: ${editForm.gps}`;
-      const finalNotes = editForm.notes.trim() ? `${editForm.notes.trim()}\n${gpsLine}` : gpsLine;
+      const gpsLine = `GPS: ${formData.gps}`;
+      const finalNotes = formData.notes.trim() ? `${formData.notes.trim()}\n${gpsLine}` : gpsLine;
 
       await updateClient(selectedClient.id, {
-        name: editForm.name,
-        phone: editForm.phone,
-        email: editForm.email,
-        address: editForm.address,
-        city: editForm.city,
-        state: editForm.state,
-        zipCode: editForm.zipCode,
-        outstandingBalance: editForm.outstandingBalance,
-        preferenceNotes: editForm.preferenceNotes,
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+        outstandingBalance: formData.outstandingBalance,
+        preferenceNotes: formData.preferenceNotes,
         notes: finalNotes,
       });
 
@@ -297,8 +187,7 @@ export default function ClientCRMRecord() {
   };
 
   // Handle Quick Create Job
-  const handleCreateJobSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateJobSubmit = async (formData: any) => {
     if (!selectedClient) return;
 
     try {
@@ -311,24 +200,18 @@ export default function ClientCRMRecord() {
 
       await createServiceRequest({
         client: selectedClient.name,
-        service: newJobForm.service,
+        service: formData.service,
         location: clientAddress || 'No site address specified',
-        type: newJobForm.type,
-        priority: newJobForm.priority,
+        type: formData.type,
+        priority: formData.priority,
         status: 'Unassigned',
         requestTime: '08:00 AM',
         estimatedDuration: '2 hours',
-        notes: newJobForm.notes,
+        notes: formData.notes,
       });
 
       setSuccessAlert('New job created in the dispatch queue successfully!');
       setShowNewJobModal(false);
-      setNewJobForm({
-        service: '',
-        type: 'Scheduled',
-        priority: 'low',
-        notes: '',
-      });
       setTimeout(() => setSuccessAlert(null), 4000);
     } catch (err) {
       console.error(err);
@@ -340,25 +223,18 @@ export default function ClientCRMRecord() {
   // Handle Edit Job Click
   const handleEditJobClick = (job: any) => {
     setSelectedJob(job);
-    setEditJobForm({
-      service: job.service || '',
-      type: job.type || 'Scheduled',
-      priority: job.priority || 'low',
-      notes: job.notes || '',
-    });
     setShowEditJobModal(true);
   };
 
   // Handle Edit Job Submit
-  const handleEditJobSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEditJobSubmit = async (formData: any) => {
     if (!selectedJob || !selectedJob.id) return;
     try {
       await updateServiceRequest(selectedJob.id, {
-        service: editJobForm.service,
-        type: editJobForm.type,
-        priority: editJobForm.priority,
-        notes: editJobForm.notes,
+        service: formData.service,
+        type: formData.type,
+        priority: formData.priority,
+        notes: formData.notes,
       });
       setSuccessAlert('Job updated successfully!');
       setShowEditJobModal(false);
@@ -393,44 +269,31 @@ export default function ClientCRMRecord() {
   };
 
   // Handle Create Client
-  const handleCreateClientSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateClientSubmit = async (formData: any) => {
     try {
-      const gpsLine = `GPS: ${newClientForm.gps}`;
-      const finalNotes = newClientForm.preferenceNotes.trim() 
-        ? `${newClientForm.preferenceNotes.trim()}\n${gpsLine}` 
+      const gpsLine = `GPS: ${formData.gps}`;
+      const finalNotes = formData.preferenceNotes.trim() 
+        ? `${formData.preferenceNotes.trim()}\n${gpsLine}` 
         : gpsLine;
 
       const created = await createClient({
-        name: newClientForm.name,
-        phone: newClientForm.phone,
-        email: newClientForm.email,
-        address: newClientForm.address,
-        city: newClientForm.city,
-        state: newClientForm.state,
-        zipCode: newClientForm.zipCode,
-        outstandingBalance: newClientForm.outstandingBalance,
-        preferenceNotes: newClientForm.preferenceNotes,
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+        outstandingBalance: formData.outstandingBalance,
+        preferenceNotes: formData.preferenceNotes,
         notes: finalNotes,
       });
 
       if (created) {
         setSelectedClientId(created.id || '');
       }
-      setSuccessAlert(`Client "${newClientForm.name}" created successfully!`);
+      setSuccessAlert(`Client "${formData.name}" created successfully!`);
       setShowNewClientModal(false);
-      setNewClientForm({
-        name: '',
-        phone: '',
-        email: '',
-        address: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        gps: '37.7749, -122.4194',
-        outstandingBalance: '0.00',
-        preferenceNotes: '',
-      });
       setTimeout(() => setSuccessAlert(null), 4000);
     } catch (err) {
       console.error(err);
@@ -823,542 +686,56 @@ export default function ClientCRMRecord() {
         </div>
       )}
 
-      {/* MODAL 1: Edit Profile details */}
-      {showEditModal && selectedClient && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Edit Client Profile</h2>
-              <button onClick={() => setShowEditModal(false)} className={styles.closeBtn} aria-label="Close modal">
-                <CloseIcon />
-              </button>
-            </div>
-            <form onSubmit={handleEditProfileSubmit} className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Client Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className={styles.formInput}
-                />
-              </div>
+      {/* Extracted modular modals */}
+      <ClientModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        client={selectedClient}
+        onSubmit={handleEditProfileSubmit}
+      />
 
-              <div className={styles.flexGap10}>
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>Phone Number</label>
-                  <input
-                    type="tel"
-                    value={editForm.phone}
-                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>Email Address</label>
-                  <input
-                    type="email"
-                    value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-              </div>
+      <ClientModal
+        isOpen={showNewClientModal}
+        onClose={() => setShowNewClientModal(false)}
+        client={null}
+        onSubmit={handleCreateClientSubmit}
+      />
 
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Street Address</label>
-                <input
-                  type="text"
-                  value={editForm.address}
-                  onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                  className={styles.formInput}
-                />
-              </div>
+      <JobModal
+        isOpen={showNewJobModal}
+        onClose={() => setShowNewJobModal(false)}
+        clientName={selectedClient?.name || ''}
+        clientAddress={[
+          selectedClient?.address,
+          selectedClient?.city,
+          selectedClient?.state,
+          selectedClient?.zipCode
+        ].filter(Boolean).join(', ') || 'No site address specified'}
+        job={null}
+        onSubmit={handleCreateJobSubmit}
+      />
 
-              <div className={styles.flexGap10}>
-                <div className={styles.formGroupFlex2}>
-                  <label className={styles.formLabel}>City</label>
-                  <input
-                    type="text"
-                    value={editForm.city}
-                    onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>State</label>
-                  <input
-                    type="text"
-                    value={editForm.state}
-                    onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-                <div className={styles.formGroupFlex1_5}>
-                  <label className={styles.formLabel}>Zip Code</label>
-                  <input
-                    type="text"
-                    value={editForm.zipCode}
-                    onChange={(e) => setEditForm({ ...editForm, zipCode: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-              </div>
+      <JobModal
+        isOpen={showEditJobModal}
+        onClose={() => setShowEditJobModal(false)}
+        clientName={selectedClient?.name || ''}
+        clientAddress={[
+          selectedClient?.address,
+          selectedClient?.city,
+          selectedClient?.state,
+          selectedClient?.zipCode
+        ].filter(Boolean).join(', ') || 'No site address specified'}
+        job={selectedJob}
+        onSubmit={handleEditJobSubmit}
+      />
 
-              <div className={styles.flexGap10}>
-                <div className={styles.formGroupFlex1_5}>
-                  <label className={styles.formLabel}>GPS Coordinates (Lat, Lng)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 37.7749, -122.4194"
-                    value={editForm.gps}
-                    onChange={(e) => setEditForm({ ...editForm, gps: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>Outstanding Balance ($)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={editForm.outstandingBalance}
-                    onChange={(e) => setEditForm({ ...editForm, outstandingBalance: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Preference Notes (Invoicing requirements, etc.)</label>
-                <textarea
-                  value={editForm.preferenceNotes}
-                  onChange={(e) => setEditForm({ ...editForm, preferenceNotes: e.target.value })}
-                  className={styles.formTextArea}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>General Admin Notes</label>
-                <textarea
-                  value={editForm.notes}
-                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                  placeholder="Additional customer file notes..."
-                  className={styles.formTextArea}
-                />
-              </div>
-
-              <div className={`${styles.flexGap10} ${styles.marginTop16}`}>
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className={styles.buttonOutlineLarge}
-                >
-                  <CancelIcon /> Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={styles.buttonPrimaryLarge}
-                >
-                  <CheckIcon /> Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 2: Quick-Create New Job pre-populated */}
-      {showNewJobModal && selectedClient && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Quick-Create New Job</h2>
-              <button onClick={() => setShowNewJobModal(false)} className={styles.closeBtn} aria-label="Close modal">
-                <CloseIcon />
-              </button>
-            </div>
-            <form onSubmit={handleCreateJobSubmit} className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Client Name (Pre-populated)</label>
-                <input
-                  type="text"
-                  disabled
-                  value={selectedClient.name}
-                  className={styles.formInputDisabled}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Site Address (Pre-populated)</label>
-                <input
-                  type="text"
-                  disabled
-                  value={[
-                    selectedClient.address,
-                    selectedClient.city,
-                    selectedClient.state,
-                    selectedClient.zipCode
-                  ].filter(Boolean).join(', ') || 'No address specified'}
-                  className={styles.formInputDisabled}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Service Type / Description *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. AC Compressor Diagnostic, Main Drain Line Clog"
-                  value={newJobForm.service}
-                  onChange={(e) => setNewJobForm({ ...newJobForm, service: e.target.value })}
-                  className={styles.formInput}
-                />
-              </div>
-
-              <div className={styles.flexGap10}>
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>Order Type</label>
-                  <select
-                    value={newJobForm.type}
-                    onChange={(e) => setNewJobForm({ ...newJobForm, type: e.target.value as any })}
-                    className={styles.formSelect}
-                  >
-                    <option value="Scheduled">Scheduled</option>
-                    <option value="Emergency">Emergency</option>
-                    <option value="WebRequest">Web Request</option>
-                  </select>
-                </div>
-
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>Priority Level</label>
-                  <select
-                    value={newJobForm.priority}
-                    onChange={(e) => setNewJobForm({ ...newJobForm, priority: e.target.value as any })}
-                    className={styles.formSelect}
-                  >
-                    <option value="low">Low Priority</option>
-                    <option value="medium">Medium Priority</option>
-                    <option value="high">High Priority</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Job Notes / Special Instructions</label>
-                <textarea
-                  value={newJobForm.notes}
-                  onChange={(e) => setNewJobForm({ ...newJobForm, notes: e.target.value })}
-                  placeholder="Check in at front desk, code is #1234, watch for golden retriever..."
-                  className={styles.formTextArea}
-                />
-              </div>
-
-              <div className={`${styles.flexGap10} ${styles.marginTop16}`}>
-                <button
-                  type="button"
-                  onClick={() => setShowNewJobModal(false)}
-                  className={styles.buttonOutlineLarge}
-                >
-                  <CancelIcon /> Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={styles.buttonPrimaryLarge}
-                >
-                  <CheckIcon /> Create New Job
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 3: Create New Client */}
-      {showNewClientModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Add New Client</h2>
-              <button onClick={() => setShowNewClientModal(false)} className={styles.closeBtn} aria-label="Close modal">
-                <CloseIcon />
-              </button>
-            </div>
-            <form onSubmit={handleCreateClientSubmit} className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Client Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Wayne Enterprises"
-                  value={newClientForm.name}
-                  onChange={(e) => setNewClientForm({ ...newClientForm, name: e.target.value })}
-                  className={styles.formInput}
-                />
-              </div>
-
-              <div className={styles.flexGap10}>
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>Phone Number</label>
-                  <input
-                    type="tel"
-                    placeholder="e.g. 555-0155"
-                    value={newClientForm.phone}
-                    onChange={(e) => setNewClientForm({ ...newClientForm, phone: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>Email Address</label>
-                  <input
-                    type="email"
-                    placeholder="e.g. billing@wayne.com"
-                    value={newClientForm.email}
-                    onChange={(e) => setNewClientForm({ ...newClientForm, email: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Street Address</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 1007 Mountain Drive"
-                  value={newClientForm.address}
-                  onChange={(e) => setNewClientForm({ ...newClientForm, address: e.target.value })}
-                  className={styles.formInput}
-                />
-              </div>
-
-              <div className={styles.flexGap10}>
-                <div className={styles.formGroupFlex2}>
-                  <label className={styles.formLabel}>City</label>
-                  <input
-                    type="text"
-                    placeholder="Gotham"
-                    value={newClientForm.city}
-                    onChange={(e) => setNewClientForm({ ...newClientForm, city: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>State</label>
-                  <input
-                    type="text"
-                    placeholder="NJ"
-                    value={newClientForm.state}
-                    onChange={(e) => setNewClientForm({ ...newClientForm, state: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-                <div className={styles.formGroupFlex1_5}>
-                  <label className={styles.formLabel}>Zip Code</label>
-                  <input
-                    type="text"
-                    placeholder="07001"
-                    value={newClientForm.zipCode}
-                    onChange={(e) => setNewClientForm({ ...newClientForm, zipCode: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-              </div>
-
-              <div className={styles.flexGap10}>
-                <div className={styles.formGroupFlex1_5}>
-                  <label className={styles.formLabel}>GPS Coordinates (Lat, Lng)</label>
-                  <input
-                    type="text"
-                    placeholder="37.7749, -122.4194"
-                    value={newClientForm.gps}
-                    onChange={(e) => setNewClientForm({ ...newClientForm, gps: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>Opening Balance ($)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={newClientForm.outstandingBalance}
-                    onChange={(e) => setNewClientForm({ ...newClientForm, outstandingBalance: e.target.value })}
-                    className={styles.formInput}
-                  />
-                </div>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Preference Notes (Invoicing requirements, etc.)</label>
-                <textarea
-                  placeholder="e.g. Email billing details instantly upon completion..."
-                  value={newClientForm.preferenceNotes}
-                  onChange={(e) => setNewClientForm({ ...newClientForm, preferenceNotes: e.target.value })}
-                  className={styles.formTextArea}
-                />
-              </div>
-
-              <div className={`${styles.flexGap10} ${styles.marginTop16}`}>
-                <button
-                  type="button"
-                  onClick={() => setShowNewClientModal(false)}
-                  className={styles.buttonOutlineLarge}
-                >
-                  <CancelIcon /> Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={styles.buttonPrimaryLarge}
-                >
-                  <CheckIcon /> Create Client
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 4: Edit Job pre-populated */}
-      {showEditJobModal && selectedClient && selectedJob && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Edit Job Details</h2>
-              <button onClick={() => setShowEditJobModal(false)} className={styles.closeBtn} aria-label="Close modal">
-                <CloseIcon />
-              </button>
-            </div>
-            <form onSubmit={handleEditJobSubmit} className={styles.modalBody}>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Client Name (Pre-populated)</label>
-                <input
-                  type="text"
-                  disabled
-                  value={selectedClient.name}
-                  className={styles.formInputDisabled}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Site Address (Pre-populated)</label>
-                <input
-                  type="text"
-                  disabled
-                  value={[
-                    selectedClient.address,
-                    selectedClient.city,
-                    selectedClient.state,
-                    selectedClient.zipCode
-                  ].filter(Boolean).join(', ') || 'No address specified'}
-                  className={styles.formInputDisabled}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Service Type / Description *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. AC Compressor Diagnostic, Main Drain Line Clog"
-                  value={editJobForm.service}
-                  onChange={(e) => setEditJobForm({ ...editJobForm, service: e.target.value })}
-                  className={styles.formInput}
-                />
-              </div>
-
-              <div className={styles.flexGap10}>
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>Order Type</label>
-                  <select
-                    value={editJobForm.type}
-                    onChange={(e) => setEditJobForm({ ...editJobForm, type: e.target.value as any })}
-                    className={styles.formSelect}
-                  >
-                    <option value="Scheduled">Scheduled</option>
-                    <option value="Emergency">Emergency</option>
-                    <option value="WebRequest">Web Request</option>
-                  </select>
-                </div>
-
-                <div className={styles.formGroupFlex1}>
-                  <label className={styles.formLabel}>Priority Level</label>
-                  <select
-                    value={editJobForm.priority}
-                    onChange={(e) => setEditJobForm({ ...editJobForm, priority: e.target.value as any })}
-                    className={styles.formSelect}
-                  >
-                    <option value="low">Low Priority</option>
-                    <option value="medium">Medium Priority</option>
-                    <option value="high">High Priority</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Job Notes / Special Instructions</label>
-                <textarea
-                  value={editJobForm.notes}
-                  onChange={(e) => setEditJobForm({ ...editJobForm, notes: e.target.value })}
-                  placeholder="Check in at front desk, code is #1234, watch for golden retriever..."
-                  className={styles.formTextArea}
-                />
-              </div>
-
-              <div className={`${styles.flexGap10} ${styles.marginTop16}`}>
-                <button
-                  type="button"
-                  onClick={() => setShowEditJobModal(false)}
-                  className={styles.buttonOutlineLarge}
-                >
-                  <CancelIcon /> Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={styles.buttonPrimaryLarge}
-                >
-                  <CheckIcon /> Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 5: Confirm Delete Job */}
-      {showDeleteConfirmModal && jobToDelete && (
-        <div className={styles.modalOverlay}>
-          <div className={`${styles.modalContent} ${styles.confirm}`}>
-            <div className={styles.modalHeader}>
-              <h2 className={`${styles.modalTitle} ${styles.confirm}`}>Confirm Delete</h2>
-              <button onClick={() => setShowDeleteConfirmModal(false)} className={styles.closeBtn} aria-label="Close modal">
-                <CloseIcon />
-              </button>
-            </div>
-            <div className={styles.modalBody}>
-              <p className={styles.pConfirm}>
-                Are you sure you want to delete the job <strong>{jobToDelete.id || 'N/A'}</strong> ({jobToDelete.service})? This action cannot be undone.
-              </p>
-              <div className={styles.flexGap10}>
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirmModal(false)}
-                  className={styles.buttonOutline}
-                >
-                  <CancelIcon /> Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteJobConfirm}
-                  className={styles.btnConfirmDelete}
-                >
-                  <TrashIcon /> Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={() => setShowDeleteConfirmModal(false)}
+        jobId={jobToDelete?.id || 'N/A'}
+        jobService={jobToDelete?.service || ''}
+        onConfirm={handleDeleteJobConfirm}
+      />
     </div>
   );
 }

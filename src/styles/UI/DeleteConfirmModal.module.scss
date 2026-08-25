@@ -1,0 +1,62 @@
+.pConfirm {
+  font-size: 0.88rem;
+  color: #334155;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.flexGap10 {
+  display: flex;
+  gap: 10px;
+}
+
+.buttonOutline {
+  background-color: transparent;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 34px;
+  height: 34px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  text-transform: none;
+
+  &:hover {
+    background-color: #f1f5f9;
+  }
+}
+
+.btnConfirmDelete {
+  background-color: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 34px;
+  height: 34px;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease;
+  text-transform: none;
+
+  &:hover {
+    background-color: #dc2626;
+  }
+}
