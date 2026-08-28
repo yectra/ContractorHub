@@ -1090,22 +1090,7 @@ export default function ThreePanelPage() {
                             <textarea
                               value={techFeedback.comment}
                               readOnly
-                              style={{
-                                width: '100%',
-                                minHeight: '40px',
-                                maxHeight: '120px',
-                                backgroundColor: '#f9f9f9',
-                                color: '#333333',
-                                border: '1px solid #e0e0e0',
-                                borderRadius: '6px',
-                                padding: '4px 8px', // compact padding
-                                fontSize: '0.72rem',
-                                fontFamily: 'inherit',
-                                boxSizing: 'border-box',
-                                resize: 'vertical',
-                                outline: 'none',
-                                lineHeight: '1.2',
-                              }}
+                              className={styles.techCommentTextarea}
                             />
                           </Box>
                         )}
@@ -1139,7 +1124,7 @@ export default function ThreePanelPage() {
                                   <img
                                     src={photo.url}
                                     alt={photo.name}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    className={styles.techFeedbackPhoto}
                                   />
                                 </Box>
                               ))}
@@ -1262,13 +1247,7 @@ export default function ThreePanelPage() {
             <img
               src={previewImageUrl}
               alt="Enlarged job preview"
-              style={{
-                maxWidth: '90vw',
-                maxHeight: '90vh',
-                borderRadius: '8px',
-                objectFit: 'contain',
-                boxShadow: '0 5px 25px rgba(0,0,0,0.5)',
-              }}
+              className={styles.previewImage}
             />
             <IconButton
               onClick={() => setPreviewImageUrl(null)}

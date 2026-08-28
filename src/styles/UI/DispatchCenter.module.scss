@@ -298,3 +298,34 @@
     font-size: 1rem !important;
   }
 }
+
+/* ── Responsive Adaptations ───────────────────────────────── */
+
+@media (max-width: 479px) {
+  .addItemRow {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .addItemInput {
+    width: 100% !important;
+  }
+
+  .addButton {
+    width: 100% !important;
+    height: 36px !important;
+  }
+
+  .modalFooter {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .cancelButton,
+  .saveButton {
+    width: 100% !important;
+    height: 36px !important;
+  }
+}

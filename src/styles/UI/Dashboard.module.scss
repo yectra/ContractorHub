@@ -835,3 +835,157 @@
   width: 100%;
   font-size: 0.78rem !important;
 }
+
+.techCommentTextarea {
+  width: 100%;
+  min-height: 40px;
+  max-height: 120px;
+  background-color: #f9f9f9;
+  color: #333333;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  resize: vertical;
+  outline: none;
+  line-height: 1.2;
+}
+
+.techFeedbackPhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.previewImage {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
+  object-fit: contain;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Responsive Adaptations ───────────────────────────────── */
+
+@media (max-width: 959px) {
+  .dashboardRoot {
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .dashboardSidePanel {
+    width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .dashboardLeftPanel {
+    transition: height 0.3s ease-in-out, min-height 0.3s ease-in-out !important;
+  }
+
+  .dashboardLeftPanelOpen {
+    height: 350px !important;
+    min-height: 350px !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    border-right: none !important;
+    border-bottom: 2px solid #e0e0e0 !important;
+  }
+
+  .dashboardLeftPanelClosed {
+    height: 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    border-right: none !important;
+    border-bottom: none !important;
+  }
+
+  .dashboardRightPanel {
+    transition: height 0.3s ease-in-out, min-height 0.3s ease-in-out !important;
+  }
+
+  .dashboardRightPanelOpen {
+    height: 450px !important;
+    min-height: 450px !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    border-left: none !important;
+    border-top: 2px solid #e0e0e0 !important;
+  }
+
+  .dashboardRightPanelClosed {
+    height: 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    border-left: none !important;
+    border-top: none !important;
+  }
+
+  .dashboardCenterPanel {
+    flex: none !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 500px !important;
+  }
+
+  /* Reposition Left Toggle Button to float horizontally at boundaries */
+  .dashboardToggleLeft {
+    top: auto !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    transition: top 0.3s ease-in-out !important;
+  }
+
+  .dashboardToggleLeftOpen {
+    top: 335px !important; /* height (350px) - half button size (15px) */
+  }
+
+  .dashboardToggleLeftClosed {
+    top: -15px !important; /* aligned with top of screen/center panel */
+  }
+
+  /* Reposition Right Toggle Button to float horizontally at boundaries */
+  .dashboardToggleRight {
+    top: auto !important;
+    right: 50% !important;
+    transform: translateX(50%) !important;
+    transition: bottom 0.3s ease-in-out !important;
+  }
+
+  .dashboardToggleRightOpen {
+    bottom: 435px !important; /* height (450px) - half button size (15px) */
+  }
+
+  .dashboardToggleRightClosed {
+    bottom: -15px !important; /* aligned with bottom of screen/center panel */
+  }
+
+  /* Rotate toggle icons clockwise 90deg on mobile so chevrons point up/down */
+  .dashboardToggleIcon {
+    transform: rotate(90deg) !important;
+  }
+
+  /* Align Nav Actions center/stretch on mobile devices */
+  .dashboardNavRow {
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 0 12px 0 !important;
+  }
+}
+
+@media (max-width: 479px) {
+  .dashboardFormRow {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+}
