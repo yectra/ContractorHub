@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useClients, useServiceRequests } from '../../hooks/useDispatchData';
+import type { Schema } from '../../../amplify/data/resource';
 import styles from '../../styles/UI/ClientRecord.module.scss';
 import { IconButton, Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -8,21 +9,45 @@ import ClientModal from './modals/ClientModal';
 import JobModal from './modals/JobModal';
 import DeleteConfirmModal from './modals/DeleteConfirmModal';
 
+type Client = Schema['Client']['type'];
+type ServiceRequest = Schema['ServiceRequest']['type'];
+
+export interface ClientFormData {
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  gps: string;
+  outstandingBalance: string;
+  preferenceNotes: string;
+  notes: string;
+}
+
+export interface JobFormData {
+  service: string;
+  type: 'Scheduled' | 'Emergency' | 'WebRequest';
+  priority: 'low' | 'medium' | 'high';
+  notes: string;
+}
+
 // Inline SVG Icons for zero-dependency consistency with FieldExecution
-const BackIcon = () => (
+const BackIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="19" y1="12" x2="5" y2="12" />
     <polyline points="12 19 5 12 12 5" />
   </svg>
 );
 
-const PhoneIcon = () => (
+const PhoneIcon: React.FC = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
   </svg>
 );
 
-const MapIcon = () => (
+const MapIcon: React.FC = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
     <line x1="8" y1="2" x2="8" y2="18" />
@@ -30,27 +55,27 @@ const MapIcon = () => (
   </svg>
 );
 
-const EditIcon = () => (
+const EditIcon: React.FC = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 20h9" />
     <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
   </svg>
 );
 
-const PlusIcon = () => (
+const PlusIcon: React.FC = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="12" y1="5" x2="12" y2="19" />
     <line x1="5" y1="12" x2="19" y2="12" />
   </svg>
 );
 
-const SearchIcon = () => (
+const SearchIcon: React.FC = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="8" />
     <line x1="21" y1="21" x2="16.65" y2="16.65" />
   </svg>
 );
-const UsersIcon = () => (
+const UsersIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
     <circle cx="9" cy="7" r="4" />
@@ -59,7 +84,7 @@ const UsersIcon = () => (
   </svg>
 );
 
-export default function ClientCRMRecord() {
+export default function ClientCRMRecord(): React.JSX.Element {
   const { clients, updateClient, createClient, loading: loadingClients } = useClients();
   const { serviceRequests, createServiceRequest, updateServiceRequest, deleteServiceRequest, loading: loadingRequests } = useServiceRequests();
 
@@ -74,9 +99,9 @@ export default function ClientCRMRecord() {
   const [showNewJobModal, setShowNewJobModal] = useState<boolean>(false);
   const [showNewClientModal, setShowNewClientModal] = useState<boolean>(false);
   const [showEditJobModal, setShowEditJobModal] = useState<boolean>(false);
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [selectedJob, setSelectedJob] = useState<ServiceRequest | null>(null);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState<boolean>(false);
-  const [jobToDelete, setJobToDelete] = useState<any>(null);
+  const [jobToDelete, setJobToDelete] = useState<ServiceRequest | null>(null);
 
   const navigate = useNavigate();
   
@@ -86,7 +111,7 @@ export default function ClientCRMRecord() {
 
   // Handle responsive layout checks
   useEffect(() => {
-    const handleResize = () => {
+    const handleResize = (): void => {
       setIsMobile(window.innerWidth < 960);
     };
     handleResize();
@@ -97,26 +122,26 @@ export default function ClientCRMRecord() {
   const effectiveSelectedClientId = selectedClientId || clients[0]?.id || '';
 
   // Find currently selected client details
-  const selectedClient = useMemo(() => {
-    return clients.find((c) => c.id === effectiveSelectedClientId) || null;
+  const selectedClient = useMemo<Client | null>(() => {
+    return clients.find((c: Client) => c.id === effectiveSelectedClientId) || null;
   }, [clients, effectiveSelectedClientId]);
 
   // Parse GPS coordinates helper
-  const parsedGPS = useMemo(() => {
+  const parsedGPS = useMemo<string>(() => {
     if (!selectedClient) return '37.7749, -122.4194';
     const match = selectedClient.notes?.match(/GPS:\s*([-\d.]+),\s*([-\d.]+)/);
     return match ? `${match[1]}, ${match[2]}` : '37.7749, -122.4194';
   }, [selectedClient]);
 
   // Filter jobs (service requests) associated with the selected client
-  const clientJobs = useMemo(() => {
+  const clientJobs = useMemo<ServiceRequest[]>(() => {
     if (!selectedClient) return [];
-    return serviceRequests.filter((job) => job.client === selectedClient.name);
+    return serviceRequests.filter((job: ServiceRequest) => job.client === selectedClient.name);
   }, [serviceRequests, selectedClient]);
 
   // Apply search query and status filters
-  const filteredJobs = useMemo(() => {
-    return clientJobs.filter((job) => {
+  const filteredJobs = useMemo<ServiceRequest[]>(() => {
+    return clientJobs.filter((job: ServiceRequest) => {
       const jobIdStr = job.id || '';
       const matchSearch =
         jobIdStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -133,21 +158,21 @@ export default function ClientCRMRecord() {
   }, [clientJobs, searchQuery, statusFilter]);
 
   // Financial Metrics calculations
-  const totalOutstanding = useMemo(() => {
+  const totalOutstanding = useMemo<number>(() => {
     if (!selectedClient) return 0;
     return parseFloat(selectedClient.outstandingBalance || '0.00');
   }, [selectedClient]);
 
-  const outstandingInvoicesCount = useMemo(() => {
+  const outstandingInvoicesCount = useMemo<number>(() => {
     // Count active and completed requests that may have outstanding invoices
     if (totalOutstanding > 0) {
-      const unpaidCount = clientJobs.filter(j => j.status !== 'Completed').length;
+      const unpaidCount = clientJobs.filter((j: ServiceRequest) => j.status !== 'Completed').length;
       return unpaidCount > 0 ? unpaidCount : 1;
     }
     return 0;
   }, [clientJobs, totalOutstanding]);
 
-  const paymentStatus = useMemo(() => {
+  const paymentStatus = useMemo<'PAID' | 'OVERDUE' | 'PENDING' | 'GOOD'>(() => {
     if (!selectedClient) return 'GOOD';
     const balance = parseFloat(selectedClient.outstandingBalance || '0.00');
     if (balance <= 0) return 'PAID';
@@ -156,7 +181,7 @@ export default function ClientCRMRecord() {
   }, [selectedClient]);
 
   // Handle Edit Profile Save
-  const handleEditProfileSubmit = async (formData: any) => {
+  const handleEditProfileSubmit = async (formData: ClientFormData): Promise<void> => {
     if (!selectedClient || !selectedClient.id) return;
 
     try {
@@ -179,7 +204,7 @@ export default function ClientCRMRecord() {
       setSuccessAlert('Client profile updated successfully!');
       setShowEditModal(false);
       setTimeout(() => setSuccessAlert(null), 4000);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       setErrorAlert('Failed to update client profile.');
       setTimeout(() => setErrorAlert(null), 4000);
@@ -187,7 +212,7 @@ export default function ClientCRMRecord() {
   };
 
   // Handle Quick Create Job
-  const handleCreateJobSubmit = async (formData: any) => {
+  const handleCreateJobSubmit = async (formData: JobFormData): Promise<void> => {
     if (!selectedClient) return;
 
     try {
@@ -213,7 +238,7 @@ export default function ClientCRMRecord() {
       setSuccessAlert('New job created in the dispatch queue successfully!');
       setShowNewJobModal(false);
       setTimeout(() => setSuccessAlert(null), 4000);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       setErrorAlert('Failed to create new job.');
       setTimeout(() => setErrorAlert(null), 4000);
@@ -221,13 +246,13 @@ export default function ClientCRMRecord() {
   };
 
   // Handle Edit Job Click
-  const handleEditJobClick = (job: any) => {
+  const handleEditJobClick = (job: ServiceRequest): void => {
     setSelectedJob(job);
     setShowEditJobModal(true);
   };
 
   // Handle Edit Job Submit
-  const handleEditJobSubmit = async (formData: any) => {
+  const handleEditJobSubmit = async (formData: JobFormData): Promise<void> => {
     if (!selectedJob || !selectedJob.id) return;
     try {
       await updateServiceRequest(selectedJob.id, {
@@ -239,7 +264,7 @@ export default function ClientCRMRecord() {
       setSuccessAlert('Job updated successfully!');
       setShowEditJobModal(false);
       setTimeout(() => setSuccessAlert(null), 4000);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       setErrorAlert('Failed to update job.');
       setTimeout(() => setErrorAlert(null), 4000);
@@ -247,13 +272,13 @@ export default function ClientCRMRecord() {
   };
 
   // Handle Delete Job Click
-  const handleDeleteJobClick = (job: any) => {
+  const handleDeleteJobClick = (job: ServiceRequest): void => {
     setJobToDelete(job);
     setShowDeleteConfirmModal(true);
   };
 
   // Handle Delete Job Confirm
-  const handleDeleteJobConfirm = async () => {
+  const handleDeleteJobConfirm = async (): Promise<void> => {
     if (!jobToDelete || !jobToDelete.id) return;
     try {
       await deleteServiceRequest(jobToDelete.id);
@@ -261,7 +286,7 @@ export default function ClientCRMRecord() {
       setShowDeleteConfirmModal(false);
       setJobToDelete(null);
       setTimeout(() => setSuccessAlert(null), 4000);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       setErrorAlert('Failed to delete job.');
       setTimeout(() => setErrorAlert(null), 4000);
@@ -269,7 +294,7 @@ export default function ClientCRMRecord() {
   };
 
   // Handle Create Client
-  const handleCreateClientSubmit = async (formData: any) => {
+  const handleCreateClientSubmit = async (formData: ClientFormData): Promise<void> => {
     try {
       const gpsLine = `GPS: ${formData.gps}`;
       const finalNotes = formData.preferenceNotes.trim() 
@@ -295,7 +320,7 @@ export default function ClientCRMRecord() {
       setSuccessAlert(`Client "${formData.name}" created successfully!`);
       setShowNewClientModal(false);
       setTimeout(() => setSuccessAlert(null), 4000);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       setErrorAlert('Failed to create client.');
       setTimeout(() => setErrorAlert(null), 4000);
@@ -303,7 +328,7 @@ export default function ClientCRMRecord() {
   };
 
   // Generate a mock job amount for visual consistency with real invoicing systems
-  const getJobAmount = (jobId: string, serviceName: string) => {
+  const getJobAmount = (jobId: string, serviceName: string): string => {
     // Generate a stable pseudorandom amount based on job details
     let sum = 0;
     const combined = jobId + serviceName;
@@ -336,10 +361,10 @@ export default function ClientCRMRecord() {
             {!loadingClients && clients.length > 0 && (
               <select
                 value={effectiveSelectedClientId}
-                onChange={(e) => setSelectedClientId(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedClientId(e.target.value)}
                 className={styles.clientSelect}
               >
-                {clients.map((c, index) => (
+                {clients.map((c: Client, index: number) => (
                   <option key={c.id || index} value={c.id || ''}>
                     {c.name}
                   </option>
@@ -358,7 +383,7 @@ export default function ClientCRMRecord() {
 
             {/* User Management button */}
             <button
-              onClick={() => window.location.href = '/admin/users'}
+              onClick={() => { window.location.href = '/admin/users'; }}
               className={styles.usersBtn}
               title="Open User Management"
             >
@@ -466,14 +491,14 @@ export default function ClientCRMRecord() {
                     type="text"
                     placeholder="Search by job ID, description, or notes..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                     className={styles.searchInput}
                   />
                 </div>
  
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatusFilter(e.target.value)}
                   className={styles.filterSelect}
                 >
                   <option value="ALL">All Statuses</option>
@@ -505,7 +530,7 @@ export default function ClientCRMRecord() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredJobs.map((job, index) => {
+                      {filteredJobs.map((job: ServiceRequest, index: number) => {
                         const isCompleted = job.status === 'Completed';
                         const isActive = job.status === 'InProgress' || job.status === 'Assigned';
                         const formattedDate = job.createdAt 
@@ -537,7 +562,7 @@ export default function ClientCRMRecord() {
                                 <Tooltip title="Edit" arrow>
                                   <IconButton
                                     size="small"
-                                    onClick={(e) => {
+                                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                                       e.stopPropagation();
                                       handleEditJobClick(job);
                                     }}
@@ -549,7 +574,7 @@ export default function ClientCRMRecord() {
                                 <Tooltip title="Delete" arrow>
                                   <IconButton
                                     size="small"
-                                    onClick={(e) => {
+                                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                                       e.stopPropagation();
                                       handleDeleteJobClick(job);
                                     }}
