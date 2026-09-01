@@ -107,7 +107,7 @@ const getChecklistForJob = (jobId: string, notes?: string | null): ChecklistItem
     try {
       const parsed = JSON.parse(notes.replace('CHECKLIST:', ''));
       if (Array.isArray(parsed) && parsed.length > 0) {
-        dispatcherTemplate = parsed.map((item: any) => ({
+        dispatcherTemplate = parsed.map((item) => ({
           id: String(item.id ?? `step-${Math.random()}`),
           text: String(item.text ?? ''),
           checked: Boolean(item.checked ?? item.completed ?? false),

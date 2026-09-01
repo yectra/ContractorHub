@@ -268,6 +268,7 @@ export default function TechDashboard() {
     sessionStorage.setItem('previousView', 'TECH_DASHBOARD');
     sessionStorage.setItem('selectedJobId', jobId);
     sessionStorage.setItem('selectedSrId', srId);
+    // eslint-disable-next-line react-hooks/immutability
     window.location.href = '/technician';
   };
 
