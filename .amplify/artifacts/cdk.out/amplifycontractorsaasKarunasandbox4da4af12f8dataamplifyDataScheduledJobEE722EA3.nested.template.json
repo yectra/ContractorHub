@@ -1,0 +1,2311 @@
+{
+ "Parameters": {
+  "DynamoDBModelTableReadIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of read IOPS the table should support."
+  },
+  "DynamoDBModelTableWriteIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of write IOPS the table should support."
+  },
+  "DynamoDBBillingMode": {
+   "Type": "String",
+   "Default": "PAY_PER_REQUEST",
+   "AllowedValues": [
+    "PAY_PER_REQUEST",
+    "PROVISIONED"
+   ],
+   "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+  },
+  "DynamoDBEnablePointInTimeRecovery": {
+   "Type": "String",
+   "Default": "false",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Whether to enable Point in Time Recovery on the table."
+  },
+  "DynamoDBEnableServerSideEncryption": {
+   "Type": "String",
+   "Default": "true",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Enable server side encryption powered by KMS."
+  },
+  "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResourceF9EBBEF4OutputsamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataAmplifyTableManagerTableMana9C16A1CD": {
+   "Type": "String"
+  },
+  "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId": {
+   "Type": "String"
+  },
+  "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName": {
+   "Type": "String"
+  },
+  "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef": {
+   "Type": "String"
+  },
+  "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef": {
+   "Type": "String"
+  },
+  "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef": {
+   "Type": "String"
+  }
+ },
+ "Conditions": {
+  "HasEnvironmentParameter": {
+   "Fn::Not": [
+    {
+     "Fn::Equals": [
+      "NONE",
+      "NONE"
+     ]
+    }
+   ]
+  },
+  "ShouldUsePayPerRequestBilling": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBBillingMode"
+    },
+    "PAY_PER_REQUEST"
+   ]
+  },
+  "ShouldUsePointInTimeRecovery": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBEnablePointInTimeRecovery"
+    },
+    "true"
+   ]
+  },
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Resources": {
+  "ScheduledJobTable": {
+   "Type": "Custom::AmplifyDynamoDBTable",
+   "Properties": {
+    "ServiceToken": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResourceF9EBBEF4OutputsamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataAmplifyTableManagerTableMana9C16A1CD"
+    },
+    "tableName": {
+     "Fn::Join": [
+      "",
+      [
+       "ScheduledJob-",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "attributeDefinitions": [
+     {
+      "attributeName": "id",
+      "attributeType": "S"
+     }
+    ],
+    "keySchema": [
+     {
+      "attributeName": "id",
+      "keyType": "HASH"
+     }
+    ],
+    "provisionedThroughput": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      {
+       "Ref": "AWS::NoValue"
+      },
+      {
+       "ReadCapacityUnits": {
+        "Ref": "DynamoDBModelTableReadIOPS"
+       },
+       "WriteCapacityUnits": {
+        "Ref": "DynamoDBModelTableWriteIOPS"
+       }
+      }
+     ]
+    },
+    "sseSpecification": {
+     "sseEnabled": false
+    },
+    "streamSpecification": {
+     "streamViewType": "NEW_AND_OLD_IMAGES"
+    },
+    "deletionProtectionEnabled": false,
+    "allowDestructiveGraphqlSchemaUpdates": true,
+    "replaceTableUponGsiUpdate": true,
+    "pointInTimeRecoverySpecification": {
+     "Fn::If": [
+      "ShouldUsePointInTimeRecovery",
+      {
+       "PointInTimeRecoveryEnabled": true
+      },
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    },
+    "billingMode": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      "PAY_PER_REQUEST",
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/ScheduledJobTable/Default/Default"
+   }
+  },
+  "ScheduledJobIAMRole5E1842ED": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "appsync.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:ConditionCheckItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator"
+         ],
+         "Effect": "Allow",
+         "Resource": [
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "ScheduledJob-",
+                {
+                 "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "ScheduledJob-",
+                {
+                 "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "DynamoDBAccess"
+     }
+    ],
+    "RoleName": {
+     "Fn::Join": [
+      "",
+      [
+       "ScheduledJobIAMRole2a320f-",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/ScheduledJobIAMRole/Resource"
+   }
+  },
+  "ScheduledJobDataSource": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DynamoDBConfig": {
+     "AwsRegion": {
+      "Ref": "AWS::Region"
+     },
+     "TableName": {
+      "Fn::Select": [
+       1,
+       {
+        "Fn::Split": [
+         "/",
+         {
+          "Fn::Select": [
+           5,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::GetAtt": [
+               "ScheduledJobTable",
+               "TableArn"
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "Name": "ScheduledJobTable",
+    "ServiceRoleArn": {
+     "Fn::GetAtt": [
+      "ScheduledJobIAMRole5E1842ED",
+      "Arn"
+     ]
+    },
+    "Type": "AMAZON_DYNAMODB"
+   },
+   "DependsOn": [
+    "ScheduledJobIAMRole5E1842ED"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/ScheduledJobDataSource/Resource"
+   }
+  },
+  "QuerygetScheduledJobpreAuth0FunctionQuerygetScheduledJobpreAuth0FunctionAppSyncFunctionBEC6449F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetScheduledJobpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/ffc597e18023b530e6afcbe02cee647d49550fa9e77bd06f1dee09d8b1be8de3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/QuerygetScheduledJobpreAuth0Function/QuerygetScheduledJobpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetScheduledJobauth0FunctionQuerygetScheduledJobauth0FunctionAppSyncFunction26A910D1": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetScheduledJobauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/ad19b8203207ee9640ec6de0a766ea38d67ea787852a8f5d32b2423f33bdbb9d.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/QuerygetScheduledJobauth0Function/QuerygetScheduledJobauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetScheduledJobpostAuth0FunctionQuerygetScheduledJobpostAuth0FunctionAppSyncFunction241B1941": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetScheduledJobpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/QuerygetScheduledJobpostAuth0Function/QuerygetScheduledJobpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryGetScheduledJobDataResolverFnQueryGetScheduledJobDataResolverFnAppSyncFunction86B4275A": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "ScheduledJobDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryGetScheduledJobDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/08f4d557693d96c1a4efba0f9dc91330e4b19772fd5477c156468843e3d9cb5e.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4c6a2d29f01c6091bd1d9afe16e5849d456c96f17c3b215938c8067399532719.vtl"
+    }
+   },
+   "DependsOn": [
+    "ScheduledJobDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/QueryGetScheduledJobDataResolverFn/QueryGetScheduledJobDataResolverFn.AppSyncFunction"
+   }
+  },
+  "GetScheduledJobResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "FieldName": "getScheduledJob",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerygetScheduledJobpreAuth0FunctionQuerygetScheduledJobpreAuth0FunctionAppSyncFunctionBEC6449F",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetScheduledJobauth0FunctionQuerygetScheduledJobauth0FunctionAppSyncFunction26A910D1",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetScheduledJobpostAuth0FunctionQuerygetScheduledJobpostAuth0FunctionAppSyncFunction241B1941",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryGetScheduledJobDataResolverFnQueryGetScheduledJobDataResolverFnAppSyncFunction86B4275A",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"getScheduledJob\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "ScheduledJobTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/queryGetScheduledJobResolver"
+   }
+  },
+  "QuerylistScheduledJobspreAuth0FunctionQuerylistScheduledJobspreAuth0FunctionAppSyncFunctionD32AFA38": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistScheduledJobspreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3e81312d4c75951808eda9fcd5f854c1925c0b819de0939f09c4fe2eebb190b8.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/QuerylistScheduledJobspreAuth0Function/QuerylistScheduledJobspreAuth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistScheduledJobsauth0FunctionQuerylistScheduledJobsauth0FunctionAppSyncFunctionCE7BC2CA": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistScheduledJobsauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/ad19b8203207ee9640ec6de0a766ea38d67ea787852a8f5d32b2423f33bdbb9d.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/QuerylistScheduledJobsauth0Function/QuerylistScheduledJobsauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistScheduledJobspostAuth0FunctionQuerylistScheduledJobspostAuth0FunctionAppSyncFunction9F638D51": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistScheduledJobspostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/QuerylistScheduledJobspostAuth0Function/QuerylistScheduledJobspostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListScheduledJobsDataResolverFnQueryListScheduledJobsDataResolverFnAppSyncFunction91E0F726": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "ScheduledJobDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListScheduledJobsDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9fcbe070ecd3023c5bf5b966fa9584757db9762eef123bad0820bd87591b2174.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cc01911d0269d4080ea57505dc445dfc315ef7ad85d3d9d4ea1357858bff451d.vtl"
+    }
+   },
+   "DependsOn": [
+    "ScheduledJobDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/QueryListScheduledJobsDataResolverFn/QueryListScheduledJobsDataResolverFn.AppSyncFunction"
+   }
+  },
+  "ListScheduledJobResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "FieldName": "listScheduledJobs",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistScheduledJobspreAuth0FunctionQuerylistScheduledJobspreAuth0FunctionAppSyncFunctionD32AFA38",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistScheduledJobsauth0FunctionQuerylistScheduledJobsauth0FunctionAppSyncFunctionCE7BC2CA",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistScheduledJobspostAuth0FunctionQuerylistScheduledJobspostAuth0FunctionAppSyncFunction9F638D51",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListScheduledJobsDataResolverFnQueryListScheduledJobsDataResolverFnAppSyncFunction91E0F726",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listScheduledJobs\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "ScheduledJobTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/queryListScheduledJobsResolver"
+   }
+  },
+  "MutationcreateScheduledJobinit0FunctionMutationcreateScheduledJobinit0FunctionAppSyncFunction2E65C226": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateScheduledJobinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a183ddccbd956316c38ef97177b8f088ef0826f62023323f5ae6053d348ccffc.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationcreateScheduledJobinit0Function/MutationcreateScheduledJobinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateScheduledJobpreAuth0FunctionMutationcreateScheduledJobpreAuth0FunctionAppSyncFunction11274306": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateScheduledJobpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/39fb35c6f8e8573ffe3a63ba867cf543b05af129a104b387a44f03c3d85da0c3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationcreateScheduledJobpreAuth0Function/MutationcreateScheduledJobpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateScheduledJobauth0FunctionMutationcreateScheduledJobauth0FunctionAppSyncFunction5555B166": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateScheduledJobauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cfe0fd6579d0a0d9d07fc80a8d9c74f21d4df09798909e4fbf4a12a134eb1635.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationcreateScheduledJobauth0Function/MutationcreateScheduledJobauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateScheduledJobpostAuth0FunctionMutationcreateScheduledJobpostAuth0FunctionAppSyncFunction44F9CD78": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateScheduledJobpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationcreateScheduledJobpostAuth0Function/MutationcreateScheduledJobpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationCreateScheduledJobDataResolverFnMutationCreateScheduledJobDataResolverFnAppSyncFunction84648F5D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "ScheduledJobDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationCreateScheduledJobDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3ac24cee8277627e1cac075382f28729a1ff4f5b0d07ee6562be81c5fcf8b0be.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "ScheduledJobDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationCreateScheduledJobDataResolverFn/MutationCreateScheduledJobDataResolverFn.AppSyncFunction"
+   }
+  },
+  "CreateScheduledJobResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "FieldName": "createScheduledJob",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationcreateScheduledJobinit0FunctionMutationcreateScheduledJobinit0FunctionAppSyncFunction2E65C226",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateScheduledJobpreAuth0FunctionMutationcreateScheduledJobpreAuth0FunctionAppSyncFunction11274306",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateScheduledJobauth0FunctionMutationcreateScheduledJobauth0FunctionAppSyncFunction5555B166",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateScheduledJobpostAuth0FunctionMutationcreateScheduledJobpostAuth0FunctionAppSyncFunction44F9CD78",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationCreateScheduledJobDataResolverFnMutationCreateScheduledJobDataResolverFnAppSyncFunction84648F5D",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"createScheduledJob\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "ScheduledJobTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/mutationCreateScheduledJobResolver"
+   }
+  },
+  "MutationupdateScheduledJobinit0FunctionMutationupdateScheduledJobinit0FunctionAppSyncFunctionE68C7EDD": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateScheduledJobinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/06db846fd14e6fc371f22b12b5545ba8e2dbfeda85d8c8d586c71c282166657b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationupdateScheduledJobinit0Function/MutationupdateScheduledJobinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateScheduledJobpreAuth0FunctionMutationupdateScheduledJobpreAuth0FunctionAppSyncFunctionB861F497": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateScheduledJobpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/39fb35c6f8e8573ffe3a63ba867cf543b05af129a104b387a44f03c3d85da0c3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationupdateScheduledJobpreAuth0Function/MutationupdateScheduledJobpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateScheduledJobauth0FunctionMutationupdateScheduledJobauth0FunctionAppSyncFunction5AB5A744": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "ScheduledJobDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateScheduledJobauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/7d012635925a5e84768b92b44a96fcc395fc0ade761e05e6c7cf5a8203bb7276.vtl"
+    }
+   },
+   "DependsOn": [
+    "ScheduledJobDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationupdateScheduledJobauth0Function/MutationupdateScheduledJobauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateScheduledJobpostAuth0FunctionMutationupdateScheduledJobpostAuth0FunctionAppSyncFunction1EA87FB4": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateScheduledJobpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationupdateScheduledJobpostAuth0Function/MutationupdateScheduledJobpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationUpdateScheduledJobDataResolverFnMutationUpdateScheduledJobDataResolverFnAppSyncFunction47CBB1BE": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "ScheduledJobDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationUpdateScheduledJobDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/474bf0776ec2164a13191d1a0a9e057154931e4918fea5086f49850d02a5371b.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "ScheduledJobDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationUpdateScheduledJobDataResolverFn/MutationUpdateScheduledJobDataResolverFn.AppSyncFunction"
+   }
+  },
+  "UpdateScheduledJobResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "FieldName": "updateScheduledJob",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationupdateScheduledJobinit0FunctionMutationupdateScheduledJobinit0FunctionAppSyncFunctionE68C7EDD",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateScheduledJobpreAuth0FunctionMutationupdateScheduledJobpreAuth0FunctionAppSyncFunctionB861F497",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateScheduledJobauth0FunctionMutationupdateScheduledJobauth0FunctionAppSyncFunction5AB5A744",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateScheduledJobpostAuth0FunctionMutationupdateScheduledJobpostAuth0FunctionAppSyncFunction1EA87FB4",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationUpdateScheduledJobDataResolverFnMutationUpdateScheduledJobDataResolverFnAppSyncFunction47CBB1BE",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"updateScheduledJob\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "ScheduledJobTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/mutationUpdateScheduledJobResolver"
+   }
+  },
+  "MutationdeleteScheduledJobpreAuth0FunctionMutationdeleteScheduledJobpreAuth0FunctionAppSyncFunctionB353306D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteScheduledJobpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a2c0f8a4d76f659d130c8a445801845ae9d33e5cc2c5ecd610edc272d4bd46e3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationdeleteScheduledJobpreAuth0Function/MutationdeleteScheduledJobpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteScheduledJobauth0FunctionMutationdeleteScheduledJobauth0FunctionAppSyncFunction4F2CAB88": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "ScheduledJobDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteScheduledJobauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/693978f74b3ee99d7510b02594546f5fc636a1e5beb52eccdc4050e6cae944c3.vtl"
+    }
+   },
+   "DependsOn": [
+    "ScheduledJobDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationdeleteScheduledJobauth0Function/MutationdeleteScheduledJobauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteScheduledJobpostAuth0FunctionMutationdeleteScheduledJobpostAuth0FunctionAppSyncFunction8E9F1C6D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteScheduledJobpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationdeleteScheduledJobpostAuth0Function/MutationdeleteScheduledJobpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationDeleteScheduledJobDataResolverFnMutationDeleteScheduledJobDataResolverFnAppSyncFunctionD8EDE5E0": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "ScheduledJobDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationDeleteScheduledJobDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4f7907d1209a2c9953a0c053df402c634e359546d70c7cc5c2e8e21ea734880f.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "ScheduledJobDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/MutationDeleteScheduledJobDataResolverFn/MutationDeleteScheduledJobDataResolverFn.AppSyncFunction"
+   }
+  },
+  "DeleteScheduledJobResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "FieldName": "deleteScheduledJob",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteScheduledJobpreAuth0FunctionMutationdeleteScheduledJobpreAuth0FunctionAppSyncFunctionB353306D",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteScheduledJobauth0FunctionMutationdeleteScheduledJobauth0FunctionAppSyncFunction4F2CAB88",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteScheduledJobpostAuth0FunctionMutationdeleteScheduledJobpostAuth0FunctionAppSyncFunction8E9F1C6D",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationDeleteScheduledJobDataResolverFnMutationDeleteScheduledJobDataResolverFnAppSyncFunctionD8EDE5E0",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"deleteScheduledJob\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "ScheduledJobTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/mutationDeleteScheduledJobResolver"
+   }
+  },
+  "SubscriptiononCreateScheduledJobauth0FunctionSubscriptiononCreateScheduledJobauth0FunctionAppSyncFunctionAE596E7A": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateScheduledJobauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/7313b9d304b42b31f7779d73251565621f911cf233e53cca2c808036bda639cc.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/SubscriptiononCreateScheduledJobauth0Function/SubscriptiononCreateScheduledJobauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateScheduledJobpostAuth0FunctionSubscriptiononCreateScheduledJobpostAuth0FunctionAppSyncFunction62F7CF98": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateScheduledJobpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/SubscriptiononCreateScheduledJobpostAuth0Function/SubscriptiononCreateScheduledJobpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnCreateScheduledJobDataResolverFnSubscriptionOnCreateScheduledJobDataResolverFnAppSyncFunction49D51466": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnCreateScheduledJobDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/SubscriptionOnCreateScheduledJobDataResolverFn/SubscriptionOnCreateScheduledJobDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateScheduledJobResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "FieldName": "onCreateScheduledJob",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateScheduledJobauth0FunctionSubscriptiononCreateScheduledJobauth0FunctionAppSyncFunctionAE596E7A",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateScheduledJobpostAuth0FunctionSubscriptiononCreateScheduledJobpostAuth0FunctionAppSyncFunction62F7CF98",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnCreateScheduledJobDataResolverFnSubscriptionOnCreateScheduledJobDataResolverFnAppSyncFunction49D51466",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onCreateScheduledJob\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/subscriptionOnCreateScheduledJobResolver"
+   }
+  },
+  "SubscriptiononUpdateScheduledJobauth0FunctionSubscriptiononUpdateScheduledJobauth0FunctionAppSyncFunctionB72562AE": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateScheduledJobauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/7313b9d304b42b31f7779d73251565621f911cf233e53cca2c808036bda639cc.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/SubscriptiononUpdateScheduledJobauth0Function/SubscriptiononUpdateScheduledJobauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateScheduledJobpostAuth0FunctionSubscriptiononUpdateScheduledJobpostAuth0FunctionAppSyncFunction2CB59F52": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateScheduledJobpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/SubscriptiononUpdateScheduledJobpostAuth0Function/SubscriptiononUpdateScheduledJobpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnUpdateScheduledJobDataResolverFnSubscriptionOnUpdateScheduledJobDataResolverFnAppSyncFunctionA91883D5": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnUpdateScheduledJobDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/SubscriptionOnUpdateScheduledJobDataResolverFn/SubscriptionOnUpdateScheduledJobDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateScheduledJobResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "FieldName": "onUpdateScheduledJob",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateScheduledJobauth0FunctionSubscriptiononUpdateScheduledJobauth0FunctionAppSyncFunctionB72562AE",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateScheduledJobpostAuth0FunctionSubscriptiononUpdateScheduledJobpostAuth0FunctionAppSyncFunction2CB59F52",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnUpdateScheduledJobDataResolverFnSubscriptionOnUpdateScheduledJobDataResolverFnAppSyncFunctionA91883D5",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onUpdateScheduledJob\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/subscriptionOnUpdateScheduledJobResolver"
+   }
+  },
+  "SubscriptiononDeleteScheduledJobauth0FunctionSubscriptiononDeleteScheduledJobauth0FunctionAppSyncFunction5E703A1B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteScheduledJobauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/7313b9d304b42b31f7779d73251565621f911cf233e53cca2c808036bda639cc.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/SubscriptiononDeleteScheduledJobauth0Function/SubscriptiononDeleteScheduledJobauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteScheduledJobpostAuth0FunctionSubscriptiononDeleteScheduledJobpostAuth0FunctionAppSyncFunction03B026FB": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteScheduledJobpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/SubscriptiononDeleteScheduledJobpostAuth0Function/SubscriptiononDeleteScheduledJobpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnDeleteScheduledJobDataResolverFnSubscriptionOnDeleteScheduledJobDataResolverFnAppSyncFunctionC8E486D3": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnDeleteScheduledJobDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/SubscriptionOnDeleteScheduledJobDataResolverFn/SubscriptionOnDeleteScheduledJobDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteScheduledJobResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "FieldName": "onDeleteScheduledJob",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteScheduledJobauth0FunctionSubscriptiononDeleteScheduledJobauth0FunctionAppSyncFunction5E703A1B",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteScheduledJobpostAuth0FunctionSubscriptiononDeleteScheduledJobpostAuth0FunctionAppSyncFunction03B026FB",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnDeleteScheduledJobDataResolverFnSubscriptionOnDeleteScheduledJobDataResolverFnAppSyncFunctionC8E486D3",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onDeleteScheduledJob\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/subscriptionOnDeleteScheduledJobResolver"
+   }
+  },
+  "ScheduledJobOwnerDataResolverFnScheduledJobOwnerDataResolverFnAppSyncFunction4E1F3C27": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "ScheduledJobOwnerDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/041534e5fd916595f752318f161512d7c7f83b9f2cf32d0f0be381c12253ff68.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/064303962e481067b44300212516363b99aaee539b6bafaf756fdd83ff0b60f0.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/ScheduledJobOwnerDataResolverFn/ScheduledJobOwnerDataResolverFn.AppSyncFunction"
+   }
+  },
+  "ScheduledJobownerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    "FieldName": "owner",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "ScheduledJobOwnerDataResolverFnScheduledJobOwnerDataResolverFnAppSyncFunction4E1F3C27",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"ScheduledJob\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"owner\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "ScheduledJob"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/scheduledJobOwnerResolver"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOwW6DMAyGn6X34DE69b6Cetwm2L0yiUEpIUGx06pCvPsEnTrt9PuTP9l/AcUhh3yHN860GTJnW5g/iIVMI6gHVXb+CyOOJBRXKIM3VmzwqiYOKWpSZWIJ4x92/jnjjc+zuXscg2nhG1tHR2RSFkeY6+AednC0KJwmvnsNc7XpVVuhYPM8+Z9Oyeu1RBl8Z/sUcWv0+9ldKS6K92dkJmF4X0PxHo5JDyRrgWV1P5NMSdS2bgR76/tF+WAILvxyLd7g9QD57sLWZjF5sSNB/cgfJyg+HDYBAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/ScheduledJob/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "GetAttScheduledJobTableStreamArn": {
+   "Description": "Your DynamoDB table StreamArn.",
+   "Value": {
+    "Fn::GetAtt": [
+     "ScheduledJobTable",
+     "TableStreamArn"
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "GetAtt:ScheduledJobTable:StreamArn"
+      ]
+     ]
+    }
+   }
+  },
+  "GetAttScheduledJobTableName": {
+   "Description": "Your DynamoDB table name.",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "ScheduledJob-",
+      {
+       "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+      },
+      "-NONE"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+       },
+       "GetAtt:ScheduledJobTable:Name"
+      ]
+     ]
+    }
+   }
+  }
+ }
+}

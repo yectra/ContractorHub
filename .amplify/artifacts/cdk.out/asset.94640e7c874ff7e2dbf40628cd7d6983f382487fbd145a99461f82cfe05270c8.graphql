@@ -1,0 +1,781 @@
+type ServiceRequest @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  type: ServiceRequestType
+  priority: ServiceRequestPriority
+  client: String!
+  service: String!
+  location: String!
+  requestTime: String!
+  estimatedDuration: String!
+  status: ServiceRequestStatus
+  assignedTechnicianId: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  owner: String
+}
+
+type Technician @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  name: String!
+  specialty: TechnicianSpecialty
+  email: AWSEmail
+  phone: AWSPhone
+  avatar: String
+  color: String
+  isAvailable: Boolean
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  owner: String
+}
+
+type ScheduledJob @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  techId: String!
+  serviceRequestId: String!
+  startHour: Int!
+  duration: Int!
+  status: ScheduledJobStatus
+  notes: String
+  scheduledDate: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  owner: String
+}
+
+type Client @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  name: String!
+  email: AWSEmail
+  phone: AWSPhone
+  address: String
+  city: String
+  state: String
+  zipCode: String
+  outstandingBalance: String
+  notes: String
+  preferenceNotes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  owner: String
+}
+
+type ServiceHistory @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  clientId: String!
+  technicianId: String!
+  service: String!
+  cost: String
+  date: AWSDate
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  owner: String
+}
+
+enum ServiceRequestType {
+  Emergency
+  WebRequest
+  Scheduled
+}
+
+enum ServiceRequestPriority {
+  high
+  medium
+  low
+}
+
+enum ServiceRequestStatus {
+  Unassigned
+  Assigned
+  InProgress
+  Completed
+}
+
+enum TechnicianSpecialty {
+  Plumbing
+  HVAC
+  Electrical
+  General
+}
+
+enum ScheduledJobStatus {
+  Scheduled
+  InProgress
+  Completed
+  Cancelled
+}
+
+input AmplifyAIConversationTurnErrorInput {
+  errorType: String!
+  message: String!
+}
+
+input ModelStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelBooleanInput {
+  ne: Boolean
+  eq: Boolean
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelSubscriptionStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  in: [String]
+  notIn: [String]
+}
+
+input ModelSubscriptionIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  in: [Int]
+  notIn: [Int]
+}
+
+input ModelSubscriptionFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  in: [Float]
+  notIn: [Float]
+}
+
+input ModelSubscriptionBooleanInput {
+  ne: Boolean
+  eq: Boolean
+}
+
+input ModelSubscriptionIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  in: [ID]
+  notIn: [ID]
+}
+
+enum ModelAttributeTypes {
+  binary
+  binarySet
+  bool
+  list
+  map
+  number
+  numberSet
+  string
+  stringSet
+  _null
+}
+
+input ModelSizeInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+}
+
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+
+type ModelServiceRequestConnection @aws_iam @aws_cognito_user_pools {
+  items: [ServiceRequest]!
+  nextToken: String
+}
+
+input ModelServiceRequestTypeInput {
+  eq: ServiceRequestType
+  ne: ServiceRequestType
+}
+
+input ModelServiceRequestPriorityInput {
+  eq: ServiceRequestPriority
+  ne: ServiceRequestPriority
+}
+
+input ModelServiceRequestStatusInput {
+  eq: ServiceRequestStatus
+  ne: ServiceRequestStatus
+}
+
+input ModelServiceRequestFilterInput {
+  id: ModelIDInput
+  type: ModelServiceRequestTypeInput
+  priority: ModelServiceRequestPriorityInput
+  client: ModelStringInput
+  service: ModelStringInput
+  location: ModelStringInput
+  requestTime: ModelStringInput
+  estimatedDuration: ModelStringInput
+  status: ModelServiceRequestStatusInput
+  assignedTechnicianId: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelServiceRequestFilterInput]
+  or: [ModelServiceRequestFilterInput]
+  not: ModelServiceRequestFilterInput
+  owner: ModelStringInput
+}
+
+type Query {
+  getServiceRequest(id: ID!): ServiceRequest @aws_iam @aws_cognito_user_pools
+  listServiceRequests(id: ID, filter: ModelServiceRequestFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelServiceRequestConnection @aws_iam @aws_cognito_user_pools
+  getTechnician(id: ID!): Technician @aws_iam @aws_cognito_user_pools
+  listTechnicians(id: ID, filter: ModelTechnicianFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelTechnicianConnection @aws_iam @aws_cognito_user_pools
+  getScheduledJob(id: ID!): ScheduledJob @aws_iam @aws_cognito_user_pools
+  listScheduledJobs(id: ID, filter: ModelScheduledJobFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelScheduledJobConnection @aws_iam @aws_cognito_user_pools
+  getClient(id: ID!): Client @aws_iam @aws_cognito_user_pools
+  listClients(id: ID, filter: ModelClientFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelClientConnection @aws_iam @aws_cognito_user_pools
+  getServiceHistory(id: ID!): ServiceHistory @aws_iam @aws_cognito_user_pools
+  listServiceHistories(id: ID, filter: ModelServiceHistoryFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelServiceHistoryConnection @aws_iam @aws_cognito_user_pools
+}
+
+input ModelServiceRequestConditionInput {
+  type: ModelServiceRequestTypeInput
+  priority: ModelServiceRequestPriorityInput
+  client: ModelStringInput
+  service: ModelStringInput
+  location: ModelStringInput
+  requestTime: ModelStringInput
+  estimatedDuration: ModelStringInput
+  status: ModelServiceRequestStatusInput
+  assignedTechnicianId: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelServiceRequestConditionInput]
+  or: [ModelServiceRequestConditionInput]
+  not: ModelServiceRequestConditionInput
+  owner: ModelStringInput
+}
+
+input CreateServiceRequestInput {
+  id: ID
+  type: ServiceRequestType
+  priority: ServiceRequestPriority
+  client: String!
+  service: String!
+  location: String!
+  requestTime: String!
+  estimatedDuration: String!
+  status: ServiceRequestStatus
+  assignedTechnicianId: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateServiceRequestInput {
+  id: ID!
+  type: ServiceRequestType
+  priority: ServiceRequestPriority
+  client: String
+  service: String
+  location: String
+  requestTime: String
+  estimatedDuration: String
+  status: ServiceRequestStatus
+  assignedTechnicianId: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteServiceRequestInput {
+  id: ID!
+}
+
+type Mutation {
+  createServiceRequest(input: CreateServiceRequestInput!, condition: ModelServiceRequestConditionInput): ServiceRequest @aws_iam @aws_cognito_user_pools
+  updateServiceRequest(input: UpdateServiceRequestInput!, condition: ModelServiceRequestConditionInput): ServiceRequest @aws_iam @aws_cognito_user_pools
+  deleteServiceRequest(input: DeleteServiceRequestInput!, condition: ModelServiceRequestConditionInput): ServiceRequest @aws_iam @aws_cognito_user_pools
+  createTechnician(input: CreateTechnicianInput!, condition: ModelTechnicianConditionInput): Technician @aws_iam @aws_cognito_user_pools
+  updateTechnician(input: UpdateTechnicianInput!, condition: ModelTechnicianConditionInput): Technician @aws_iam @aws_cognito_user_pools
+  deleteTechnician(input: DeleteTechnicianInput!, condition: ModelTechnicianConditionInput): Technician @aws_iam @aws_cognito_user_pools
+  createScheduledJob(input: CreateScheduledJobInput!, condition: ModelScheduledJobConditionInput): ScheduledJob @aws_iam @aws_cognito_user_pools
+  updateScheduledJob(input: UpdateScheduledJobInput!, condition: ModelScheduledJobConditionInput): ScheduledJob @aws_iam @aws_cognito_user_pools
+  deleteScheduledJob(input: DeleteScheduledJobInput!, condition: ModelScheduledJobConditionInput): ScheduledJob @aws_iam @aws_cognito_user_pools
+  createClient(input: CreateClientInput!, condition: ModelClientConditionInput): Client @aws_iam @aws_cognito_user_pools
+  updateClient(input: UpdateClientInput!, condition: ModelClientConditionInput): Client @aws_iam @aws_cognito_user_pools
+  deleteClient(input: DeleteClientInput!, condition: ModelClientConditionInput): Client @aws_iam @aws_cognito_user_pools
+  createServiceHistory(input: CreateServiceHistoryInput!, condition: ModelServiceHistoryConditionInput): ServiceHistory @aws_iam @aws_cognito_user_pools
+  updateServiceHistory(input: UpdateServiceHistoryInput!, condition: ModelServiceHistoryConditionInput): ServiceHistory @aws_iam @aws_cognito_user_pools
+  deleteServiceHistory(input: DeleteServiceHistoryInput!, condition: ModelServiceHistoryConditionInput): ServiceHistory @aws_iam @aws_cognito_user_pools
+}
+
+input ModelSubscriptionServiceRequestFilterInput {
+  id: ModelSubscriptionIDInput
+  type: ModelSubscriptionStringInput
+  priority: ModelSubscriptionStringInput
+  client: ModelSubscriptionStringInput
+  service: ModelSubscriptionStringInput
+  location: ModelSubscriptionStringInput
+  requestTime: ModelSubscriptionStringInput
+  estimatedDuration: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  assignedTechnicianId: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionServiceRequestFilterInput]
+  or: [ModelSubscriptionServiceRequestFilterInput]
+  owner: ModelStringInput
+}
+
+type Subscription {
+  onCreateServiceRequest(filter: ModelSubscriptionServiceRequestFilterInput, owner: String): ServiceRequest @aws_subscribe(mutations: ["createServiceRequest"]) @aws_iam @aws_cognito_user_pools
+  onUpdateServiceRequest(filter: ModelSubscriptionServiceRequestFilterInput, owner: String): ServiceRequest @aws_subscribe(mutations: ["updateServiceRequest"]) @aws_iam @aws_cognito_user_pools
+  onDeleteServiceRequest(filter: ModelSubscriptionServiceRequestFilterInput, owner: String): ServiceRequest @aws_subscribe(mutations: ["deleteServiceRequest"]) @aws_iam @aws_cognito_user_pools
+  onCreateTechnician(filter: ModelSubscriptionTechnicianFilterInput, owner: String): Technician @aws_subscribe(mutations: ["createTechnician"]) @aws_iam @aws_cognito_user_pools
+  onUpdateTechnician(filter: ModelSubscriptionTechnicianFilterInput, owner: String): Technician @aws_subscribe(mutations: ["updateTechnician"]) @aws_iam @aws_cognito_user_pools
+  onDeleteTechnician(filter: ModelSubscriptionTechnicianFilterInput, owner: String): Technician @aws_subscribe(mutations: ["deleteTechnician"]) @aws_iam @aws_cognito_user_pools
+  onCreateScheduledJob(filter: ModelSubscriptionScheduledJobFilterInput, owner: String): ScheduledJob @aws_subscribe(mutations: ["createScheduledJob"]) @aws_iam @aws_cognito_user_pools
+  onUpdateScheduledJob(filter: ModelSubscriptionScheduledJobFilterInput, owner: String): ScheduledJob @aws_subscribe(mutations: ["updateScheduledJob"]) @aws_iam @aws_cognito_user_pools
+  onDeleteScheduledJob(filter: ModelSubscriptionScheduledJobFilterInput, owner: String): ScheduledJob @aws_subscribe(mutations: ["deleteScheduledJob"]) @aws_iam @aws_cognito_user_pools
+  onCreateClient(filter: ModelSubscriptionClientFilterInput, owner: String): Client @aws_subscribe(mutations: ["createClient"]) @aws_iam @aws_cognito_user_pools
+  onUpdateClient(filter: ModelSubscriptionClientFilterInput, owner: String): Client @aws_subscribe(mutations: ["updateClient"]) @aws_iam @aws_cognito_user_pools
+  onDeleteClient(filter: ModelSubscriptionClientFilterInput, owner: String): Client @aws_subscribe(mutations: ["deleteClient"]) @aws_iam @aws_cognito_user_pools
+  onCreateServiceHistory(filter: ModelSubscriptionServiceHistoryFilterInput, owner: String): ServiceHistory @aws_subscribe(mutations: ["createServiceHistory"]) @aws_iam @aws_cognito_user_pools
+  onUpdateServiceHistory(filter: ModelSubscriptionServiceHistoryFilterInput, owner: String): ServiceHistory @aws_subscribe(mutations: ["updateServiceHistory"]) @aws_iam @aws_cognito_user_pools
+  onDeleteServiceHistory(filter: ModelSubscriptionServiceHistoryFilterInput, owner: String): ServiceHistory @aws_subscribe(mutations: ["deleteServiceHistory"]) @aws_iam @aws_cognito_user_pools
+}
+
+type ModelTechnicianConnection @aws_iam @aws_cognito_user_pools {
+  items: [Technician]!
+  nextToken: String
+}
+
+input ModelTechnicianSpecialtyInput {
+  eq: TechnicianSpecialty
+  ne: TechnicianSpecialty
+}
+
+input ModelTechnicianFilterInput {
+  id: ModelIDInput
+  name: ModelStringInput
+  specialty: ModelTechnicianSpecialtyInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  avatar: ModelStringInput
+  color: ModelStringInput
+  isAvailable: ModelBooleanInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelTechnicianFilterInput]
+  or: [ModelTechnicianFilterInput]
+  not: ModelTechnicianFilterInput
+  owner: ModelStringInput
+}
+
+input ModelTechnicianConditionInput {
+  name: ModelStringInput
+  specialty: ModelTechnicianSpecialtyInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  avatar: ModelStringInput
+  color: ModelStringInput
+  isAvailable: ModelBooleanInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelTechnicianConditionInput]
+  or: [ModelTechnicianConditionInput]
+  not: ModelTechnicianConditionInput
+  owner: ModelStringInput
+}
+
+input CreateTechnicianInput {
+  id: ID
+  name: String!
+  specialty: TechnicianSpecialty
+  email: AWSEmail
+  phone: AWSPhone
+  avatar: String
+  color: String
+  isAvailable: Boolean
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateTechnicianInput {
+  id: ID!
+  name: String
+  specialty: TechnicianSpecialty
+  email: AWSEmail
+  phone: AWSPhone
+  avatar: String
+  color: String
+  isAvailable: Boolean
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteTechnicianInput {
+  id: ID!
+}
+
+input ModelSubscriptionTechnicianFilterInput {
+  id: ModelSubscriptionIDInput
+  name: ModelSubscriptionStringInput
+  specialty: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  phone: ModelSubscriptionStringInput
+  avatar: ModelSubscriptionStringInput
+  color: ModelSubscriptionStringInput
+  isAvailable: ModelSubscriptionBooleanInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionTechnicianFilterInput]
+  or: [ModelSubscriptionTechnicianFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelScheduledJobConnection @aws_iam @aws_cognito_user_pools {
+  items: [ScheduledJob]!
+  nextToken: String
+}
+
+input ModelScheduledJobStatusInput {
+  eq: ScheduledJobStatus
+  ne: ScheduledJobStatus
+}
+
+input ModelScheduledJobFilterInput {
+  id: ModelIDInput
+  techId: ModelStringInput
+  serviceRequestId: ModelStringInput
+  startHour: ModelIntInput
+  duration: ModelIntInput
+  status: ModelScheduledJobStatusInput
+  notes: ModelStringInput
+  scheduledDate: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelScheduledJobFilterInput]
+  or: [ModelScheduledJobFilterInput]
+  not: ModelScheduledJobFilterInput
+  owner: ModelStringInput
+}
+
+input ModelScheduledJobConditionInput {
+  techId: ModelStringInput
+  serviceRequestId: ModelStringInput
+  startHour: ModelIntInput
+  duration: ModelIntInput
+  status: ModelScheduledJobStatusInput
+  notes: ModelStringInput
+  scheduledDate: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelScheduledJobConditionInput]
+  or: [ModelScheduledJobConditionInput]
+  not: ModelScheduledJobConditionInput
+  owner: ModelStringInput
+}
+
+input CreateScheduledJobInput {
+  id: ID
+  techId: String!
+  serviceRequestId: String!
+  startHour: Int!
+  duration: Int!
+  status: ScheduledJobStatus
+  notes: String
+  scheduledDate: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateScheduledJobInput {
+  id: ID!
+  techId: String
+  serviceRequestId: String
+  startHour: Int
+  duration: Int
+  status: ScheduledJobStatus
+  notes: String
+  scheduledDate: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteScheduledJobInput {
+  id: ID!
+}
+
+input ModelSubscriptionScheduledJobFilterInput {
+  id: ModelSubscriptionIDInput
+  techId: ModelSubscriptionStringInput
+  serviceRequestId: ModelSubscriptionStringInput
+  startHour: ModelSubscriptionIntInput
+  duration: ModelSubscriptionIntInput
+  status: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  scheduledDate: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionScheduledJobFilterInput]
+  or: [ModelSubscriptionScheduledJobFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelClientConnection @aws_iam @aws_cognito_user_pools {
+  items: [Client]!
+  nextToken: String
+}
+
+input ModelClientFilterInput {
+  id: ModelIDInput
+  name: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  address: ModelStringInput
+  city: ModelStringInput
+  state: ModelStringInput
+  zipCode: ModelStringInput
+  outstandingBalance: ModelStringInput
+  notes: ModelStringInput
+  preferenceNotes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelClientFilterInput]
+  or: [ModelClientFilterInput]
+  not: ModelClientFilterInput
+  owner: ModelStringInput
+}
+
+input ModelClientConditionInput {
+  name: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  address: ModelStringInput
+  city: ModelStringInput
+  state: ModelStringInput
+  zipCode: ModelStringInput
+  outstandingBalance: ModelStringInput
+  notes: ModelStringInput
+  preferenceNotes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelClientConditionInput]
+  or: [ModelClientConditionInput]
+  not: ModelClientConditionInput
+  owner: ModelStringInput
+}
+
+input CreateClientInput {
+  id: ID
+  name: String!
+  email: AWSEmail
+  phone: AWSPhone
+  address: String
+  city: String
+  state: String
+  zipCode: String
+  outstandingBalance: String
+  notes: String
+  preferenceNotes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateClientInput {
+  id: ID!
+  name: String
+  email: AWSEmail
+  phone: AWSPhone
+  address: String
+  city: String
+  state: String
+  zipCode: String
+  outstandingBalance: String
+  notes: String
+  preferenceNotes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteClientInput {
+  id: ID!
+}
+
+input ModelSubscriptionClientFilterInput {
+  id: ModelSubscriptionIDInput
+  name: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  phone: ModelSubscriptionStringInput
+  address: ModelSubscriptionStringInput
+  city: ModelSubscriptionStringInput
+  state: ModelSubscriptionStringInput
+  zipCode: ModelSubscriptionStringInput
+  outstandingBalance: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  preferenceNotes: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionClientFilterInput]
+  or: [ModelSubscriptionClientFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelServiceHistoryConnection @aws_iam @aws_cognito_user_pools {
+  items: [ServiceHistory]!
+  nextToken: String
+}
+
+input ModelServiceHistoryFilterInput {
+  id: ModelIDInput
+  clientId: ModelStringInput
+  technicianId: ModelStringInput
+  service: ModelStringInput
+  cost: ModelStringInput
+  date: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelServiceHistoryFilterInput]
+  or: [ModelServiceHistoryFilterInput]
+  not: ModelServiceHistoryFilterInput
+  owner: ModelStringInput
+}
+
+input ModelServiceHistoryConditionInput {
+  clientId: ModelStringInput
+  technicianId: ModelStringInput
+  service: ModelStringInput
+  cost: ModelStringInput
+  date: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelServiceHistoryConditionInput]
+  or: [ModelServiceHistoryConditionInput]
+  not: ModelServiceHistoryConditionInput
+  owner: ModelStringInput
+}
+
+input CreateServiceHistoryInput {
+  id: ID
+  clientId: String!
+  technicianId: String!
+  service: String!
+  cost: String
+  date: AWSDate
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateServiceHistoryInput {
+  id: ID!
+  clientId: String
+  technicianId: String
+  service: String
+  cost: String
+  date: AWSDate
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteServiceHistoryInput {
+  id: ID!
+}
+
+input ModelSubscriptionServiceHistoryFilterInput {
+  id: ModelSubscriptionIDInput
+  clientId: ModelSubscriptionStringInput
+  technicianId: ModelSubscriptionStringInput
+  service: ModelSubscriptionStringInput
+  cost: ModelSubscriptionStringInput
+  date: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionServiceHistoryFilterInput]
+  or: [ModelSubscriptionServiceHistoryFilterInput]
+  owner: ModelStringInput
+}

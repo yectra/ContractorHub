@@ -1,0 +1,112 @@
+type ServiceRequest @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: private, operations: [read, update, delete, create]}])
+{
+  id: ID! @primaryKey
+  type: ServiceRequestType
+  priority: ServiceRequestPriority
+  client: String!
+  service: String!
+  location: String!
+  requestTime: String!
+  estimatedDuration: String!
+  status: ServiceRequestStatus
+  assignedTechnicianId: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Technician @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: private, operations: [read, create, update, delete]}])
+{
+  id: ID! @primaryKey
+  name: String!
+  specialty: TechnicianSpecialty
+  email: AWSEmail
+  phone: AWSPhone
+  avatar: String
+  color: String
+  isAvailable: Boolean @default(value: "true")
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ScheduledJob @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: private, operations: [read, create, update, delete]}])
+{
+  id: ID! @primaryKey
+  techId: String!
+  serviceRequestId: String!
+  startHour: Int!
+  duration: Int!
+  status: ScheduledJobStatus
+  notes: String
+  scheduledDate: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Client @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: private, operations: [read, create, update, delete]}])
+{
+  id: ID! @primaryKey
+  name: String!
+  email: AWSEmail
+  phone: AWSPhone
+  address: String
+  city: String
+  state: String
+  zipCode: String
+  outstandingBalance: String
+  notes: String
+  preferenceNotes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ServiceHistory @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: private, operations: [read, create, update, delete]}])
+{
+  id: ID! @primaryKey
+  clientId: String!
+  technicianId: String!
+  service: String!
+  cost: String
+  date: AWSDate
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+enum ServiceRequestType {
+  Emergency
+  WebRequest
+  Scheduled
+}
+
+enum ServiceRequestPriority {
+  high
+  medium
+  low
+}
+
+enum ServiceRequestStatus {
+  Unassigned
+  Assigned
+  InProgress
+  Completed
+}
+
+enum TechnicianSpecialty {
+  Plumbing
+  HVAC
+  Electrical
+  General
+}
+
+enum ScheduledJobStatus {
+  Scheduled
+  InProgress
+  Completed
+  Cancelled
+}
