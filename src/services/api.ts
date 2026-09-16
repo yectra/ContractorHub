@@ -1,4 +1,5 @@
-import { generateClient } from 'aws-amplify/api';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
 import outputs from '../../amplify_outputs.json';
 
@@ -6,7 +7,8 @@ import outputs from '../../amplify_outputs.json';
 export const isAmplifyConfigured = outputs && Object.keys(outputs).length > 0 && (outputs as any).data?.url;
 
 // Generate Amplify client only if configured
-const client = isAmplifyConfigured ? generateClient<Schema>() : null;
+// const client = isAmplifyConfigured ? generateClient<Schema>() : null;
+const client = generateClient<Schema>();
 
 /**
  * LOCAL STORAGE MOCK DATABASE (DEMO MODE FALLBACK)

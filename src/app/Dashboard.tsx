@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Box, IconButton, Card, CardContent, Typography, Chip, Avatar, Divider, Alert, Snackbar, Button, CircularProgress, TextField, Select, MenuItem, FormControl, InputLabel, Dialog, OutlinedInput } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -17,6 +17,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import Tooltip from '@mui/material/Tooltip';
 import styles from '../styles/UI/Dashboard.module.scss';
 import DispatchCenter from '../components/DispatchCenter';
+import { serviceRequestAPI } from '../services/api';
 
 // Hours for the schedule grid (7 AM to 7 PM)
 const hours = Array.from({ length: 12 }, (_, i) => i + 7);
@@ -454,6 +455,22 @@ export default function ThreePanelPage() {
       console.error('Drop error:', error);
     }
   };
+
+  useEffect(() => {
+    const testAPI = async () => {
+      try {
+        const data = await serviceRequestAPI.listServiceRequests();
+
+        console.log('===== AMPLIFY API TEST =====');
+        console.log('Service Requests:', data);
+      } catch (error) {
+        console.error('===== AMPLIFY API ERROR =====');
+        console.error(error);
+      }
+    };
+
+    testAPI();
+  }, []);
 
   return (
     <Box className={styles.dashboardRoot}>
