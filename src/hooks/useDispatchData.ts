@@ -103,6 +103,19 @@ export function useTechnicians() {
     return () => sub.unsubscribe();
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createTechnician = async (data: any) => {
+    try {
+      const created = await technicianAPI.createTechnician(data);
+      setTechnicians((prev) => [...prev, created]);
+      return created;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create technician';
+      setError(message);
+      throw err;
+    }
+  };
+
   const deleteTechnician = async (id: string) => {
     try {
       await technicianAPI.deleteTechnician(id);
@@ -132,6 +145,7 @@ export function useTechnicians() {
     technicians,
     loading,
     error,
+    createTechnician,
     deleteTechnician,
     updateTechnician,
   };

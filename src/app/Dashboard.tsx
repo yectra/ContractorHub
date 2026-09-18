@@ -14,9 +14,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useServiceRequests, useTechnicians, useScheduledJobs, useClients } from '../hooks/useDispatchData';
 import GroupsIcon from '@mui/icons-material/Groups';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import EngineeringIcon from '@mui/icons-material/Engineering';
 import Tooltip from '@mui/material/Tooltip';
 import styles from '../styles/UI/Dashboard.module.scss';
 import DispatchCenter from '../components/DispatchCenter';
+import CreateTechnicianModal, { type CreateTechnicianData } from '../components/admin/modals/CreateTechnicianModal';
 import { serviceRequestAPI } from '../services/api';
 
 // Hours for the schedule grid (7 AM to 7 PM)
@@ -80,6 +82,9 @@ export default function ThreePanelPage() {
   const [checklistModalJobId, setChecklistModalJobId] = useState<string | null>(null);
   const [checklistDraftItems, setChecklistDraftItems] = useState<DispatchChecklistItem[]>([]);
 
+  // ── Create Technician Modal state ───────────────────────────────────────────
+  const [createTechModalOpen, setCreateTechModalOpen] = useState(false);
+
   const getScheduleByDate = (date: string) => {
     console.log(`Fetching schedule for date: ${date}`);
     // Future API integration: getScheduleByDate(date).then(...)
@@ -92,9 +97,21 @@ export default function ThreePanelPage() {
 
   // Fetch real data from Amplify
   const { serviceRequests, loading: srLoading, error: srError, updateServiceRequest, deleteServiceRequest } = useServiceRequests();
-  const { technicians, loading: techLoading, error: techError } = useTechnicians();
+  const { technicians, loading: techLoading, error: techError, createTechnician } = useTechnicians();
   const { scheduledJobs, createScheduledJob, updateScheduledJob, deleteScheduledJob } = useScheduledJobs();
   const { clients, loading: clLoading } = useClients();
+
+  const handleCreateTechnician = async (techData: CreateTechnicianData) => {
+    try {
+      const created = await createTechnician(techData);
+      showNotification_(`Technician "${created.name}" created successfully!`, 'success');
+    } catch (err: any) {
+      console.error('Failed to create technician:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to create technician';
+      showNotification_(msg, 'error');
+      throw err;
+    }
+  };
 
   // Filter scheduled jobs by selectedDate (defaulting legacy jobs to today's date)
   const filteredJobs = useMemo(() => {
@@ -621,20 +638,18 @@ export default function ThreePanelPage() {
           )}*/}
            {/* Navigation Buttons */}
           <Box className={styles.dashboardNavRow}>
-          {/* <Tooltip title="Open Technician View" arrow>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<EngineeringIcon className={styles.dashboardNavIcon} />}
-                  onClick={() => {
-                    sessionStorage.setItem('previousView', 'ADMIN');
-                    window.location.href = '/technician';
-                  }}
-                  className={styles.dashboardCompactButton}
-                >
-                  Tech
-                </Button>
-              </Tooltip> */}
+            <Tooltip title="Create New Technician" arrow>
+              <Button
+                id="create-technician-nav-btn"
+                variant="outlined"
+                size="small"
+                startIcon={<EngineeringIcon className={styles.dashboardNavIcon} />}
+                onClick={() => setCreateTechModalOpen(true)}
+                className={styles.dashboardCompactButton}
+              >
+                Technician
+              </Button>
+            </Tooltip>
 
               <Tooltip title="Open Client CRM" arrow>
                 <Button
@@ -731,12 +746,11 @@ export default function ThreePanelPage() {
                   You don't have any technicians available for dispatch. Add staff to your system to start scheduling jobs.
                 </Typography>
                 <Button
+                  id="dashboard-empty-add-tech-btn"
                   variant="contained"
                   startIcon={<PersonAddIcon />}
                   className={`${styles.dashboardPrimaryButton} ${styles.dashboardAddTechButton}`}
-                  onClick={() => {
-                    showNotification_('Redirect to staff management (feature not yet implemented)', 'warning');
-                  }}
+                  onClick={() => setCreateTechModalOpen(true)}
                 >
                   Add Technicians
                 </Button>
@@ -1242,6 +1256,15 @@ export default function ThreePanelPage() {
         items={checklistDraftItems}
         onItemsChange={setChecklistDraftItems}
         onSave={handleChecklistSave}
+      />
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          CREATE TECHNICIAN MODAL
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <CreateTechnicianModal
+        isOpen={createTechModalOpen}
+        onClose={() => setCreateTechModalOpen(false)}
+        onSubmit={handleCreateTechnician}
       />
 
       {/* Image Preview Modal */}
