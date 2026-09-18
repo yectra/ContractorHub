@@ -71,6 +71,103 @@
   border-bottom: 2px solid #e0e0e0;
 }
 
+.profileMenu {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.profileMenuTrigger {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 2px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out !important;
+
+  &:hover {
+    border-color: #94a3b8 !important;
+    background-color: #f8fafc !important;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12) !important;
+  }
+}
+
+.profileAvatar {
+  width: 34px !important;
+  height: 34px !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  background-color: #475569 !important;
+  letter-spacing: 0 !important;
+}
+
+.profileDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  min-width: 168px;
+  padding: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.16);
+}
+
+.profileMenuItem {
+  width: 100%;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #475569;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+
+  &:hover,
+  &:focus-visible {
+    color: #1e293b;
+    background-color: #f1f5f9;
+    outline: none;
+  }
+}
+
+.profileMenuIcon {
+  flex: 0 0 auto;
+  font-size: 1rem !important;
+  color: #64748b;
+  transition: color 0.2s ease-in-out;
+}
+
+.profileMenuItem:hover .profileMenuIcon,
+.profileMenuItem:focus-visible .profileMenuIcon {
+  color: #475569;
+}
+
+.profileMenuItemDanger {
+  color: #b91c1c;
+
+  .profileMenuIcon {
+    color: #dc2626;
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: #991b1b;
+    background-color: #fef2f2;
+  }
+}
+
 .dashboardCompactButton {
   text-transform: none !important;
   border-radius: 6px !important;
@@ -998,7 +1095,7 @@
 
   /* Align Nav Actions center/stretch on mobile devices */
   .dashboardNavRow {
-    justify-content: center !important;
+    justify-content: flex-end !important;
     margin: 0 !important;
     padding: 0 0 12px 0 !important;
   }

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Box, IconButton, Card, CardContent, Typography, Chip, Avatar, Divider, Alert, Snackbar, Button, CircularProgress, TextField, Select, MenuItem, FormControl, InputLabel, Dialog, OutlinedInput } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -18,7 +18,7 @@ import { signOut as amplifySignOut } from 'aws-amplify/auth';
 import GroupsIcon from '@mui/icons-material/Groups';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EngineeringIcon from '@mui/icons-material/Engineering';
-import Tooltip from '@mui/material/Tooltip';
+import LogoutIcon from '@mui/icons-material/Logout';
 import styles from '../styles/UI/Dashboard.module.scss';
 import DispatchCenter from '../components/DispatchCenter';
 import CreateTechnicianModal, { type CreateTechnicianData } from '../components/admin/modals/CreateTechnicianModal';
@@ -68,9 +68,18 @@ interface DispatchChecklistItem {
   checked: boolean; // field name matches FieldExecution's ChecklistItem.checked
 }
 
+type ProfileUser = {
+  username?: string;
+  signInDetails?: {
+    loginId?: string;
+  };
+  attributes?: Record<string, string | undefined>;
+};
+
 export default function ThreePanelPage() {
   const navigate = useNavigate();
-  const { signOut } = useAuthenticator((context) => [context.signOut]);
+  const { signOut, user } = useAuthenticator((context) => [context.signOut, context.user]);
+  const profileUser = user as ProfileUser | undefined;
 
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
@@ -82,6 +91,8 @@ export default function ThreePanelPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   // ── Dispatcher Checklist Modal state ────────────────────────────────────────
   const [checklistModalOpen, setChecklistModalOpen] = useState(false);
@@ -90,6 +101,38 @@ export default function ThreePanelPage() {
 
   // ── Create Technician Modal state ───────────────────────────────────────────
   const [createTechModalOpen, setCreateTechModalOpen] = useState(false);
+
+  const profileEmail =
+    profileUser?.attributes?.email ||
+    profileUser?.signInDetails?.loginId ||
+    profileUser?.username ||
+    '';
+
+  const profileImageUrl =
+    profileUser?.attributes?.picture ||
+    profileUser?.attributes?.profile_image ||
+    profileUser?.attributes?.avatar_url ||
+    '';
+
+  const profileAvatarInitials = useMemo(() => {
+    const emailUsername = profileEmail.split('@')[0] || profileEmail;
+    const normalized = emailUsername.replace(/[._-]+/g, ' ').trim();
+
+    if (!normalized) {
+      return 'U';
+    }
+
+    const parts = normalized.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+
+    return parts
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase();
+  }, [profileEmail]);
 
   const getScheduleByDate = (date: string) => {
     console.log(`Fetching schedule for date: ${date}`);
@@ -100,6 +143,25 @@ export default function ThreePanelPage() {
     setSelectedDate(newDate || getTodayString());
     getScheduleByDate(newDate || getTodayString());
   };
+
+  useEffect(() => {
+    if (!profileMenuOpen) {
+      return;
+    }
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        event.target instanceof Node &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [profileMenuOpen]);
 
   // Fetch real data from Amplify
   const { serviceRequests, loading: srLoading, error: srError, updateServiceRequest, deleteServiceRequest } = useServiceRequests();
@@ -699,70 +761,95 @@ export default function ThreePanelPage() {
               Running in <strong>Offline Demo Mode</strong> using local browser storage. Run <code>npx amplify sandbox</code> to deploy the AWS Amplify backend.
             </Alert>
           )}*/}
-           {/* Navigation Buttons */}
+           {/* Profile Navigation Menu */}
           <Box className={styles.dashboardNavRow}>
-            <Tooltip title="Create New Technician" arrow>
-              <Button
-                id="create-technician-nav-btn"
-                variant="outlined"
-                size="small"
-                startIcon={<EngineeringIcon className={styles.dashboardNavIcon} />}
-                onClick={() => setCreateTechModalOpen(true)}
-                className={styles.dashboardCompactButton}
+            <Box className={styles.profileMenu} ref={profileMenuRef}>
+              <IconButton
+                id="profile-menu-trigger"
+                className={styles.profileMenuTrigger}
+                onClick={() => setProfileMenuOpen((isOpen) => !isOpen)}
+                aria-label="Open profile navigation"
+                aria-expanded={profileMenuOpen}
+                aria-haspopup="menu"
               >
-                Technician
-              </Button>
-            </Tooltip>
-
-              <Tooltip title="Open Client CRM" arrow>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<GroupsIcon className={styles.dashboardNavIcon} />}
-                  onClick={() => (window.location.href = '/crm')}
-                  className={styles.dashboardCompactButton}
+                <Avatar
+                  className={styles.profileAvatar}
+                  src={profileImageUrl || undefined}
+                  alt={profileEmail ? `${profileEmail} profile` : 'User profile'}
                 >
-                  Client
-                </Button>
-              </Tooltip>
+                  {!profileImageUrl ? profileAvatarInitials : null}
+                </Avatar>
+              </IconButton>
 
-              <Tooltip title="Open Technician Dashboard" arrow>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<DashboardIcon className={styles.dashboardNavIcon} />}
-                  onClick={() => (window.location.href = '/tech-dashboard')}
-                  className={styles.dashboardCompactButton}
-                >
-                  Dashboard
-                </Button>
-              </Tooltip>
-
-              <Tooltip title="Open User Management" arrow>
-                <Button
-                  id="user-management-nav-btn"
-                  variant="outlined"
-                  size="small"
-                  startIcon={<PersonAddIcon className={styles.dashboardNavIcon} />}
-                  onClick={() => (window.location.href = '/admin/users')}
-                  className={styles.dashboardCompactButton}
-                >
-                  Users
-                </Button>
-              </Tooltip>
-
-              <Tooltip title="Sign Out & Teardown Session" arrow>
-                <Button
-                  id="logout-nav-btn"
-                  variant="outlined"
-                  size="small"
-                  onClick={handleLogout}
-                  className={styles.dashboardLogoutButton}
-                >
-                  🚪 Logout
-                </Button>
-              </Tooltip>
-          </Box>    
+              {profileMenuOpen && (
+                <Box className={styles.profileDropdown} role="menu" aria-labelledby="profile-menu-trigger">
+                  <button
+                    id="create-technician-nav-btn"
+                    type="button"
+                    className={styles.profileMenuItem}
+                    onClick={() => {
+                      setCreateTechModalOpen(true);
+                      setProfileMenuOpen(false);
+                    }}
+                    role="menuitem"
+                  >
+                    <EngineeringIcon className={styles.profileMenuIcon} />
+                    <span>Technician</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.profileMenuItem}
+                    onClick={() => {
+                      navigate('/crm');
+                      setProfileMenuOpen(false);
+                    }}
+                    role="menuitem"
+                  >
+                    <GroupsIcon className={styles.profileMenuIcon} />
+                    <span>Client</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.profileMenuItem}
+                    onClick={() => {
+                      navigate('/tech-dashboard');
+                      setProfileMenuOpen(false);
+                    }}
+                    role="menuitem"
+                  >
+                    <DashboardIcon className={styles.profileMenuIcon} />
+                    <span>Dashboard</span>
+                  </button>
+                  <button
+                    id="user-management-nav-btn"
+                    type="button"
+                    className={styles.profileMenuItem}
+                    onClick={() => {
+                      navigate('/admin/users');
+                      setProfileMenuOpen(false);
+                    }}
+                    role="menuitem"
+                  >
+                    <PersonAddIcon className={styles.profileMenuIcon} />
+                    <span>Users</span>
+                  </button>
+                  <button
+                    id="logout-nav-btn"
+                    type="button"
+                    className={`${styles.profileMenuItem} ${styles.profileMenuItemDanger}`}
+                    onClick={() => {
+                      setProfileMenuOpen(false);
+                      handleLogout();
+                    }}
+                    role="menuitem"
+                  >
+                    <LogoutIcon className={styles.profileMenuIcon} />
+                    <span>Logout</span>
+                  </button>
+                </Box>
+              )}
+            </Box>
+          </Box>
           <Box className={`${styles.dashboardRowBetween} ${styles.dashboardCenterTitleRow}`}>
             <Typography variant="h5" className={styles.dashboardCenterTitle}>
               Dispatch Command Center
@@ -1383,3 +1470,4 @@ export default function ThreePanelPage() {
     </Box>
   );
 }
+
