@@ -12,6 +12,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CloseIcon from '@mui/icons-material/Close';
 import { useServiceRequests, useTechnicians, useScheduledJobs, useClients } from '../hooks/useDispatchData';
+import { useNavigate } from 'react-router-dom';
+import { useAuthenticator } from '@aws-amplify/ui-react';
+import { signOut as amplifySignOut } from 'aws-amplify/auth';
 import GroupsIcon from '@mui/icons-material/Groups';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EngineeringIcon from '@mui/icons-material/Engineering';
@@ -66,6 +69,9 @@ interface DispatchChecklistItem {
 }
 
 export default function ThreePanelPage() {
+  const navigate = useNavigate();
+  const { signOut } = useAuthenticator((context) => [context.signOut]);
+
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
@@ -110,6 +116,63 @@ export default function ThreePanelPage() {
       const msg = err instanceof Error ? err.message : 'Failed to create technician';
       showNotification_(msg, 'error');
       throw err;
+    }
+  };
+
+  // ── Authentication & Sandbox Teardown Handler ──────────────────────────────
+  const handleLogout = async () => {
+    try {
+      // 1. Invoke active AWS Amplify / Cognito sandbox signOut
+      if (typeof signOut === 'function') {
+        await signOut();
+      } else {
+        await amplifySignOut();
+      }
+    } catch (authErr) {
+      console.warn('Amplify authorization clearance fallback:', authErr);
+      try {
+        await amplifySignOut();
+      } catch (fallbackErr) {
+        console.warn('Direct amplifySignOut fallback:', fallbackErr);
+      }
+    } finally {
+      // 2. Clear all cached technician rows and local data stores from runtime memory
+      try {
+        const standardCacheKeys = [
+          'mock_technicians',
+          'mock_service_requests',
+          'mock_scheduled_jobs',
+          'mock_clients',
+          'mock_users',
+        ];
+        standardCacheKeys.forEach((key) => localStorage.removeItem(key));
+
+        // Purge dynamic job checklists, photo queues, comments, and auth artifacts
+        const keysToPurge: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (
+            key &&
+            (key.startsWith('checklist_job_') ||
+              key.startsWith('photos_job_') ||
+              key.startsWith('upload_queue_') ||
+              key.startsWith('comment_job_') ||
+              key.startsWith('job_activity_') ||
+              key.startsWith('amplify-') ||
+              key.startsWith('CognitoIdentityServiceProvider'))
+          ) {
+            keysToPurge.push(key);
+          }
+        }
+        keysToPurge.forEach((k) => localStorage.removeItem(k));
+        sessionStorage.clear();
+      } catch (storageErr) {
+        console.error('Error clearing local sandbox stores:', storageErr);
+      }
+
+      // 3. Clean routing redirect back to root entry path
+      navigate('/');
+      window.location.href = '/';
     }
   };
 
@@ -685,6 +748,18 @@ export default function ThreePanelPage() {
                   className={styles.dashboardCompactButton}
                 >
                   Users
+                </Button>
+              </Tooltip>
+
+              <Tooltip title="Sign Out & Teardown Session" arrow>
+                <Button
+                  id="logout-nav-btn"
+                  variant="outlined"
+                  size="small"
+                  onClick={handleLogout}
+                  className={styles.dashboardLogoutButton}
+                >
+                  🚪 Logout
                 </Button>
               </Tooltip>
           </Box>    
