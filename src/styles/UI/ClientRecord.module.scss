@@ -622,6 +622,51 @@
   }
 }
 
+.deleteProfileBtn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #fef2f2;
+    color: #ef4444;
+  }
+}
+
+.buttonDangerOutline {
+  background-color: transparent;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 34px;
+  height: 34px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  text-transform: none;
+
+  &:hover {
+    background-color: #fef2f2;
+    border-color: #fca5a5;
+    color: #dc2626;
+  }
+}
+
+
 .preferenceNotesContainer {
   background-color: #eff6ff;
   border: 1px solid #bfdbfe;
