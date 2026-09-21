@@ -788,13 +788,13 @@ export default function ThreePanelPage() {
                     type="button"
                     className={styles.profileMenuItem}
                     onClick={() => {
-                      setCreateTechModalOpen(true);
+                      navigate('/admin/technicians');
                       setProfileMenuOpen(false);
                     }}
                     role="menuitem"
                   >
                     <EngineeringIcon className={styles.profileMenuIcon} />
-                    <span>Technician</span>
+                    <span>Technicians</span>
                   </button>
                   <button
                     type="button"

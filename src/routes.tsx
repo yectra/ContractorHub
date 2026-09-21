@@ -5,6 +5,7 @@ import FieldExecution from './components/admin/FieldExecution';
 import TechDashboard from './components/TechDashboard';
 import ClientCRMRecord from './components/admin/ClientCRMRecord';
 import UserManagement from './components/admin/UserManagement';
+import TechnicianManagement from './components/TechnicianManagement';
 
 export const router = createBrowserRouter([
   {
@@ -27,5 +28,10 @@ export const router = createBrowserRouter([
   {
     path: '/admin/users',
     element: <UserManagement />,
+  },
+  {
+    path: '/admin/technicians',
+    element: <TechnicianManagement />,
   }
 ]);
+

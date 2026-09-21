@@ -1,0 +1,556 @@
+/* =========================================================
+   TechnicianManagement.module.scss
+   CRM Light Theme Styling for Field Technician Management
+   ========================================================= */
+
+.techBoardRoot {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  width: 100%;
+  padding-bottom: 32px;
+  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+}
+
+/* ── Header Status Bar ──────────────────────────────────── */
+
+.techHeader {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  padding-right: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.techHeaderContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: auto;
+}
+
+.techHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.techBackButton {
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+  color: #64748b !important;
+
+  &:hover {
+    background-color: #f1f5f9 !important;
+  }
+}
+
+.techBackIcon {
+  font-size: 1rem !important;
+}
+
+@media (min-width: 900px) {
+  .techHeader {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .techHeaderContent {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+  }
+}
+
+.techManagementTitle {
+  font-weight: 750 !important;
+  color: #0f172a;
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+}
+
+.techManagementSubtitle {
+  color: #64748b;
+  display: block;
+  margin-top: 1px;
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+}
+
+.techManagementNavActions {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+  width: 100%;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.techManagementNavButton {
+  text-transform: none !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 0.72rem !important;
+
+  .MuiButton-startIcon {
+    margin-right: 4px;
+  }
+}
+
+.techManagementNavIcon {
+  font-size: 0.95rem !important;
+}
+
+@media (min-width: 900px) {
+  .techManagementNavActions {
+    margin-top: 0;
+    width: auto;
+    justify-content: flex-end;
+  }
+}
+
+/* ── Stats Summary Grid ─────────────────────────────────── */
+
+.statsContainer {
+  max-width: 1320px !important;
+  margin: 16px auto 0 !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 899px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+}
+
+.statsCard {
+  color: #ffffff !important;
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Card 1: Deep Blue */
+.totalTechsCard {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+  box-shadow: 0 2px 8px rgba(30, 60, 114, 0.2) !important;
+}
+
+/* Card 2: Teal Green */
+.activeTechsCard {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%) !important;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2) !important;
+}
+
+/* Card 3: Purple */
+.specialtiesCard {
+  background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%) !important;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2) !important;
+}
+
+.cardContent {
+  padding: 14px !important;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardTitle {
+  font-weight: 600 !important;
+  opacity: 0.85;
+  letter-spacing: 0.4px !important;
+  text-transform: uppercase;
+  font-size: 0.65rem !important;
+  line-height: 1.15 !important;
+}
+
+.cardIcon {
+  opacity: 0.85;
+  font-size: 1.25rem !important;
+}
+
+.cardValue {
+  font-weight: 800 !important;
+  margin-top: 6px !important;
+  font-size: 1.75rem !important;
+  line-height: 1.05 !important;
+}
+
+.cardDescription {
+  opacity: 0.75;
+  font-size: 0.68rem !important;
+  margin-top: 4px !important;
+  display: block !important;
+  line-height: 1.2 !important;
+}
+
+/* ── Controls and Data Grid ─────────────────────────────── */
+
+.dataPaper {
+  border-radius: 8px;
+  box-shadow:
+    0 2px 5px -1px rgba(0, 0, 0, 0.05),
+    0 1px 3px -1px rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid #f1f5f9 !important;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.controlsBar {
+  padding: 10px !important;
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+@media (min-width: 900px) {
+  .controlsBar {
+    padding: 12px;
+  }
+}
+
+.controlsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (min-width: 600px) {
+  .controlsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 900px) {
+  .controlsGrid {
+    grid-template-columns:
+      minmax(240px, 1.6fr)
+      minmax(140px, 0.7fr)
+      minmax(130px, 0.6fr)
+      auto;
+  }
+}
+
+.searchIcon {
+  color: #94a3b8 !important;
+}
+
+.filterControl {
+  min-width: 0 !important;
+}
+
+.filterLabel {
+  font-size: 0.75rem !important;
+  transform: translate(14px, 8px) scale(1);
+
+  &.MuiInputLabel-shrink {
+    transform: translate(14px, -7px) scale(0.75);
+  }
+}
+
+.filterSelect {
+  height: 34px !important;
+  border-radius: 8px;
+  font-size: 0.78rem !important;
+
+  & .MuiSelect-select {
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-right: 28px !important;
+    padding-left: 10px;
+    min-height: 0 !important;
+    line-height: 34px;
+  }
+}
+
+.createButtonContainer {
+  display: flex;
+  justify-content: flex-start;
+}
+
+@media (min-width: 900px) {
+  .createButtonContainer {
+    justify-content: flex-end;
+  }
+}
+
+.createButton {
+  text-transform: none !important;
+  border-radius: 8px;
+  font-weight: 600 !important;
+  min-height: 34px !important;
+  height: 34px !important;
+  width: 100%;
+  padding-left: 14px;
+  padding-right: 14px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 0.78rem !important;
+  background-color: #2563eb !important;
+
+  &:hover {
+    background-color: #1d4ed8 !important;
+  }
+
+  & .MuiButton-startIcon {
+    margin-right: 6px;
+
+    & svg {
+      font-size: 1rem;
+    }
+  }
+}
+
+@media (min-width: 900px) {
+  .createButton {
+    width: auto;
+    min-width: 140px;
+  }
+}
+
+/* ── States ─────────────────────────────────────────────── */
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 180px !important;
+  gap: 8px;
+}
+
+.loadingText {
+  color: #64748b !important;
+  font-size: 0.78rem !important;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 180px !important;
+  gap: 6px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.emptyStateTitle {
+  font-weight: 650 !important;
+  color: #334155 !important;
+  font-size: 0.92rem !important;
+}
+
+.emptyStateDescription {
+  color: #64748b !important;
+  text-align: center;
+  max-width: 420px !important;
+  font-size: 0.76rem !important;
+}
+
+/* ── Modal Overlay and Box ──────────────────────────────── */
+
+.modalOverlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  outline: none;
+}
+
+.modalBox {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.modalHeader {
+  padding: 16px 20px;
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalTitle {
+  font-weight: 750 !important;
+  color: #1e293b;
+  font-size: 1rem !important;
+  line-height: 1.25 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modalCloseBtn {
+  color: #94a3b8 !important;
+  padding: 4px !important;
+  border-radius: 6px !important;
+
+  &:hover {
+    background-color: #e2e8f0 !important;
+    color: #475569 !important;
+  }
+}
+
+.modalBody {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modalFooter {
+  padding: 14px 20px;
+  background-color: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ── Live Preview Badge inside modal ────────────────────── */
+
+.previewBadge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.previewAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.previewInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.previewName {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.previewMeta {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+/* ── Form Inputs ────────────────────────────────────────── */
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.formGroupRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.formLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.requiredStar {
+  color: #ef4444;
+}
+
+.colorPickerRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.colorSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  padding: 0;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+}
+
+.colorSwatchSelected {
+  border-color: #0f172a !important;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.2);
+}

@@ -564,6 +564,15 @@ export default function UserManagement() {
             <Button
               variant="outlined"
               size="small"
+              startIcon={<EngineeringIcon className={styles.userManagementNavIcon} />}
+              onClick={() => (window.location.href = '/admin/technicians')}
+              className={styles.userManagementNavButton}
+            >
+              Technicians
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
               startIcon={<PeopleIcon className={styles.userManagementNavIcon} />}
               onClick={() => (window.location.href = '/crm')}
               className={styles.userManagementNavButton}
