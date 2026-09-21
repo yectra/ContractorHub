@@ -8,6 +8,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ClientModal from './modals/ClientModal';
 import JobModal from './modals/JobModal';
 import DeleteConfirmModal from './modals/DeleteConfirmModal';
+import DeleteClientModal from './modals/DeleteClientModal';
 
 type Client = Schema['Client']['type'];
 type ServiceRequest = Schema['ServiceRequest']['type'];
@@ -62,6 +63,13 @@ const EditIcon: React.FC = () => (
   </svg>
 );
 
+const TrashIcon: React.FC = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </svg>
+);
+
 const PlusIcon: React.FC = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="12" y1="5" x2="12" y2="19" />
@@ -75,6 +83,7 @@ const SearchIcon: React.FC = () => (
     <line x1="21" y1="21" x2="16.65" y2="16.65" />
   </svg>
 );
+
 const UsersIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -85,7 +94,7 @@ const UsersIcon: React.FC = () => (
 );
 
 export default function ClientCRMRecord(): React.JSX.Element {
-  const { clients, updateClient, createClient, loading: loadingClients } = useClients();
+  const { clients, updateClient, createClient, deleteClient, loading: loadingClients } = useClients();
   const { serviceRequests, createServiceRequest, updateServiceRequest, deleteServiceRequest, loading: loadingRequests } = useServiceRequests();
 
   // State
@@ -102,6 +111,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
   const [selectedJob, setSelectedJob] = useState<ServiceRequest | null>(null);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState<boolean>(false);
   const [jobToDelete, setJobToDelete] = useState<ServiceRequest | null>(null);
+  const [showDeleteClientModal, setShowDeleteClientModal] = useState<boolean>(false);
 
   const navigate = useNavigate();
   
@@ -205,9 +215,73 @@ export default function ClientCRMRecord(): React.JSX.Element {
       setShowEditModal(false);
       setTimeout(() => setSuccessAlert(null), 4000);
     } catch (err: unknown) {
-      console.error(err);
+      console.error('Error updating client profile:', err);
       setErrorAlert('Failed to update client profile.');
       setTimeout(() => setErrorAlert(null), 4000);
+      throw err;
+    }
+  };
+
+  // Handle Create Client
+  const handleCreateClientSubmit = async (formData: ClientFormData): Promise<void> => {
+    try {
+      const gpsLine = `GPS: ${formData.gps}`;
+      const finalNotes = formData.preferenceNotes.trim() 
+        ? `${formData.preferenceNotes.trim()}\n${gpsLine}` 
+        : gpsLine;
+
+      const created = await createClient({
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+        outstandingBalance: formData.outstandingBalance,
+        preferenceNotes: formData.preferenceNotes,
+        notes: finalNotes,
+      });
+
+      if (created) {
+        setSelectedClientId(created.id || '');
+      }
+      setSuccessAlert(`Client "${formData.name}" created successfully!`);
+      setShowNewClientModal(false);
+      setTimeout(() => setSuccessAlert(null), 4000);
+    } catch (err: unknown) {
+      console.error('Error creating client:', err);
+      setErrorAlert('Failed to create client.');
+      setTimeout(() => setErrorAlert(null), 4000);
+      throw err;
+    }
+  };
+
+  // Handle Delete Client Confirm
+  const handleDeleteClientConfirm = async (): Promise<void> => {
+    if (!selectedClient || !selectedClient.id) return;
+    const clientName = selectedClient.name;
+    const deletedId = selectedClient.id;
+
+    try {
+      await deleteClient(deletedId);
+
+      // Select next client in list if available
+      const remainingClients = clients.filter((c) => c.id !== deletedId);
+      if (remainingClients.length > 0) {
+        setSelectedClientId(remainingClients[0].id || '');
+      } else {
+        setSelectedClientId('');
+      }
+
+      setSuccessAlert(`Client "${clientName}" deleted successfully!`);
+      setShowDeleteClientModal(false);
+      setTimeout(() => setSuccessAlert(null), 4000);
+    } catch (err: unknown) {
+      console.error('Error deleting client:', err);
+      setErrorAlert(`Failed to delete client "${clientName}".`);
+      setTimeout(() => setErrorAlert(null), 4000);
+      throw err;
     }
   };
 
@@ -242,6 +316,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
       console.error(err);
       setErrorAlert('Failed to create new job.');
       setTimeout(() => setErrorAlert(null), 4000);
+      throw err;
     }
   };
 
@@ -268,6 +343,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
       console.error(err);
       setErrorAlert('Failed to update job.');
       setTimeout(() => setErrorAlert(null), 4000);
+      throw err;
     }
   };
 
@@ -290,40 +366,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
       console.error(err);
       setErrorAlert('Failed to delete job.');
       setTimeout(() => setErrorAlert(null), 4000);
-    }
-  };
-
-  // Handle Create Client
-  const handleCreateClientSubmit = async (formData: ClientFormData): Promise<void> => {
-    try {
-      const gpsLine = `GPS: ${formData.gps}`;
-      const finalNotes = formData.preferenceNotes.trim() 
-        ? `${formData.preferenceNotes.trim()}\n${gpsLine}` 
-        : gpsLine;
-
-      const created = await createClient({
-        name: formData.name,
-        phone: formData.phone,
-        email: formData.email,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        zipCode: formData.zipCode,
-        outstandingBalance: formData.outstandingBalance,
-        preferenceNotes: formData.preferenceNotes,
-        notes: finalNotes,
-      });
-
-      if (created) {
-        setSelectedClientId(created.id || '');
-      }
-      setSuccessAlert(`Client "${formData.name}" created successfully!`);
-      setShowNewClientModal(false);
-      setTimeout(() => setSuccessAlert(null), 4000);
-    } catch (err: unknown) {
-      console.error(err);
-      setErrorAlert('Failed to create client.');
-      setTimeout(() => setErrorAlert(null), 4000);
+      throw err;
     }
   };
 
@@ -601,13 +644,22 @@ export default function ClientCRMRecord(): React.JSX.Element {
             <div className={styles.card}>
               <div className={styles.sectionTitle}>
                 <span>Client Profile Card</span>
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  className={styles.editProfileBtn}
-                  title="Edit Profile"
-                >
-                  <EditIcon />
-                </button>
+                <div className={styles.flexGap8}>
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className={styles.editProfileBtn}
+                    title="Edit Profile"
+                  >
+                    <EditIcon />
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteClientModal(true)}
+                    className={styles.deleteProfileBtn}
+                    title="Delete Client"
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
               </div>
  
               <div className={styles.profileDetail}>
@@ -681,12 +733,20 @@ export default function ClientCRMRecord(): React.JSX.Element {
                   </div>
                 )}
  
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  className={`${styles.buttonOutline} ${styles.marginTop4}`}
-                >
-                  <EditIcon /> EDIT PROFILE DETAILS
-                </button>
+                <div className={styles.flexGap10}>
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className={`${styles.buttonOutline} ${styles.marginTop4}`}
+                  >
+                    <EditIcon /> EDIT PROFILE
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteClientModal(true)}
+                    className={`${styles.buttonDangerOutline} ${styles.marginTop4}`}
+                  >
+                    <TrashIcon /> DELETE
+                  </button>
+                </div>
               </div>
             </div>
  
@@ -724,6 +784,14 @@ export default function ClientCRMRecord(): React.JSX.Element {
         onClose={() => setShowNewClientModal(false)}
         client={null}
         onSubmit={handleCreateClientSubmit}
+      />
+
+      <DeleteClientModal
+        isOpen={showDeleteClientModal}
+        onClose={() => setShowDeleteClientModal(false)}
+        clientId={selectedClient?.id || ''}
+        clientName={selectedClient?.name || ''}
+        onConfirm={handleDeleteClientConfirm}
       />
 
       <JobModal
