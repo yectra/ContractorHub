@@ -1,38 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
-import { useClients, useServiceRequests } from '../../hooks/useDispatchData';
+import { useClients, useServiceRequests, useTechnicians, useScheduledJobs } from '../../hooks/useDispatchData';
+import { parseStartHour, parseDurationHours, getTodayString, mapServiceStatusToJobStatus } from '../../utils/jobHelpers';
 import type { Schema } from '../../../amplify/data/resource';
 import styles from '../../styles/UI/ClientRecord.module.scss';
 import { IconButton, Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ClientModal from './modals/ClientModal';
-import JobModal from './modals/JobModal';
+import ClientModal, { type ClientFormData } from './modals/ClientModal';
+import JobModal, { type JobFormData } from './modals/JobModal';
 import DeleteConfirmModal from './modals/DeleteConfirmModal';
 import DeleteClientModal from './modals/DeleteClientModal';
 
 type Client = Schema['Client']['type'];
 type ServiceRequest = Schema['ServiceRequest']['type'];
-
-export interface ClientFormData {
-  name: string;
-  phone: string;
-  email: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  gps: string;
-  outstandingBalance: string;
-  preferenceNotes: string;
-  notes: string;
-}
-
-export interface JobFormData {
-  service: string;
-  type: 'Scheduled' | 'Emergency' | 'WebRequest';
-  priority: 'low' | 'medium' | 'high';
-  notes: string;
-}
 
 // Inline SVG Icons for zero-dependency consistency with FieldExecution
 const BackIcon: React.FC = () => (
@@ -93,9 +73,20 @@ const UsersIcon: React.FC = () => (
   </svg>
 );
 
+const DispatchIcon: React.FC = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="9" rx="1" />
+    <rect x="14" y="3" width="7" height="5" rx="1" />
+    <rect x="14" y="12" width="7" height="9" rx="1" />
+    <rect x="3" y="16" width="7" height="5" rx="1" />
+  </svg>
+);
+
 export default function ClientCRMRecord(): React.JSX.Element {
   const { clients, updateClient, createClient, deleteClient, loading: loadingClients } = useClients();
   const { serviceRequests, createServiceRequest, updateServiceRequest, deleteServiceRequest, loading: loadingRequests } = useServiceRequests();
+  const { scheduledJobs, createScheduledJob, updateScheduledJob, deleteScheduledJob } = useScheduledJobs();
+  const { technicians } = useTechnicians();
 
   // State
   const [selectedClientId, setSelectedClientId] = useState<string>('');
@@ -116,8 +107,17 @@ export default function ClientCRMRecord(): React.JSX.Element {
   const navigate = useNavigate();
   
   // Alerts
-  const [successAlert, setSuccessAlert] = useState<string | null>(null);
+  const [successAlert, setSuccessAlert] = useState<{ message: string; jobId?: string; date?: string } | null>(null);
   const [errorAlert, setErrorAlert] = useState<string | null>(null);
+
+  const handleNavigateToDashboard = (jobId: string, scheduledDate?: string | null) => {
+    const params = new URLSearchParams();
+    params.set('jobId', jobId);
+    if (scheduledDate) {
+      params.set('date', scheduledDate);
+    }
+    navigate(`/?${params.toString()}`);
+  };
 
   // Handle responsive layout checks
   useEffect(() => {
@@ -146,26 +146,38 @@ export default function ClientCRMRecord(): React.JSX.Element {
   // Filter jobs (service requests) associated with the selected client
   const clientJobs = useMemo<ServiceRequest[]>(() => {
     if (!selectedClient) return [];
-    return serviceRequests.filter((job: ServiceRequest) => job.client === selectedClient.name);
+    return serviceRequests.filter(
+      (job: ServiceRequest) =>
+        job.client === selectedClient.name || job.client === selectedClient.id
+    );
   }, [serviceRequests, selectedClient]);
 
   // Apply search query and status filters
   const filteredJobs = useMemo<ServiceRequest[]>(() => {
     return clientJobs.filter((job: ServiceRequest) => {
       const jobIdStr = job.id || '';
+      const tech = technicians.find((t) => t.id === job.assignedTechnicianId);
+      const techName = tech ? tech.name.toLowerCase() : '';
+      const query = searchQuery.toLowerCase();
+
       const matchSearch =
-        jobIdStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (job.notes || '').toLowerCase().includes(searchQuery.toLowerCase());
-      
+        jobIdStr.toLowerCase().includes(query) ||
+        job.service.toLowerCase().includes(query) ||
+        (job.notes || '').toLowerCase().includes(query) ||
+        techName.includes(query);
+
       const matchStatus =
         statusFilter === 'ALL' ||
         (statusFilter === 'COMPLETED' && job.status === 'Completed') ||
+        (statusFilter === 'IN_PROGRESS' && job.status === 'InProgress') ||
+        (statusFilter === 'ASSIGNED' && job.status === 'Assigned') ||
+        (statusFilter === 'UNASSIGNED' && (job.status === 'Unassigned' || !job.status)) ||
         (statusFilter === 'ACTIVE' && (job.status === 'InProgress' || job.status === 'Assigned' || job.status === 'Unassigned'));
 
       return matchSearch && matchStatus;
     });
-  }, [clientJobs, searchQuery, statusFilter]);
+  }, [clientJobs, searchQuery, statusFilter, technicians]);
+
 
   // Financial Metrics calculations
   const totalOutstanding = useMemo<number>(() => {
@@ -211,7 +223,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
         notes: finalNotes,
       });
 
-      setSuccessAlert('Client profile updated successfully!');
+      setSuccessAlert({ message: 'Client profile updated successfully!' });
       setShowEditModal(false);
       setTimeout(() => setSuccessAlert(null), 4000);
     } catch (err: unknown) {
@@ -246,7 +258,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
       if (created) {
         setSelectedClientId(created.id || '');
       }
-      setSuccessAlert(`Client "${formData.name}" created successfully!`);
+      setSuccessAlert({ message: `Client "${formData.name}" created successfully!` });
       setShowNewClientModal(false);
       setTimeout(() => setSuccessAlert(null), 4000);
     } catch (err: unknown) {
@@ -274,7 +286,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
         setSelectedClientId('');
       }
 
-      setSuccessAlert(`Client "${clientName}" deleted successfully!`);
+      setSuccessAlert({ message: `Client "${clientName}" deleted successfully!` });
       setShowDeleteClientModal(false);
       setTimeout(() => setSuccessAlert(null), 4000);
     } catch (err: unknown) {
@@ -297,23 +309,50 @@ export default function ClientCRMRecord(): React.JSX.Element {
         selectedClient.zipCode
       ].filter(Boolean).join(', ');
 
-      await createServiceRequest({
+      const isAssigned = !!formData.assignedTechnicianId && formData.status !== 'Unassigned';
+      const scheduledDate = formData.scheduledDate || getTodayString();
+
+      const created = await createServiceRequest({
         client: selectedClient.name,
         service: formData.service,
         location: clientAddress || 'No site address specified',
         type: formData.type,
         priority: formData.priority,
-        status: 'Unassigned',
-        requestTime: '08:00 AM',
-        estimatedDuration: '2 hours',
+        status: formData.status,
+        assignedTechnicianId: formData.assignedTechnicianId || undefined,
+        requestTime: formData.requestTime || '08:00 AM',
+        estimatedDuration: formData.estimatedDuration || '2 hours',
         notes: formData.notes,
       });
 
-      setSuccessAlert('New job created in the dispatch queue successfully!');
+      // If assigned to a technician, also create the ScheduledJob so it immediately reflects in the Calendar timeline
+      if (created?.id && isAssigned) {
+        const startHour = parseStartHour(formData.requestTime);
+        const duration = parseDurationHours(formData.estimatedDuration);
+        const jobStatus = mapServiceStatusToJobStatus(formData.status);
+
+        await createScheduledJob({
+          techId: formData.assignedTechnicianId,
+          serviceRequestId: created.id,
+          startHour,
+          duration,
+          status: jobStatus,
+          scheduledDate,
+          notes: formData.notes,
+        });
+      }
+
+      const idStr = created?.id ? ` (${created.id})` : '';
+      const destMsg = isAssigned ? 'technician schedule & dispatch board' : 'dispatch service queue';
+      setSuccessAlert({
+        message: `New job${idStr} created in ${destMsg} successfully!`,
+        jobId: created?.id,
+        date: isAssigned ? scheduledDate : undefined,
+      });
       setShowNewJobModal(false);
-      setTimeout(() => setSuccessAlert(null), 4000);
+      setTimeout(() => setSuccessAlert(null), 6000);
     } catch (err: unknown) {
-      console.error(err);
+      console.error('Error creating new job:', err);
       setErrorAlert('Failed to create new job.');
       setTimeout(() => setErrorAlert(null), 4000);
       throw err;
@@ -334,13 +373,57 @@ export default function ClientCRMRecord(): React.JSX.Element {
         service: formData.service,
         type: formData.type,
         priority: formData.priority,
+        status: formData.status,
+        assignedTechnicianId: formData.assignedTechnicianId || null,
+        requestTime: formData.requestTime,
+        estimatedDuration: formData.estimatedDuration,
         notes: formData.notes,
       });
-      setSuccessAlert('Job updated successfully!');
+
+      // Synchronize ScheduledJob on the Calendar
+      const existingSchedJob = scheduledJobs.find((j) => j.serviceRequestId === selectedJob.id);
+      const isAssigned = !!formData.assignedTechnicianId && formData.status !== 'Unassigned';
+      const scheduledDate = formData.scheduledDate || existingSchedJob?.scheduledDate || getTodayString();
+
+      if (isAssigned) {
+        const startHour = parseStartHour(formData.requestTime);
+        const duration = parseDurationHours(formData.estimatedDuration);
+        const jobStatus = mapServiceStatusToJobStatus(formData.status);
+
+        if (existingSchedJob?.id) {
+          await updateScheduledJob(existingSchedJob.id, {
+            techId: formData.assignedTechnicianId,
+            startHour,
+            duration,
+            scheduledDate,
+            status: jobStatus,
+            notes: formData.notes,
+          });
+        } else {
+          await createScheduledJob({
+            techId: formData.assignedTechnicianId,
+            serviceRequestId: selectedJob.id,
+            startHour,
+            duration,
+            scheduledDate,
+            status: jobStatus,
+            notes: formData.notes,
+          });
+        }
+      } else if (existingSchedJob?.id) {
+        // If changed to Unassigned, remove the ScheduledJob so it moves cleanly to the Service Queue
+        await deleteScheduledJob(existingSchedJob.id);
+      }
+
+      setSuccessAlert({
+        message: `Job #${selectedJob.id} updated successfully!`,
+        jobId: selectedJob.id,
+        date: isAssigned ? scheduledDate : undefined,
+      });
       setShowEditJobModal(false);
-      setTimeout(() => setSuccessAlert(null), 4000);
+      setTimeout(() => setSuccessAlert(null), 6000);
     } catch (err: unknown) {
-      console.error(err);
+      console.error('Error updating job:', err);
       setErrorAlert('Failed to update job.');
       setTimeout(() => setErrorAlert(null), 4000);
       throw err;
@@ -356,15 +439,24 @@ export default function ClientCRMRecord(): React.JSX.Element {
   // Handle Delete Job Confirm
   const handleDeleteJobConfirm = async (): Promise<void> => {
     if (!jobToDelete || !jobToDelete.id) return;
+    const jobId = jobToDelete.id;
     try {
-      await deleteServiceRequest(jobToDelete.id);
-      setSuccessAlert('Job deleted successfully!');
+      // Delete any associated ScheduledJob first
+      const existingSchedJob = scheduledJobs.find((j) => j.serviceRequestId === jobId);
+      if (existingSchedJob?.id) {
+        await deleteScheduledJob(existingSchedJob.id);
+      }
+
+      await deleteServiceRequest(jobId);
+      setSuccessAlert({
+        message: `Job #${jobId} deleted successfully from dispatch queue & calendar!`,
+      });
       setShowDeleteConfirmModal(false);
       setJobToDelete(null);
       setTimeout(() => setSuccessAlert(null), 4000);
     } catch (err: unknown) {
-      console.error(err);
-      setErrorAlert('Failed to delete job.');
+      console.error('Error deleting job:', err);
+      setErrorAlert(`Failed to delete job #${jobId}.`);
       setTimeout(() => setErrorAlert(null), 4000);
       throw err;
     }
@@ -380,8 +472,6 @@ export default function ClientCRMRecord(): React.JSX.Element {
     }
     return `$${((sum % 450) + 75).toFixed(2)}`;
   };
-
-
 
   return (
     <div className={styles.container}>
@@ -440,14 +530,25 @@ export default function ClientCRMRecord(): React.JSX.Element {
       {/* Alert Banners */}
       {successAlert && (
         <div className={styles.alertSuccess}>
-          <span>{successAlert}</span>
-          <button onClick={() => setSuccessAlert(null)}>×</button>
+          <div className={styles.alertSuccessContent}>
+            <span>{successAlert.message}</span>
+            {successAlert.jobId && (
+              <button
+                type="button"
+                className={styles.alertActionBtn}
+                onClick={() => handleNavigateToDashboard(successAlert.jobId!, successAlert.date)}
+              >
+                View in Dashboard →
+              </button>
+            )}
+          </div>
+          <button className={styles.alertCloseBtn} onClick={() => setSuccessAlert(null)}>×</button>
         </div>
       )}
       {errorAlert && (
         <div className={styles.alertError}>
           <span>{errorAlert}</span>
-          <button onClick={() => setErrorAlert(null)}>×</button>
+          <button className={styles.alertCloseBtn} onClick={() => setErrorAlert(null)}>×</button>
         </div>
       )}
 
@@ -532,7 +633,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search by job ID, description, or notes..."
+                    placeholder="Search by job ID, service, technician, or notes..."
                     value={searchQuery}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                     className={styles.searchInput}
@@ -545,7 +646,10 @@ export default function ClientCRMRecord(): React.JSX.Element {
                   className={styles.filterSelect}
                 >
                   <option value="ALL">All Statuses</option>
-                  <option value="ACTIVE">Active (Assigned/InProgress)</option>
+                  <option value="ACTIVE">Active (In Queue/Assigned/In Progress)</option>
+                  <option value="ASSIGNED">Assigned Only</option>
+                  <option value="IN_PROGRESS">In Progress Only</option>
+                  <option value="UNASSIGNED">Unassigned Only</option>
                   <option value="COMPLETED">Completed Only</option>
                 </select>
               </div>
@@ -565,8 +669,10 @@ export default function ClientCRMRecord(): React.JSX.Element {
                     <thead>
                       <tr>
                         <th className={styles.th}>Job Number</th>
-                        <th className={styles.th}>Date</th>
+                        <th className={styles.th}>Date & Time</th>
                         <th className={styles.th}>Service Type / Desc</th>
+                        <th className={styles.th}>Technician</th>
+                        <th className={styles.th}>Priority</th>
                         <th className={styles.th}>Status</th>
                         <th className={styles.th}>Total Amount</th>
                         <th className={styles.th}>Actions</th>
@@ -575,24 +681,71 @@ export default function ClientCRMRecord(): React.JSX.Element {
                     <tbody>
                       {filteredJobs.map((job: ServiceRequest, index: number) => {
                         const isCompleted = job.status === 'Completed';
-                        const isActive = job.status === 'InProgress' || job.status === 'Assigned';
+                        const isInProgress = job.status === 'InProgress';
+                        const isAssigned = job.status === 'Assigned';
                         const formattedDate = job.createdAt 
                           ? new Date(job.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
                           : 'Recent';
- 
+                        
+                        const tech = technicians.find((t) => t.id === job.assignedTechnicianId);
+                        const priority = (job.priority || 'low').toLowerCase();
+
                         return (
                           <tr 
                             key={job.id || index} 
                             className={styles.trHover}
                           >
-                            <td className={`${styles.td} ${styles.jobNumber}`}>{job.id || 'N/A'}</td>
-                            <td className={styles.td}>{formattedDate}</td>
+                            <td className={`${styles.td} ${styles.jobNumber}`}>
+                              <button
+                                type="button"
+                                className={styles.jobNumberBtn}
+                                onClick={() => {
+                                  const sched = scheduledJobs.find((j) => j.serviceRequestId === job.id);
+                                  handleNavigateToDashboard(job.id || '', sched?.scheduledDate);
+                                }}
+                                title="Open in Dispatch Dashboard"
+                              >
+                                {job.id || 'N/A'}
+                              </button>
+                            </td>
+                            <td className={styles.td}>
+                              <div className={styles.dateTimeCell}>
+                                <span>{formattedDate}</span>
+                                {job.requestTime && <span className={styles.dateTimeSub}>{job.requestTime}</span>}
+                              </div>
+                            </td>
                             <td className={`${styles.td} ${styles.service}`}>{job.service}</td>
+                            <td className={styles.td}>
+                              {tech ? (
+                                <div className={styles.techAssigneeBadge}>
+                                  <div 
+                                    className={styles.techAvatarSmall} 
+                                    style={{ backgroundColor: tech.color || '#2563eb' }}
+                                  >
+                                    {tech.avatar || (tech.name ? tech.name.substring(0, 2).toUpperCase() : 'T')}
+                                  </div>
+                                  <span>{tech.name}</span>
+                                </div>
+                              ) : (
+                                <span className={styles.pillUnassigned}>Unassigned</span>
+                              )}
+                            </td>
+                            <td className={styles.td}>
+                              <span className={
+                                priority === 'high' ? styles.pillPriorityHigh :
+                                priority === 'medium' ? styles.pillPriorityMedium :
+                                styles.pillPriorityLow
+                              }>
+                                {priority.toUpperCase()}
+                              </span>
+                            </td>
                             <td className={styles.td}>
                               {isCompleted ? (
                                 <span className={styles.pillCompleted}>COMPLETED</span>
-                              ) : isActive ? (
-                                <span className={styles.pillActive}>ACTIVE</span>
+                              ) : isInProgress ? (
+                                <span className={styles.pillActive}>IN PROGRESS</span>
+                              ) : isAssigned ? (
+                                <span className={styles.pillActive}>ASSIGNED</span>
                               ) : (
                                 <span className={styles.pillUnassigned}>UNASSIGNED</span>
                               )}
@@ -602,7 +755,20 @@ export default function ClientCRMRecord(): React.JSX.Element {
                             </td>
                             <td className={styles.td}>
                               <div className={styles.actionButtons}>
-                                <Tooltip title="Edit" arrow>
+                                <Tooltip title="View in Dispatch Dashboard" arrow>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                                      e.stopPropagation();
+                                      const sched = scheduledJobs.find((j) => j.serviceRequestId === job.id);
+                                      handleNavigateToDashboard(job.id || '', sched?.scheduledDate);
+                                    }}
+                                    className={styles.actionBtnDispatch}
+                                  >
+                                    <DispatchIcon />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Edit Job" arrow>
                                   <IconButton
                                     size="small"
                                     onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
@@ -614,7 +780,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
                                     <EditIcon />
                                   </IconButton>
                                 </Tooltip>
-                                <Tooltip title="Delete" arrow>
+                                <Tooltip title="Delete Job" arrow>
                                   <IconButton
                                     size="small"
                                     onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
@@ -805,6 +971,8 @@ export default function ClientCRMRecord(): React.JSX.Element {
           selectedClient?.zipCode
         ].filter(Boolean).join(', ') || 'No site address specified'}
         job={null}
+        initialScheduledDate={getTodayString()}
+        technicians={technicians}
         onSubmit={handleCreateJobSubmit}
       />
 
@@ -819,6 +987,12 @@ export default function ClientCRMRecord(): React.JSX.Element {
           selectedClient?.zipCode
         ].filter(Boolean).join(', ') || 'No site address specified'}
         job={selectedJob}
+        initialScheduledDate={
+          selectedJob
+            ? scheduledJobs.find((j) => j.serviceRequestId === selectedJob.id)?.scheduledDate || getTodayString()
+            : getTodayString()
+        }
+        technicians={technicians}
         onSubmit={handleEditJobSubmit}
       />
 
@@ -832,3 +1006,4 @@ export default function ClientCRMRecord(): React.JSX.Element {
     </div>
   );
 }
+

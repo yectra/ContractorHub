@@ -25,6 +25,19 @@ const TrashIcon = () => (
   </svg>
 );
 
+const SpinnerIcon = () => (
+  <svg style={{ animation: 'spin 1s linear infinite' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="2" x2="12" y2="6" />
+    <line x1="12" y1="18" x2="12" y2="22" />
+    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
+    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+    <line x1="2" y1="12" x2="6" y2="12" />
+    <line x1="18" y1="12" x2="22" y2="12" />
+    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
+    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
+  </svg>
+);
+
 export default function DeleteConfirmModal({ isOpen, onClose, jobId, jobService, onConfirm }: DeleteConfirmModalProps) {
   const [submitting, setSubmitting] = useState(false);
 
@@ -32,32 +45,48 @@ export default function DeleteConfirmModal({ isOpen, onClose, jobId, jobService,
     setSubmitting(true);
     try {
       await onConfirm();
+    } catch (err) {
+      console.error('Error in DeleteConfirmModal:', err);
     } finally {
       setSubmitting(false);
     }
   };
 
+  const handleClose = () => {
+    if (submitting) return;
+    onClose();
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Confirm Delete" isConfirm={true}>
+    <Modal isOpen={isOpen} onClose={handleClose} title="Confirm Delete Job" isConfirm={true}>
       <p className={styles.pConfirm}>
         Are you sure you want to delete the job <strong>{jobId}</strong> ({jobService})? This action cannot be undone.
       </p>
       <div className={styles.flexGap10}>
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleClose}
           className={styles.buttonOutline}
           disabled={submitting}
         >
           <CancelIcon /> Cancel
         </button>
         <button
+          id="confirm-delete-job-btn"
           type="button"
           onClick={handleConfirm}
           className={styles.btnConfirmDelete}
           disabled={submitting}
         >
-          <TrashIcon /> Delete
+          {submitting ? (
+            <>
+              <SpinnerIcon /> Deleting...
+            </>
+          ) : (
+            <>
+              <TrashIcon /> Delete Job
+            </>
+          )}
         </button>
       </div>
     </Modal>

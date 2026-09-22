@@ -42,6 +42,32 @@
     border-color: #2563eb;
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
   }
+
+  &:disabled {
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+}
+
+.inputError {
+  border-color: #ef4444 !important;
+
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+  }
+}
+
+.errorMessage {
+  font-size: 0.72rem;
+  color: #ef4444;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.requiredStar {
+  color: #ef4444;
+  margin-left: 2px;
 }
 
 .formInputDisabled {
@@ -79,6 +105,12 @@
     border-color: #2563eb;
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
   }
+
+  &:disabled {
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
 }
 
 .formSelect {
@@ -100,6 +132,12 @@
 
   &:focus {
     border-color: #2563eb;
+  }
+
+  &:disabled {
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
   }
 }
 
@@ -132,8 +170,13 @@
   transition: background-color 0.2s ease;
   text-transform: none;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: #1d4ed8;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
   }
 }
 
@@ -157,7 +200,26 @@
   transition: all 0.2s ease;
   text-transform: none;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: #f1f5f9;
   }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
 }
+
+.spinnerIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+

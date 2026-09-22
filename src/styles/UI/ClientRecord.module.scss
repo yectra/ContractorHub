@@ -484,7 +484,10 @@
 .pillPending,
 .pillUnassigned,
 .pillOverdue,
-.pillCount {
+.pillCount,
+.pillPriorityHigh,
+.pillPriorityMedium,
+.pillPriorityLow {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -518,10 +521,23 @@
   border: 1px solid #fde68a;
 }
 
-.pillOverdue {
+.pillOverdue,
+.pillPriorityHigh {
   background-color: #fff1f2;
   color: #be123c;
   border: 1px solid #ffe4e6;
+}
+
+.pillPriorityMedium {
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fef3c7;
+}
+
+.pillPriorityLow {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
 }
 
 .pillCount {
@@ -530,6 +546,41 @@
   border: 1px solid #cbd5e1;
   text-transform: none;
 }
+
+.techAssigneeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.techAvatarSmall {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dateTimeCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dateTimeSub {
+  font-size: 0.68rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
 
 
 .alertSuccess,
@@ -544,7 +595,7 @@
   align-items: center;
   box-sizing: border-box;
 
-  button {
+  .alertCloseBtn {
     background: none;
     border: none;
     cursor: pointer;
@@ -554,12 +605,35 @@
   }
 }
 
+.alertSuccessContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.alertActionBtn {
+  background-color: #047857 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+
+  &:hover {
+    background-color: #065f46 !important;
+  }
+}
+
 .alertSuccess {
   background-color: #ecfdf5;
   color: #047857;
   border: 1px solid #a7f3d0;
 
-  button {
+  .alertCloseBtn {
     color: #047857;
     &:hover {
       color: #065f46;
@@ -572,7 +646,7 @@
   color: #be123c;
   border: 1px solid #ffe4e6;
 
-  button {
+  .alertCloseBtn {
     color: #be123c;
     &:hover {
       color: #9f1239;
@@ -708,6 +782,47 @@
 .actionButtons {
   display: flex;
   gap: 6px;
+}
+
+.jobNumberBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  color: #2563eb;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #1d4ed8;
+  }
+}
+
+.actionBtnDispatch {
+  width: 26px !important;
+  height: 26px !important;
+  padding: 0 !important;
+  border: 1px solid #bfdbfe !important;
+  border-radius: 6px !important;
+  color: #2563eb !important;
+  background-color: #eff6ff !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    background-color: #dbeafe !important;
+    color: #1d4ed8 !important;
+    border-color: #93c5fd !important;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .actionBtnEdit {

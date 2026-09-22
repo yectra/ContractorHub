@@ -12,7 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CloseIcon from '@mui/icons-material/Close';
 import { useServiceRequests, useTechnicians, useScheduledJobs, useClients } from '../hooks/useDispatchData';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { signOut as amplifySignOut } from 'aws-amplify/auth';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -76,8 +76,12 @@ type ProfileUser = {
   attributes?: Record<string, string | undefined>;
 };
 
-export default function ThreePanelPage() {
+export default function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlJobId = searchParams.get('jobId') || searchParams.get('highlight');
+  const urlDate = searchParams.get('date');
+
   const { signOut, user } = useAuthenticator((context) => [context.signOut, context.user]);
   const profileUser = user as ProfileUser | undefined;
 
@@ -163,11 +167,36 @@ export default function ThreePanelPage() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [profileMenuOpen]);
 
-  // Fetch real data from Amplify
+  // Fetch real data from Amplify / LocalStorage
   const { serviceRequests, loading: srLoading, error: srError, updateServiceRequest, deleteServiceRequest } = useServiceRequests();
   const { technicians, loading: techLoading, error: techError, createTechnician } = useTechnicians();
   const { scheduledJobs, createScheduledJob, updateScheduledJob, deleteScheduledJob } = useScheduledJobs();
   const { clients, loading: clLoading } = useClients();
+
+  // Handle deep-linking from URL query parameters (e.g. from Client CRM page)
+  useEffect(() => {
+    if (!urlJobId) return;
+
+    const targetRequest = serviceRequests.find((r) => r.id === urlJobId);
+    const targetScheduledJob = scheduledJobs.find((j) => j.serviceRequestId === urlJobId || j.id === urlJobId);
+
+    if (targetRequest || targetScheduledJob) {
+      const resolvedRequestId = targetRequest?.id || targetScheduledJob?.serviceRequestId || urlJobId;
+      setSelectedRequest(resolvedRequestId);
+      setRightPanelOpen(true);
+
+      if (urlDate) {
+        setSelectedDate(urlDate);
+      } else if (targetScheduledJob?.scheduledDate) {
+        setSelectedDate(targetScheduledJob.scheduledDate);
+      }
+
+      // If it is an unassigned request in queue, ensure the left panel is open
+      if (targetRequest?.status === 'Unassigned') {
+        setLeftPanelOpen(true);
+      }
+    }
+  }, [urlJobId, urlDate, serviceRequests, scheduledJobs]);
 
   const handleCreateTechnician = async (techData: CreateTechnicianData) => {
     try {
@@ -687,7 +716,7 @@ export default function ThreePanelPage() {
                     onClick={() => handleRequestClick(request.id!)}
                     className={`${styles.dashboardRequestCard} ${
                       selectedRequest === request.id ? styles.dashboardRequestCardSelected : styles.dashboardRequestCardIdle
-                    }`}
+                    } ${urlJobId === request.id ? styles.dashboardCardHighlighted : ''}`}
                   >
                     <CardContent className={styles.dashboardCardContent}>
                       {/* Header Row */}
@@ -970,7 +999,7 @@ export default function ThreePanelPage() {
                           }}
                           className={`${styles.dashboardScheduledJob} ${
                             isDragging ? styles.dashboardScheduledJobGrabbing : styles.dashboardScheduledJobGrab
-                          }`}
+                          } ${urlJobId === job.serviceRequestId || selectedRequest === job.serviceRequestId ? styles.dashboardScheduledJobActive : ''}`}
                           sx={{
                             left: `${((job.startHour - 7) / 12) * 100}%`,
                             width: `${(job.duration / 12) * 100}%`,

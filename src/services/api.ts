@@ -165,6 +165,27 @@ const notify = (model: string, data: any) => {
   }
 };
 
+// Cross-tab and window storage synchronization
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e: StorageEvent) => {
+    if (!e.newValue) return;
+    try {
+      const parsed = JSON.parse(e.newValue);
+      if (e.key === 'mock_service_requests') {
+        notify('ServiceRequest', parsed);
+      } else if (e.key === 'mock_scheduled_jobs') {
+        notify('ScheduledJob', parsed);
+      } else if (e.key === 'mock_technicians') {
+        notify('Technician', parsed);
+      } else if (e.key === 'mock_clients') {
+        notify('Client', parsed);
+      }
+    } catch {
+      // Ignore malformed storage updates
+    }
+  });
+}
+
 const subscribeMock = (model: string, callback: SubscriberCallback, initialData: any) => {
   pubsub[model].push(callback);
   // Send initial data immediately
