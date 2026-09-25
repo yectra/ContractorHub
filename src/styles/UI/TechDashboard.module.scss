@@ -42,7 +42,7 @@
 /* Navigation Row across top of header */
 .techDashboardNavRow {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 8px;
   margin: 0 -12px 10px;
@@ -693,3 +693,140 @@
   font-size: 0.7rem !important;
   font-weight: 600 !important;
 }
+
+/* ── Top-Right Profile Avatar & Dropdown Menu (Synchronized with Admin UX) ── */
+
+.profileMenu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.profileMenuTrigger {
+  width: 36px !important;
+  height: 36px !important;
+  padding: 2px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  border-radius: 50% !important;
+  cursor: pointer;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out !important;
+
+  &:hover {
+    border-color: #94a3b8 !important;
+    background-color: #f8fafc !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12) !important;
+  }
+}
+
+.profileAvatar {
+  width: 30px !important;
+  height: 30px !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  background-color: #0284c7 !important;
+  letter-spacing: 0 !important;
+}
+
+.profileDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  min-width: 200px;
+  padding: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.16);
+}
+
+.profileHeader {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.profileName {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profileEmail {
+  font-size: 0.7rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profileRoleBadge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #0369a1;
+  background-color: #e0f2fe;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.profileMenuItem {
+  width: 100%;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #475569;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+
+  &:hover,
+  &:focus-visible {
+    color: #1e293b;
+    background-color: #f1f5f9;
+    outline: none;
+  }
+}
+
+.profileMenuIcon {
+  flex: 0 0 auto;
+  font-size: 1rem !important;
+  color: #64748b;
+  transition: color 0.2s ease-in-out;
+}
+
+.profileMenuItem:hover .profileMenuIcon,
+.profileMenuItem:focus-visible .profileMenuIcon {
+  color: #475569;
+}
+
+.profileMenuItemDanger {
+  color: #b91c1c;
+
+  .profileMenuIcon {
+    color: #dc2626;
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: #991b1b;
+    background-color: #fef2f2;
+  }
+}
+

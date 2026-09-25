@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
@@ -9,13 +9,16 @@ import {
   Select,
   MenuItem,
   IconButton,
+  Avatar,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TodayIcon from '@mui/icons-material/Today';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
+import { useAuthenticator } from '@aws-amplify/ui-react';
+import { signOut as amplifySignOut } from 'aws-amplify/auth';
 import { useServiceRequests, useScheduledJobs, useTechnicians } from '../hooks/useDispatchData';
 import styles from '../styles/UI/TechDashboard.module.scss';
 
@@ -171,11 +174,135 @@ type JobItemData = {
   startHour: number;
 };
 
+type ProfileUser = {
+  username?: string;
+  signInDetails?: {
+    loginId?: string;
+  };
+  attributes?: Record<string, string | undefined>;
+};
+
 export default function TechDashboard() {
   const routerNavigate = useNavigate();
+  const { signOut, user } = useAuthenticator((context) => [context.signOut, context.user]);
+  const profileUser = user as ProfileUser | undefined;
+
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+
   const { serviceRequests, loading: srLoading } = useServiceRequests();
   const { scheduledJobs, loading: jobsLoading } = useScheduledJobs();
   const { technicians } = useTechnicians();
+
+  // ── Profile details extraction ────────────────────────────────────────────
+  const profileEmail =
+    profileUser?.attributes?.email ||
+    profileUser?.signInDetails?.loginId ||
+    profileUser?.username ||
+    'technician@service.com';
+
+  const profileName =
+    profileUser?.attributes?.name ||
+    profileUser?.attributes?.given_name ||
+    profileEmail.split('@')[0] ||
+    'Technician';
+
+  const profileImageUrl =
+    profileUser?.attributes?.picture ||
+    profileUser?.attributes?.profile_image ||
+    profileUser?.attributes?.avatar_url ||
+    '';
+
+  const profileAvatarInitials = useMemo(() => {
+    const emailUsername = profileEmail.split('@')[0] || profileEmail;
+    const normalized = emailUsername.replace(/[._-]+/g, ' ').trim();
+
+    if (!normalized) {
+      return 'T';
+    }
+
+    const parts = normalized.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+
+    return parts
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase();
+  }, [profileEmail]);
+
+  // ── Click-away detection for profile dropdown ─────────────────────────────
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        event.target instanceof Node &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [profileMenuOpen]);
+
+  // ── Authentication & Sandbox Teardown Handler (Logout) ────────────────────
+  const handleLogout = async () => {
+    try {
+      if (typeof signOut === 'function') {
+        await signOut();
+      } else {
+        await amplifySignOut();
+      }
+    } catch (authErr) {
+      console.warn('Amplify signOut clearance fallback:', authErr);
+      try {
+        await amplifySignOut();
+      } catch (fallbackErr) {
+        console.warn('Direct amplifySignOut fallback:', fallbackErr);
+      }
+    } finally {
+      try {
+        const standardCacheKeys = [
+          'mock_technicians',
+          'mock_service_requests',
+          'mock_scheduled_jobs',
+          'mock_clients',
+          'mock_users',
+        ];
+        standardCacheKeys.forEach((key) => localStorage.removeItem(key));
+
+        const keysToPurge: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (
+            key &&
+            (key.startsWith('checklist_job_') ||
+              key.startsWith('photos_job_') ||
+              key.startsWith('upload_queue_') ||
+              key.startsWith('comment_job_') ||
+              key.startsWith('job_activity_') ||
+              key.startsWith('amplify-') ||
+              key.startsWith('CognitoIdentityServiceProvider'))
+          ) {
+            keysToPurge.push(key);
+          }
+        }
+        keysToPurge.forEach((k) => localStorage.removeItem(k));
+        sessionStorage.clear();
+      } catch (storageErr) {
+        console.error('Error clearing local sandbox stores:', storageErr);
+      }
+
+      routerNavigate('/login');
+      window.location.href = '/login';
+    }
+  };
 
   // ── Navigation state ──────────────────────────────────────────────────────
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
@@ -282,7 +409,7 @@ export default function TechDashboard() {
             TOP HEADER BANNER (Responsive Mobile Stacking & Controls)
         ════════════════════════════════════════════════════════════════════ */}
         <Box className={styles.techDashboardHeader} sx={{ width: '100%' }}>
-          {/* Top Navigation Row: Stacks vertically (flex-col gap-3) on mobile <= 640px */}
+          {/* Top Navigation Row: Aligned to the right side */}
           <Box
             className={styles.techDashboardNavRow}
             sx={{
@@ -290,29 +417,10 @@ export default function TechDashboard() {
               flexDirection: { xs: 'column', sm: 'row' },
               gap: { xs: 1.5, sm: 1 },
               alignItems: { xs: 'stretch', sm: 'center' },
-              justifyContent: 'space-between',
+              justifyContent: { xs: 'flex-start', sm: 'flex-end' },
               width: '100%',
             }}
           >
-            <Box
-              className={styles.techDashboardNavGroup}
-              sx={{ width: { xs: '100%', sm: 'auto' } }}
-            >
-              <Tooltip title="Back to Admin Master View" arrow>
-                <Button
-                  id="tech-dashboard-back-btn"
-                  variant="outlined"
-                  size="small"
-                  startIcon={<ArrowBackIcon className={styles.techDashboardNavIcon} />}
-                  onClick={() => routerNavigate('/admin')}
-                  className={styles.techDashboardCompactButton}
-                  sx={{ width: { xs: '100%', sm: 'auto' } }}
-                >
-                  Admin Master View
-                </Button>
-              </Tooltip>
-            </Box>
-
             {/* Period Navigation Controls */}
             <Box
               className={styles.techDashboardControls}
@@ -381,6 +489,61 @@ export default function TechDashboard() {
                   Month View
                 </MenuItem>
               </Select>
+
+              {/* Profile Navigation Menu */}
+              <Box className={styles.profileMenu} ref={profileMenuRef}>
+                <Tooltip title={`Account (${profileEmail})`} arrow>
+                  <IconButton
+                    id="tech-profile-menu-trigger"
+                    className={styles.profileMenuTrigger}
+                    onClick={() => setProfileMenuOpen((isOpen) => !isOpen)}
+                    aria-label="Open technician profile menu"
+                    aria-expanded={profileMenuOpen}
+                    aria-haspopup="menu"
+                  >
+                    <Avatar
+                      className={styles.profileAvatar}
+                      src={profileImageUrl || undefined}
+                      alt={profileEmail ? `${profileEmail} profile` : 'Technician profile'}
+                    >
+                      {!profileImageUrl ? profileAvatarInitials : null}
+                    </Avatar>
+                  </IconButton>
+                </Tooltip>
+
+                {profileMenuOpen && (
+                  <Box
+                    className={styles.profileDropdown}
+                    role="menu"
+                    aria-labelledby="tech-profile-menu-trigger"
+                  >
+                    {/* User Info Header */}
+                    <Box className={styles.profileHeader}>
+                      <Typography className={styles.profileName}>
+                        {profileName}
+                      </Typography>
+                      <Typography className={styles.profileEmail}>
+                        {profileEmail}
+                      </Typography>
+                      <span className={styles.profileRoleBadge}>Technician</span>
+                    </Box>
+
+                    <button
+                      id="tech-logout-nav-btn"
+                      type="button"
+                      className={`${styles.profileMenuItem} ${styles.profileMenuItemDanger}`}
+                      onClick={() => {
+                        setProfileMenuOpen(false);
+                        handleLogout();
+                      }}
+                      role="menuitem"
+                    >
+                      <LogoutIcon className={styles.profileMenuIcon} />
+                      <span>Logout</span>
+                    </button>
+                  </Box>
+                )}
+              </Box>
             </Box>
           </Box>
 
