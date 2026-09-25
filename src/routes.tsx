@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
+import RoleBasedRouter from './components/auth/RoleBasedRouter';
 import Dashboard from './app/Dashboard';
 import NotFoundPage from './app/NotFoundPage';
 import FieldExecution from './components/admin/FieldExecution';
@@ -10,8 +11,16 @@ import TechnicianManagement from './components/TechnicianManagement';
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Dashboard />,
+    element: <RoleBasedRouter />,
     errorElement: <NotFoundPage />,
+  },
+  {
+    path: '/admin',
+    element: <Dashboard />,
+  },
+  {
+    path: '/admin/dashboard',
+    element: <Dashboard />,
   },
   {
     path: '/technician',
@@ -34,4 +43,3 @@ export const router = createBrowserRouter([
     element: <TechnicianManagement />,
   }
 ]);
-

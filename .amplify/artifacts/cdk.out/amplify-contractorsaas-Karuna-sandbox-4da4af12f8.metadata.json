@@ -9,36 +9,6 @@
       ]
     },
     {
-      "type": "aws:cdk:warning",
-      "data": "No cross-stack-reference strength configured, defaulting to \"strong\". We recommend you set feature flag \"@aws-cdk/core:defaultCrossStackReferences\" to \"both\", then deploy everywhere, then set it to \"weak\". Alternatively, set it to \"strong\" explicitly to lock in the current producer-protecting behavior. (See: https://github.com/aws/aws-cdk/blob/main/packages/aws-cdk-lib/README.md#reference-strength) [ack: @aws-cdk/core:crossStackReferencesDefaultStrong]",
-      "trace": [
-        "Annotations.addMessage (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:3441)",
-        "Annotations.addWarningV2 (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:2129)",
-        "resolveValue (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\aws-cdk-lib\\core\\lib\\private\\refs.js:1:6065)",
-        "resolveReferences (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\aws-cdk-lib\\core\\lib\\private\\refs.js:1:4778)",
-        "prepareApp (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\aws-cdk-lib\\core\\lib\\private\\prepare-app.js:1:1514)",
-        "synthesize (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:1:3580)",
-        "App.synth (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\aws-cdk-lib\\core\\lib\\stage.js:1:4636)",
-        "App.synth (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\aws-cdk-lib\\core\\lib\\app.js:1:4814)",
-        "process.<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\@aws-amplify\\backend\\src\\default_stack_factory.ts:15:11)",
-        "Object.onceWrapper (node:events:631:26)",
-        "process.emit (node:events:509:28)",
-        "cdkToolkit.fromAssemblyBuilder.contextStore (file:///C:/Projects/Yectra/My%20Yectra%20Projects/contractor-saas/node_modules/@aws-amplify/sandbox/node_modules/@aws-amplify/backend-deployer/lib/cdk_deployer.js:204:21)",
-        "async Object.produce (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\@aws-cdk\\toolkit-lib\\lib\\api\\cloud-assembly\\source-builder.js:130:36)",
-        "async ContextAwareCloudAssemblySource.produce (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\@aws-cdk\\toolkit-lib\\lib\\api\\cloud-assembly\\private\\context-aware-source.js:49:33)",
-        "async assemblyFromSource (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\@aws-cdk\\toolkit-lib\\lib\\toolkit\\private\\index.js:21:85)",
-        "async synthAndMeasure (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\@aws-cdk\\toolkit-lib\\lib\\toolkit\\toolkit.js:1290:21)",
-        "async Toolkit.synth (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\@aws-cdk\\toolkit-lib\\lib\\toolkit\\toolkit.js:245:26)",
-        "async CDKDeployer.deploy (file:///C:/Projects/Yectra/My%20Yectra%20Projects/contractor-saas/node_modules/@aws-amplify/sandbox/node_modules/@aws-amplify/backend-deployer/lib/cdk_deployer.js:51:29)",
-        "async AmplifySandboxExecutor.<anonymous> (file:///C:/Projects/Yectra/My%20Yectra%20Projects/contractor-saas/node_modules/@aws-amplify/sandbox/lib/sandbox_executor.js:14:43)",
-        "async file:///C:/Projects/Yectra/My%20Yectra%20Projects/contractor-saas/node_modules/@aws-amplify/sandbox/lib/file_watching_sandbox.js:216:38",
-        "async FileWatchingSandbox.deploy (file:///C:/Projects/Yectra/My%20Yectra%20Projects/contractor-saas/node_modules/@aws-amplify/sandbox/lib/file_watching_sandbox.js:213:9)",
-        "async file:///C:/Projects/Yectra/My%20Yectra%20Projects/contractor-saas/node_modules/@aws-amplify/sandbox/lib/file_watching_sandbox.js:138:13",
-        "async FileWatchingSandbox.start (file:///C:/Projects/Yectra/My%20Yectra%20Projects/contractor-saas/node_modules/@aws-amplify/sandbox/lib/file_watching_sandbox.js:179:13)",
-        "async Object.handler (file:///C:/Projects/Yectra/My%20Yectra%20Projects/contractor-saas/node_modules/@aws-amplify/backend-cli/lib/commands/sandbox/sandbox_command.js:79:9)"
-      ]
-    },
-    {
       "type": "aws:cdk:stack-tags",
       "data": [
         {
@@ -411,6 +381,32 @@
       ]
     }
   ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/definedFunctions": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "definedFunctions"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\backend-output-storage...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-output-storage, @aws-amplify\\backend-function, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
   "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data": [
     {
       "type": "aws:cdk:creationStack",
@@ -539,6 +535,32 @@
       ]
     }
   ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/reference-to-amplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputs.amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/reference-to-amplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputs.amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaServiceRole84051F14Ref": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaServiceRole84051F14Ref"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
   "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthUserPool69B51D66Ref": [
     {
       "type": "aws:cdk:logicalId",
@@ -617,6 +639,59 @@
         "...defineBackend in @aws-amplify\\backend...",
         "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:5:24)",
         "...node internals..."
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaServiceRole84051F14Ref": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaServiceRole84051F14Ref"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9ARef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9ARef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function.NestedStack/function.NestedStackResource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "function1351588B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-auth, @aws-amplify\\backend..."
       ]
     }
   ],
@@ -877,6 +952,67 @@
       ]
     }
   ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/AdminGroup": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthAdminGroupCC42FF04"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\auth-construct...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend..."
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/TechnicianGroup": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthTechnicianGroup949E564D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\auth-construct...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend..."
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/AMPLIFY_AUTH_USERPOOL_IDParameter/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AMPLIFYAUTHUSERPOOLIDParameterCC466CA3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\backend...",
+        "Array.map (:)",
+        "...<anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/userpoolAccess1/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "userpoolAccess13FEE5419"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, acceptResourceAccess in @aws-amplify\\backend-auth...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-auth, @aws-amplify\\backend..."
+      ]
+    }
+  ],
   "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/CDKMetadata/Default": [
     {
       "type": "aws:cdk:logicalId",
@@ -891,6 +1027,46 @@
     }
   ],
   "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/CDKMetadata/Condition": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadataAvailable"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/post-confirmation-lambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "postconfirmationlambda195D98D2"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend-function, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-auth..."
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/CDKMetadata/Condition": [
     {
       "type": "aws:cdk:logicalId",
       "data": "CDKMetadataAvailable"
@@ -1132,6 +1308,20 @@
       ]
     }
   ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/UserPool/PostConfirmationCognito": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthUserPoolPostConfirmationCognitoE7E727CF"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\backend-auth...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend-auth, @aws-amplify\\backend..."
+      ]
+    }
+  ],
   "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/UserPoolAppClient/Resource": [
     {
       "type": "aws:cdk:logicalId",
@@ -1169,6 +1359,47 @@
       "data": [
         "...aws-cdk-lib, @aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
         "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/AdminGroupRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthAdminGroupRole766878DC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\auth-construct...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\auth-construct, @aws-amplify\\backend-auth, @aws-amplify\\backend..."
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/TechnicianGroupRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyAuthTechnicianGroupRole12B02266"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\auth-construct...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\auth-construct, @aws-amplify\\backend-auth, @aws-amplify\\backend..."
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/post-confirmation-lambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "postconfirmationlambdaServiceRoleD88F89BD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend-function, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
       ]
     }
   ],
@@ -3467,6 +3698,20 @@
       "data": [
         "...aws-cdk-lib, @aws-amplify\\backend-data, <anonymous> in @aws-amplify\\backend...",
         "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/post-confirmation-lambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "postconfirmationlambdaServiceRoleDefaultPolicyCD4BF2C1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend-function, C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\node_modules\\constructs\\lib\\construct.js:413: in constructs...",
+        "Array.flatMap (:)",
+        "...constructs, aws-cdk-lib..."
       ]
     }
   ],

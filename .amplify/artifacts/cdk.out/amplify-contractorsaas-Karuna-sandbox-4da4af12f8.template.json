@@ -1,5 +1,5 @@
 {
- "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.23.0\",\"stackType\":\"root\",\"metadata\":{}}",
+ "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.25.1\",\"stackType\":\"root\",\"metadata\":{}}",
  "Metadata": {
   "AWS::Amplify::Platform": {
    "version": "1",
@@ -32,6 +32,12 @@
     "oauthResponseType",
     "oauthClientId",
     "groups"
+   ]
+  },
+  "AWS::Amplify::Function": {
+   "version": "1",
+   "stackOutputs": [
+    "definedFunctions"
    ]
   },
   "AWS::Amplify::GraphQL": {
@@ -138,7 +144,24 @@
    }
   },
   "groups": {
-   "Value": "[]"
+   "Value": "[{\"Admin\":{\"precedence\":0}},{\"Technician\":{\"precedence\":1}}]"
+  },
+  "definedFunctions": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "[\"",
+      {
+       "Fn::GetAtt": [
+        "function1351588B",
+        "Outputs.amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9ARef"
+       ]
+      },
+      "\"]"
+     ]
+    ]
+   }
   },
   "awsAppsyncApiId": {
    "Value": {
@@ -209,6 +232,20 @@
   "auth179371D7": {
    "Type": "AWS::CloudFormation::Stack",
    "Properties": {
+    "Parameters": {
+     "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn": {
+      "Fn::GetAtt": [
+       "function1351588B",
+       "Outputs.amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn"
+      ]
+     },
+     "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaServiceRole84051F14Ref": {
+      "Fn::GetAtt": [
+       "function1351588B",
+       "Outputs.amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaServiceRole84051F14Ref"
+      ]
+     }
+    },
     "Tags": [
      {
       "Key": "amplify:deployment-type",
@@ -235,7 +272,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/1f27f13b1018fb41d1922a440c37b5e3c771dc6ce3a40c70a0a175483fda6d96.json"
+       "/14eef288a472492641ef8fda7bfcd53afb73ad4bb3560a6099c6e51fd3c1e06f.json"
       ]
      ]
     }
@@ -245,6 +282,48 @@
    "Metadata": {
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth.NestedStack/auth.NestedStackResource",
     "aws:asset:path": "amplifycontractorsaasKarunasandbox4da4af12f8authA98743C5.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "function1351588B": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/b6047903d1811e77eb24800ade9fc8d36c180ba2467398970dd9d22d29684a3f.json"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function.NestedStack/function.NestedStackResource",
+    "aws:asset:path": "amplifycontractorsaasKarunasandbox4da4af12f8function9E594EDC.nested.template.json",
     "aws:asset:property": "TemplateURL"
    }
   },
@@ -303,7 +382,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/764624bf411a85af17d101669af67cda30f8a200aaa52c0022d7526908b9c4f3.json"
+       "/8e43003a6dabbb69961b519207df3a0648e869e13e31a6bfd91b5970d975a96f.json"
       ]
      ]
     }
@@ -319,7 +398,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zPSMzIz0DNQTCwv1k1OydbNyUzSqw4uSUzO1nFOy/MvLSkoLQGxwEK1Onn5Kal6WcX6ZUYmeoZmegaKWcWZmbpFpXklmbmpekEQGgBUYlPEVAAAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zPSMzI30DNQTCwv1k1OydbNyUzSqw4uSUzO1nFOy/MvLSkoLQGxwEK1Onn5Kal6WcX6ZUYmeoZmegaKWcWZmbpFpXklmbmpekEQGgAnoZKpVAAAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/CDKMetadata/Default"

@@ -1,5 +1,5 @@
 {
- "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.11.2\",\"stackType\":\"auth-Cognito\",\"metadata\":{}}",
+ "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.12.0\",\"stackType\":\"auth-Cognito\",\"metadata\":{}}",
  "Resources": {
   "amplifyAuthUserPool4BA7F805": {
    "Type": "AWS::Cognito::UserPool",
@@ -20,6 +20,11 @@
     ],
     "EmailVerificationMessage": "The verification code to your new account is {####}",
     "EmailVerificationSubject": "Verify your new account",
+    "LambdaConfig": {
+     "PostConfirmation": {
+      "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn"
+     }
+    },
     "Policies": {
      "PasswordPolicy": {
       "MinimumLength": 8,
@@ -34,6 +39,12 @@
       "Mutable": true,
       "Name": "email",
       "Required": true
+     },
+     {
+      "AttributeDataType": "String",
+      "Mutable": true,
+      "Name": "role",
+      "StringAttributeConstraints": {}
      }
     ],
     "SmsVerificationMessage": "The verification code to your new account is {####}",
@@ -64,6 +75,27 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/UserPool/Resource"
+   }
+  },
+  "amplifyAuthUserPoolPostConfirmationCognitoE7E727CF": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn"
+    },
+    "Principal": "cognito-idp.amazonaws.com",
+    "SourceArn": {
+     "Fn::GetAtt": [
+      "amplifyAuthUserPool4BA7F805",
+      "Arn"
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/UserPool/PostConfirmationCognito"
    }
   },
   "amplifyAuthUserPoolAppClient2626C6F8": {
@@ -298,10 +330,194 @@
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/IdentityPoolRoleAttachment"
    }
   },
+  "amplifyAuthAdminGroupRole766878DC": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRoleWithWebIdentity",
+       "Condition": {
+        "StringEquals": {
+         "cognito-identity.amazonaws.com:aud": {
+          "Ref": "amplifyAuthIdentityPool3FDE84CC"
+         }
+        },
+        "ForAnyValue:StringLike": {
+         "cognito-identity.amazonaws.com:amr": "authenticated"
+        }
+       },
+       "Effect": "Allow",
+       "Principal": {
+        "Federated": "cognito-identity.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyAuth"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/AdminGroupRole/Resource"
+   }
+  },
+  "amplifyAuthAdminGroupCC42FF04": {
+   "Type": "AWS::Cognito::UserPoolGroup",
+   "Properties": {
+    "GroupName": "Admin",
+    "Precedence": 0,
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "amplifyAuthAdminGroupRole766878DC",
+      "Arn"
+     ]
+    },
+    "UserPoolId": {
+     "Ref": "amplifyAuthUserPool4BA7F805"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/AdminGroup"
+   }
+  },
+  "amplifyAuthTechnicianGroupRole12B02266": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRoleWithWebIdentity",
+       "Condition": {
+        "StringEquals": {
+         "cognito-identity.amazonaws.com:aud": {
+          "Ref": "amplifyAuthIdentityPool3FDE84CC"
+         }
+        },
+        "ForAnyValue:StringLike": {
+         "cognito-identity.amazonaws.com:amr": "authenticated"
+        }
+       },
+       "Effect": "Allow",
+       "Principal": {
+        "Federated": "cognito-identity.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyAuth"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/TechnicianGroupRole/Resource"
+   }
+  },
+  "amplifyAuthTechnicianGroup949E564D": {
+   "Type": "AWS::Cognito::UserPoolGroup",
+   "Properties": {
+    "GroupName": "Technician",
+    "Precedence": 1,
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "amplifyAuthTechnicianGroupRole12B02266",
+      "Arn"
+     ]
+    },
+    "UserPoolId": {
+     "Ref": "amplifyAuthUserPool4BA7F805"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/TechnicianGroup"
+   }
+  },
+  "AMPLIFYAUTHUSERPOOLIDParameterCC466CA3": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "Name": "/amplify/resource_reference/contractorsaas/Karuna-sandbox-4da4af12f8/AMPLIFY_AUTH_USERPOOL_ID",
+    "Tags": {
+     "amplify:deployment-type": "sandbox",
+     "created-by": "amplify"
+    },
+    "Type": "String",
+    "Value": {
+     "Ref": "amplifyAuthUserPool4BA7F805"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/AMPLIFY_AUTH_USERPOOL_IDParameter/Resource"
+   }
+  },
+  "userpoolAccess13FEE5419": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "cognito-idp:AdminAddUserToGroup",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "amplifyAuthUserPool4BA7F805",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "userpoolAccess13FEE5419",
+    "Roles": [
+     {
+      "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaServiceRole84051F14Ref"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/userpoolAccess1/Resource"
+   }
+  },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02LwQ6CMBBEv4V7WZEY7oaTF2Mgnk1tV10o24SuEtP03w0xKKeZeTNTQlkVUGR6Crmxfe7oCvGIQdC2ok2v9BQu0fg7k3iI54DjyXun6hv//GJqR8iyrv7kYJGF5L2c17nxDvci2jwGZEmK9ABxhvNw1pSSYm8RurB5lTvYVlBkXSDKxycLDQjNVz/nmsNYzgAAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12LQWsCMRCFf4v37LhdpJ7LHkovZVE8S0xGO5pMSmZUJOS/l1W2lZ7e997j66BbttDO7FUa509NoB2UTxRFv1brTsZeZVtcOjBpgrIRzENKwfR7/uUJ+kDI+nz9LR8eWUlvk/zcVyngm6p1X/Gf/57T+buaYOPOW+j3PGCOJEKJDdkIZVRH4Z5DCuRuY31QNSIRyloz8WGw2UZUzPd/KrVWw8kjHGV+6Rbw8grt7ChETT6zUkRYPfIH0Vkm9CgBAAA="
    },
    "Metadata": {
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/CDKMetadata/Default"
@@ -573,6 +789,14 @@
      ]
     }
    ]
+  }
+ },
+ "Parameters": {
+  "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn": {
+   "Type": "String"
+  },
+  "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaServiceRole84051F14Ref": {
+   "Type": "String"
   }
  },
  "Outputs": {

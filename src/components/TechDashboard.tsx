@@ -15,6 +15,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TodayIcon from '@mui/icons-material/Today';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { useNavigate } from 'react-router-dom';
 import { useServiceRequests, useScheduledJobs, useTechnicians } from '../hooks/useDispatchData';
 import styles from '../styles/UI/TechDashboard.module.scss';
 
@@ -171,6 +172,7 @@ type JobItemData = {
 };
 
 export default function TechDashboard() {
+  const routerNavigate = useNavigate();
   const { serviceRequests, loading: srLoading } = useServiceRequests();
   const { scheduledJobs, loading: jobsLoading } = useScheduledJobs();
   const { technicians } = useTechnicians();
@@ -268,8 +270,7 @@ export default function TechDashboard() {
     sessionStorage.setItem('previousView', 'TECH_DASHBOARD');
     sessionStorage.setItem('selectedJobId', jobId);
     sessionStorage.setItem('selectedSrId', srId);
-    // eslint-disable-next-line react-hooks/immutability
-    window.location.href = '/technician';
+    routerNavigate('/technician');
   };
 
   const isLoading = srLoading || jobsLoading;
@@ -303,7 +304,7 @@ export default function TechDashboard() {
                   variant="outlined"
                   size="small"
                   startIcon={<ArrowBackIcon className={styles.techDashboardNavIcon} />}
-                  onClick={() => (window.location.href = '/')}
+                  onClick={() => routerNavigate('/admin')}
                   className={styles.techDashboardCompactButton}
                   sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >

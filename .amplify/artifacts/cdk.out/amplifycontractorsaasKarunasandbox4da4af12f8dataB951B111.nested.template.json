@@ -1,5 +1,5 @@
 {
- "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.21.3\",\"stackType\":\"api-AppSync\",\"metadata\":{\"dataSources\":\"dynamodb\",\"authorizationModes\":\"amazon_cognito_identity_pools,amazon_cognito_user_pools,aws_iam\",\"customOperations\":\"\"}}",
+ "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.22.2\",\"stackType\":\"api-AppSync\",\"metadata\":{\"dataSources\":\"dynamodb\",\"authorizationModes\":\"amazon_cognito_identity_pools,amazon_cognito_user_pools,aws_iam\",\"customOperations\":\"\"}}",
  "Resources": {
   "amplifyDataGraphQLAPI42A6FA33": {
    "Type": "AWS::AppSync::GraphQLApi",
@@ -120,7 +120,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/c3d96b2afe3f711acd9493eed0bae45d1773f07c75c8f281559c21215d83503c.json"
+       "/76d6bbdc3676733c9742dac43c67d938e138c1c4a7233b56edc720c6fdbcdcb8.json"
       ]
      ]
     }
@@ -210,7 +210,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/cc9eac6db98234336712dc49b26832f825589e0214b80123421a0b6610a4c8a2.json"
+       "/96a9f0dcefff68a23174bbfa295a38ea0ea8e5cd592d4fb8272e0e6ecfd23ab8.json"
       ]
      ]
     }
@@ -303,7 +303,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/6dcb3bf73031c79683498d72fe93c18cc4e0e034dfe379bb82541ff84cb265ec.json"
+       "/296aa14b83be8cab969cce1e185abdb897c91341993e525ac47606e65dbeee7f.json"
       ]
      ]
     }
@@ -396,7 +396,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/4ff8382c2a0c4e2d7499ed1902e1e57b1c8341cc7586c12d16b2866d26155947.json"
+       "/5bbf5ee297d56557bd1c4c037e60673288143105e137e46d7775f4d12d28604f.json"
       ]
      ]
     }
@@ -489,7 +489,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/59afe34dce39eebe5b9971742e53c924370897a6f7a2a2d92f37b069fbd3671d.json"
+       "/436013a40c23ab29848edfcf710f75e84663f037289b521b44c39c64e704995a.json"
       ]
      ]
     }
@@ -582,7 +582,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/83384b88dbea44d87a4daaa2d966b94d5f046605af01849e248262452c95b3b4.json"
+       "/fe977b0bcb207e435b8fa34df6a7eb4fcec339617234d55ece26da909448bdb8.json"
       ]
      ]
     }
@@ -743,7 +743,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "a72522445441e9b66c2f16956c54d4786af8c61c156b80c48a6e7c32fcc49023.zip"
+     "S3Key": "98f62bef9320f8c0a0a7be21d7c746f069131f196f51ffe3008a6bb730b368ec.zip"
     },
     "Description": "/opt/awscli/aws"
    },
@@ -751,7 +751,7 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsDeployment/AwsCliLayer/Resource",
-    "aws:asset:path": "asset.a72522445441e9b66c2f16956c54d4786af8c61c156b80c48a6e7c32fcc49023.zip",
+    "aws:asset:path": "asset.98f62bef9320f8c0a0a7be21d7c746f069131f196f51ffe3008a6bb730b368ec.zip",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Content"
    }
@@ -1050,11 +1050,14 @@
   "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBC5D8AB21": {
    "Type": "AWS::Lambda::Function",
    "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
     "Code": {
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "97e9ebf0b174a5c8f7faa505739022b7f509edddffcab9211dcd08b759944c4f.zip"
+     "S3Key": "35328da138f26fbd9160297abc9a2522d93dbf75878cd5114a9c050419fc1ce0.zip"
     },
     "Environment": {
      "Variables": {
@@ -1095,7 +1098,7 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiB/Resource",
-    "aws:asset:path": "asset.97e9ebf0b174a5c8f7faa505739022b7f509edddffcab9211dcd08b759944c4f",
+    "aws:asset:path": "asset.35328da138f26fbd9160297abc9a2522d93dbf75878cd5114a9c050419fc1ce0",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
@@ -1248,7 +1251,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "a72522445441e9b66c2f16956c54d4786af8c61c156b80c48a6e7c32fcc49023.zip"
+     "S3Key": "98f62bef9320f8c0a0a7be21d7c746f069131f196f51ffe3008a6bb730b368ec.zip"
     },
     "Description": "/opt/awscli/aws"
    },
@@ -1256,7 +1259,7 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/modelIntrospectionSchemaBucketDeployment/AwsCliLayer/Resource",
-    "aws:asset:path": "asset.a72522445441e9b66c2f16956c54d4786af8c61c156b80c48a6e7c32fcc49023.zip",
+    "aws:asset:path": "asset.98f62bef9320f8c0a0a7be21d7c746f069131f196f51ffe3008a6bb730b368ec.zip",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Content"
    }
@@ -1372,7 +1375,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/6WSTW/bMAyGf0tzVrQsHXrYzXWwXYoui4FdhiFgZCZlog9PpJsFgv/7IGtJ2u1U7ES+fEXiEaW5nt/N9OwGjjw17WFqaaPTI7Jg2wiYg1ohhz4aVHDkdYKu45M3On2O0D39tFVH98Co6q0fK18fqo5eqMY8oQP1GDwuQKApo+qtv6pB8a1O9705oGSnZN/TxNEv8pOPk5doGYJv9WixLkerXsICLQp+2ezRCE8G9V/dP1SxlsGSOV2Zin4DWWloBAQd+jeC/dt85sobz1tbpxY7G07Z/tO0uBQUMKOwrnIYlAW3aUGneusf4ITxG0am4FVDfmdRgv/UeyO5cknq7aU4KAKn0yrY8fHGeN1OyQbF7HRqJJLfLSGCQ8E4+mcxDFmWf1X3LMFdfleees4L69pmzjUc2VjS1ZFrSyO6Gq/UCOzI717N/2voMoZnajGWffnQot7zu+f5B/3+Ts9u9kw0jb0XcqhXJf4GH4qyfQ8DAAA="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/6WSTY8TMQyGf8v2nIbSRSBxm50KLquldCQuCFVuxu26zccQe7ZU0fx3lAltl+W04mS/fmPriZO5nn+Y6dkNHHlq2sPU0kanB2TBthEwB7VCDn00qODI6wRdxydvdPocoXv8aauO7oBR1Vs/Vr7eVx09U415RAfqIXhcgEBTRtVbf1WD4lud7npzQMlOyb6niaNf5CcfJ8/RMgTf6tFiXY5WvYQFWhT8stmjEZ4M6r+6f6hiLYMlc7oyFf0KstLQCAg69K8E+7f5zJU3nre2Ti12Npyy/adpcSkoYEZhXeUwKAtu04JO9dbfwwnjN4xMwauG/M6iBP+p90Zy5ZLU20txUAROp1Ww4+ON8bqdkg2K2enUSCS/W0IEh4Jx9M9iGLIs/6ruWYK7/K489ZwX1rXNnGs4srGkqyPXlkZ0NV6pEdiR3/01/8XQZQxP1GIs+/KhRb3nN0/zd/rtez272TPRNPZeyKFelfgb5n8UBg8DAAA="
    },
    "Metadata": {
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/CDKMetadata/Default"

@@ -2276,7 +2276,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOwW6DMAyGn6X34DE69b6Cetwm2L0yiUEpIUGx06pCvPsEnTrt9PuTP9l/AcUhh3yHN860GTJnW5g/iIVMI6gHVXb+CyOOJBRXKIM3VmzwqiYOKWpSZWIJ4x92/jnjjc+zuXscg2nhG1tHR2RSFkeY6+AednC0KJwmvnsNc7XpVVuhYPM8+Z9Oyeu1RBl8Z/sUcWv0+9ldKS6K92dkJmF4X0PxHo5JDyRrgWV1P5NMSdS2bgR76/tF+WAILvxyLd7g9QD57sLWZjF5sSNB/cgfJyg+HDYBAAA="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOwW6DMAyGn6X34DE6becV1OM2we6VSQxKCQmKnVYV4t0n6NRpp9+f/Mn+Cyjecsh3eOVMmyFztoX5g1jINIJ6UGXnvzDiSEJxhTJ4Y8UGr2rikKImVSaWMP5h5x8zXvk0m5vHMZgWvrF1dEAmZXGEuQ7ubgdHi8Jp4pvXMFebXrUVCjaPk//pmLxeS5TBd7ZPEbdGv5/dheKieH9CZhKG9zUU7+GQ9ECyFlhW9zPJlERt60awt75flA+G4MxPl+IFnl8h353Z2iwmL3YkqO/5A1itPP42AQAA"
    },
    "Metadata": {
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/Technician/CDKMetadata/Default"
