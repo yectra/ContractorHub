@@ -97,3 +97,39 @@ export function mapServiceStatusToJobStatus(
       return 'Scheduled';
   }
 }
+
+/**
+ * Formats an ISO date string, Date object, or YYYY-MM-DD date string
+ * into a clean, human-readable format (e.g. "Oct 05, 2026").
+ * Returns fallback if date is missing or invalid.
+ */
+export function formatDisplayDate(
+  dateInput?: string | number | Date | null,
+  fallback = 'Not Scheduled'
+): string {
+  if (!dateInput) return fallback;
+
+  try {
+    const str = String(dateInput).trim();
+    if (!str || str.toLowerCase() === 'undefined' || str.toLowerCase() === 'null') {
+      return fallback;
+    }
+
+    // If it's a YYYY-MM-DD date string without time, append T00:00:00 to prevent timezone offsets from shifting the day
+    const date =
+      str.length === 10 && /^\d{4}-\d{2}-\d{2}$/.test(str)
+        ? new Date(`${str}T00:00:00`)
+        : new Date(str);
+
+    if (isNaN(date.getTime())) return fallback;
+
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+    });
+  } catch {
+    return fallback;
+  }
+}
+

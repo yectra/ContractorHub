@@ -581,6 +581,25 @@
   font-weight: 500;
 }
 
+.datePrimary {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.pillNotScheduled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+
 
 
 .alertSuccess,
