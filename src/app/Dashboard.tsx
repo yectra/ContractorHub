@@ -16,7 +16,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { signOut as amplifySignOut } from 'aws-amplify/auth';
 import GroupsIcon from '@mui/icons-material/Groups';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import EngineeringIcon from '@mui/icons-material/Engineering';
 import LogoutIcon from '@mui/icons-material/Logout';
 import styles from '../styles/UI/Dashboard.module.scss';
@@ -24,8 +23,9 @@ import DispatchCenter from '../components/DispatchCenter';
 import CreateTechnicianModal, { type CreateTechnicianData } from '../components/admin/modals/CreateTechnicianModal';
 import { serviceRequestAPI } from '../services/api';
 
-// Hours for the schedule grid (7 AM to 7 PM)
-const hours = Array.from({ length: 12 }, (_, i) => i + 7);
+// Hours for the schedule grid (7 AM to 7 PM inclusive - 13 hourly slots)
+const hours = Array.from({ length: 13 }, (_, i) => i + 7);
+
 
 const compactSelectLabelSx = {
   backgroundColor: '#ffffff',
@@ -895,7 +895,7 @@ export default function Dashboard() {
                   key={hour}
                   className={styles.dashboardTimeHeaderCell}
                 >
-                  {hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`}
+                  {hour === 12 ? '12:00 PM' : hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`}
                 </Box>
               ))}
             </Box>
@@ -989,8 +989,8 @@ export default function Dashboard() {
                             isDragging ? styles.dashboardScheduledJobGrabbing : styles.dashboardScheduledJobGrab
                           } ${urlJobId === job.serviceRequestId || selectedRequest === job.serviceRequestId ? styles.dashboardScheduledJobActive : ''}`}
                           sx={{
-                            left: `${((job.startHour - 7) / 12) * 100}%`,
-                            width: `${(job.duration / 12) * 100}%`,
+                            left: `${((job.startHour - 7) / hours.length) * 100}%`,
+                            width: `${(job.duration / hours.length) * 100}%`,
                             backgroundColor: tech.color || getTechnicianColor(tech.id!),
                           }}
                         >

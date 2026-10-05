@@ -24,8 +24,9 @@ import styles from '../styles/UI/TechDashboard.module.scss';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-/** Time columns: 7 AM → 6 PM (12 one-hour slots, matching Admin Dashboard) */
-const HOUR_COLUMNS = Array.from({ length: 12 }, (_, i) => i + 7);
+/** Time columns: 7 AM → 7 PM (13 one-hour slots, matching Admin Dashboard) */
+const HOUR_COLUMNS = Array.from({ length: 13 }, (_, i) => i + 7);
+
 
 // ─── Date Utility Helpers ─────────────────────────────────────────────────────
 

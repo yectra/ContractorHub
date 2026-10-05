@@ -287,7 +287,7 @@
 }
 
 .techDashboardGridInner {
-  min-width: 900px;
+  min-width: max-content;
   width: 100%;
 }
 
@@ -318,7 +318,7 @@
 }
 
 .techDashboardTimeHeaderCell {
-  flex: 1;
+  flex: 1 0 80px;
   min-width: 80px;
   text-align: center;
   font-weight: 600;
@@ -327,6 +327,7 @@
   color: #666;
   padding-bottom: 4px;
   border-right: 1px solid #e8e8e8;
+  box-sizing: border-box;
 
   &:last-child {
     border-right: none;
@@ -400,7 +401,7 @@
 }
 
 .techDashboardTimeSlot {
-  flex: 1;
+  flex: 1 0 80px;
   min-width: 80px;
   min-height: 46px;
   border-right: 1px solid #e0e0e0;
@@ -409,6 +410,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  box-sizing: border-box;
   transition: background-color 0.2s;
 
   &:last-child {

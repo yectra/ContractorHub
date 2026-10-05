@@ -1,2 +1,3 @@
-export { default, getInitials, getAvatarColor } from './admin/UserManagement';
+export { default } from './admin/UserManagement';
 export type { UserAccount } from './admin/UserManagement';
+
