@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useClients, useServiceRequests, useTechnicians, useScheduledJobs } from '../../hooks/useDispatchData';
-import { parseStartHour, parseDurationHours, getTodayString, mapServiceStatusToJobStatus } from '../../utils/jobHelpers';
+import { parseStartHour, parseDurationHours, getTodayString, mapServiceStatusToJobStatus, formatDisplayDate } from '../../utils/jobHelpers';
 import type { Schema } from '../../../amplify/data/resource';
 import styles from '../../styles/UI/ClientRecord.module.scss';
 import { IconButton, Tooltip } from '@mui/material';
@@ -669,7 +669,8 @@ export default function ClientCRMRecord(): React.JSX.Element {
                     <thead>
                       <tr>
                         <th className={styles.th}>Job Number</th>
-                        <th className={styles.th}>Date & Time</th>
+                        <th className={styles.th}>Created Date</th>
+                        <th className={styles.th}>Scheduled Date</th>
                         <th className={styles.th}>Service Type / Desc</th>
                         <th className={styles.th}>Technician</th>
                         <th className={styles.th}>Priority</th>
@@ -683,9 +684,11 @@ export default function ClientCRMRecord(): React.JSX.Element {
                         const isCompleted = job.status === 'Completed';
                         const isInProgress = job.status === 'InProgress';
                         const isAssigned = job.status === 'Assigned';
-                        const formattedDate = job.createdAt 
-                          ? new Date(job.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-                          : 'Recent';
+                        const sched = scheduledJobs.find((j) => j.serviceRequestId === job.id);
+                        const rawScheduledDate = (job as { scheduledDate?: string; scheduledAt?: string }).scheduledDate || (job as { scheduledDate?: string; scheduledAt?: string }).scheduledAt || sched?.scheduledDate;
+                        const createdDateFormatted = formatDisplayDate(job.createdAt, 'Recent');
+                        const scheduledDateFormatted = formatDisplayDate(rawScheduledDate, 'Not Scheduled');
+                        const hasScheduledDate = Boolean(rawScheduledDate);
                         
                         const tech = technicians.find((t) => t.id === job.assignedTechnicianId);
                         const priority = (job.priority || 'low').toLowerCase();
@@ -700,7 +703,6 @@ export default function ClientCRMRecord(): React.JSX.Element {
                                 type="button"
                                 className={styles.jobNumberBtn}
                                 onClick={() => {
-                                  const sched = scheduledJobs.find((j) => j.serviceRequestId === job.id);
                                   handleNavigateToDashboard(job.id || '', sched?.scheduledDate);
                                 }}
                                 title="Open in Dispatch Dashboard"
@@ -708,11 +710,22 @@ export default function ClientCRMRecord(): React.JSX.Element {
                                 {job.id || 'N/A'}
                               </button>
                             </td>
+                            {/* Created Date Column */}
                             <td className={styles.td}>
                               <div className={styles.dateTimeCell}>
-                                <span>{formattedDate}</span>
-                                {job.requestTime && <span className={styles.dateTimeSub}>{job.requestTime}</span>}
+                                <span className={styles.datePrimary}>{createdDateFormatted}</span>
                               </div>
+                            </td>
+                            {/* Scheduled Date Column */}
+                            <td className={styles.td}>
+                              {hasScheduledDate ? (
+                                <div className={styles.dateTimeCell}>
+                                  <span className={styles.datePrimary}>{scheduledDateFormatted}</span>
+                                  {job.requestTime && <span className={styles.dateTimeSub}>{job.requestTime}</span>}
+                                </div>
+                              ) : (
+                                <span className={styles.pillNotScheduled}>Not Scheduled</span>
+                              )}
                             </td>
                             <td className={`${styles.td} ${styles.service}`}>{job.service}</td>
                             <td className={styles.td}>

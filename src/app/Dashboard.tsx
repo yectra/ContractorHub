@@ -838,18 +838,6 @@ export default function Dashboard() {
                     <span>Client</span>
                   </button>
                   <button
-                    type="button"
-                    className={styles.profileMenuItem}
-                    onClick={() => {
-                      navigate('/tech-dashboard');
-                      setProfileMenuOpen(false);
-                    }}
-                    role="menuitem"
-                  >
-                    <DashboardIcon className={styles.profileMenuIcon} />
-                    <span>Dashboard</span>
-                  </button>
-                  <button
                     id="user-management-nav-btn"
                     type="button"
                     className={styles.profileMenuItem}
