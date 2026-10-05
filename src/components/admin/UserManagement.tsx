@@ -124,7 +124,7 @@ const ROLE_PRESETS = {
 };
 
 // Generates avatar initials dynamically from first and last names
-export const getInitials = (name: string): string => {
+const getInitials = (name: string): string => {
   if (!name || !name.trim()) return 'U';
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) {
@@ -134,7 +134,7 @@ export const getInitials = (name: string): string => {
 };
 
 // Returns dynamic avatar background colors
-export const getAvatarColor = (role: string, name?: string): string => {
+const getAvatarColor = (role: string, name?: string): string => {
   if (role === 'Dispatcher') return '#f59e0b';
   const colors = ['#2563eb', '#0d9488', '#7c3aed', '#0284c7', '#059669', '#d97706'];
   if (!name) return '#2563eb';
@@ -212,8 +212,6 @@ export default function UserManagement() {
   // 1. DYNAMIC API FETCH & REAL-TIME READING:
   // Subscribes to live AWS Amplify Sandbox API updates directly via observeQuery
   useEffect(() => {
-    setLoading(true);
-
     // Live subscription to active AWS Amplify Sandbox Technician collection
     const subscription = technicianAPI.observeTechnicians(
       (techRecords) => {
@@ -437,24 +435,25 @@ export default function UserManagement() {
 
       // Close modal on success
       setModalOpen(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 2. ROBUST ERROR CATCHING & DETAILED LOGGING
       console.error('Amplify Sandbox Detail Error:', error);
 
       let detailedErrorMessage = 'Error saving account to sandbox API';
+      const errObj = error as { errors?: Array<{ message?: string } | unknown>; message?: string } | null;
 
-      if (error?.errors && Array.isArray(error.errors)) {
-        console.error(`Validation Mismatch Count: ${error.errors.length}`);
-        error.errors.forEach((err: any, idx: number) => {
-          const message = err?.message || JSON.stringify(err);
+      if (errObj?.errors && Array.isArray(errObj.errors)) {
+        console.error(`Validation Mismatch Count: ${errObj.errors.length}`);
+        errObj.errors.forEach((err: unknown, idx: number) => {
+          const message = (err as { message?: string })?.message || JSON.stringify(err);
           console.error(`Validation Mismatch [${idx + 1}]:`, message);
           if (idx === 0) {
             detailedErrorMessage = message;
           }
         });
-      } else if (error?.message) {
-        console.error('Amplify Validation Message:', error.message);
-        detailedErrorMessage = error.message;
+      } else if (errObj?.message) {
+        console.error('Amplify Validation Message:', errObj.message);
+        detailedErrorMessage = errObj.message;
       }
 
       // 3. FRIENDLY FALLBACK UI HANDLING

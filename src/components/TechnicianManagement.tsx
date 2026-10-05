@@ -176,7 +176,6 @@ export default function TechnicianManagement() {
 
   // Real-time Subscriptions for live AWS Amplify data binding
   useEffect(() => {
-    setLoading(true);
 
     // Observe Technicians
     const unsubTechs = technicianAPI.observeTechnicians(

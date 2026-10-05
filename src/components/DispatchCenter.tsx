@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Modal,
   Box,
@@ -35,7 +35,7 @@ export interface JobChecklistEditorProps {
 /**
  * Parses the CHECKLIST: prefix format stored in the job notes into item objects.
  */
-export const parseChecklistFromNotes = (notes: string | null | undefined): DispatchChecklistItem[] => {
+const parseChecklistFromNotes = (notes: string | null | undefined): DispatchChecklistItem[] => {
   if (notes?.startsWith('CHECKLIST:')) {
     try {
       const parsed = JSON.parse(notes.replace('CHECKLIST:', ''));
@@ -64,12 +64,22 @@ export const DispatchCenter: React.FC<JobChecklistEditorProps> = ({
   updateScheduledJob,
   onNotification,
 }) => {
-  const [draftItems, setDraftItems] = useState<DispatchChecklistItem[]>([]);
+  const [prevProps, setPrevProps] = useState({ open, controlledItems, jobNotes });
+  const [draftItems, setDraftItems] = useState<DispatchChecklistItem[]>(() => {
+    if (controlledItems !== undefined) return controlledItems;
+    if (jobNotes) return parseChecklistFromNotes(jobNotes);
+    return [];
+  });
   const [newItemText, setNewItemText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   // Sync draft items when modal opens or job notes change
-  useEffect(() => {
+  if (
+    prevProps.open !== open ||
+    prevProps.controlledItems !== controlledItems ||
+    prevProps.jobNotes !== jobNotes
+  ) {
+    setPrevProps({ open, controlledItems, jobNotes });
     if (open) {
       if (controlledItems !== undefined) {
         setDraftItems(controlledItems);
@@ -80,7 +90,7 @@ export const DispatchCenter: React.FC<JobChecklistEditorProps> = ({
       }
       setNewItemText('');
     }
-  }, [open, controlledItems, jobNotes]);
+  }
 
   const handleAddItem = useCallback(() => {
     const text = newItemText.trim();

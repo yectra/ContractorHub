@@ -533,6 +533,7 @@ export default function FieldExecution() {
     };
 
     processQueue();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline, uploadQueue, effectiveSelectedJobId, uploadedPhotos]);
 
   const handleDeleteUploadedPhoto = async (photo: UploadedPhoto) => {
