@@ -33,15 +33,17 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
   InputAdornment,
 } from '@mui/material';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import EngineeringIcon from '@mui/icons-material/Engineering';
@@ -57,7 +59,7 @@ import styles from '../../styles/UI/UserManagement.module.scss';
 import { technicianAPI } from '../../services/api';
 
 // Types definition
-interface UserAccount {
+export interface UserAccount {
   id: string;
   name: string;
   email: string;
@@ -121,6 +123,28 @@ const ROLE_PRESETS = {
   ]
 };
 
+// Generates avatar initials dynamically from first and last names
+export const getInitials = (name: string): string => {
+  if (!name || !name.trim()) return 'U';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0].substring(0, 2).toUpperCase();
+  }
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
+// Returns dynamic avatar background colors
+export const getAvatarColor = (role: string, name?: string): string => {
+  if (role === 'Dispatcher') return '#f59e0b';
+  const colors = ['#2563eb', '#0d9488', '#7c3aed', '#0284c7', '#059669', '#d97706'];
+  if (!name) return '#2563eb';
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
+
 export default function UserManagement() {
   // Database States
   const [users, setUsers] = useState<UserAccount[]>([]);
@@ -134,6 +158,12 @@ export default function UserManagement() {
   // Modal States
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<UserAccount | null>(null);
+  const [savingForm, setSavingForm] = useState<boolean>(false);
+
+  // Delete Confirmation Dialog States
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [userToDelete, setUserToDelete] = useState<UserAccount | null>(null);
+  const [deletingUser, setDeletingUser] = useState<boolean>(false);
   
   // Form States
   const [formName, setFormName] = useState<string>('');
@@ -169,7 +199,7 @@ export default function UserManagement() {
 
   // Helper to trigger alert notifications
   const showSnackbar = useCallback(
-    (message: string, severity: "success" | "error") => {
+    (message: string, severity: 'success' | 'error') => {
       setAlert({
         open: true,
         message,
@@ -179,122 +209,77 @@ export default function UserManagement() {
     []
   );
 
+  // 1. DYNAMIC API FETCH & REAL-TIME READING:
+  // Subscribes to live AWS Amplify Sandbox API updates directly via observeQuery
   useEffect(() => {
-  const loadData = async () => {
-    try {
-      setLoading(true);
+    setLoading(true);
 
-      // Get list of technicians from standard DB
-      const techs = await technicianAPI.listTechnicians();
-
-      // Check if users exist in LocalStorage
-      const cachedUsersRaw = localStorage.getItem("mock_users");
-
-      let initialUsers: UserAccount[] = [];
-
-      if (cachedUsersRaw) {
-        initialUsers = JSON.parse(cachedUsersRaw);
-      } else {
-        // Map existing technicians to users
-        const mappedTechs: UserAccount[] = techs.map((t) => {
-          const hasToken = t.id === "tech-1" || t.id === "tech-2";
-
+    // Live subscription to active AWS Amplify Sandbox Technician collection
+    const subscription = technicianAPI.observeTechnicians(
+      (techRecords) => {
+        const liveTechUsers: UserAccount[] = (techRecords || []).map((t) => {
+          const isTech1Or2 = t.id === 'tech-1' || t.id === 'tech-2';
           return {
             id: t.id!,
-            name: t.name,
-            email:
-              t.email ??
-              `${t.name.toLowerCase().replace(/\s+/g, "")}@contractorsaas.com`,
-            phone: t.phone ?? "555-0100",
-            role: "Technician",
-            status: t.isAvailable ? "Active" : "Inactive",
-            devicePushToken: hasToken
-              ? `fcm-push-token-${t.id}-${Math.floor(
-                  100000 + Math.random() * 900000
-                )}`
+            name: t.name || 'Unnamed Technician',
+            email: t.email || `${(t.name || 'tech').toLowerCase().replace(/\s+/g, '')}@contractorsaas.com`,
+            phone: t.phone || '555-0100',
+            role: 'Technician',
+            status: t.isAvailable ? 'Active' : 'Inactive',
+            devicePushToken: isTech1Or2
+              ? `fcm-push-token-${t.id}-892341`
               : null,
-            deviceType: hasToken
-              ? t.id === "tech-1"
-                ? "iOS"
-                : "Android"
-              : null,
-            deviceRegisteredAt: hasToken
-              ? new Date(
-                  Date.now() - 30 * 24 * 60 * 60 * 1000
-                ).toISOString()
+            deviceType: isTech1Or2 ? (t.id === 'tech-1' ? 'iOS' : 'Android') : null,
+            deviceRegisteredAt: isTech1Or2
+              ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
               : null,
             permissions: [...ROLE_PRESETS.Technician],
-
-            // Remove `as any`
-            specialty: t.specialty ?? "General",
-
-            createdAt: t.createdAt ?? new Date().toISOString(),
-            updatedAt: t.updatedAt ?? new Date().toISOString(),
+            specialty: (t.specialty as 'Plumbing' | 'HVAC' | 'Electrical' | 'General') || 'General',
+            createdAt: t.createdAt || new Date().toISOString(),
+            updatedAt: t.updatedAt || new Date().toISOString(),
           };
         });
 
-        const defaultDispatchers: UserAccount[] = [
-          {
-            id: "disp-1",
-            name: "Jane Doe",
-            email: "jane@contractorsaas.com",
-            phone: "555-9090",
-            role: "Dispatcher",
-            status: "Active",
-            devicePushToken: "web-push-token-jane-8837190",
-            deviceType: "Web",
-            deviceRegisteredAt: new Date(
-              Date.now() - 60 * 24 * 60 * 60 * 1000
-            ).toISOString(),
-            permissions: [...ROLE_PRESETS.Dispatcher],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          {
-            id: "disp-2",
-            name: "Alex Rivera",
-            email: "alex.rivera@contractorsaas.com",
-            phone: "555-8080",
-            role: "Dispatcher",
-            status: "Active",
-            devicePushToken: null,
-            deviceType: null,
-            deviceRegisteredAt: null,
-            permissions: [...ROLE_PRESETS.Dispatcher],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ];
-
-        initialUsers = [...mappedTechs, ...defaultDispatchers];
-        localStorage.setItem("mock_users", JSON.stringify(initialUsers));
+        // Sync with existing non-technician user records (e.g. Dispatchers)
+        setUsers((prevUsers) => {
+          const dispatchers = prevUsers.filter((u) => u.role !== 'Technician');
+          return [...liveTechUsers, ...dispatchers];
+        });
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Failed to observe live AWS Amplify Sandbox records:', err);
+        showSnackbar('Error reading live database records', 'error');
+        setLoading(false);
       }
+    );
 
-      setUsers(initialUsers);
-    } catch (err) {
-      console.error("Failed to load users:", err);
-      showSnackbar("Error reading user records", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [showSnackbar]);
 
-  loadData();
-}, [showSnackbar]);
+  // 2. DYNAMIC COUNTER METRICS CARDS:
+  // Dynamically bound directly to fetched sandbox data
+  const stats = useMemo(() => {
+    const total = users.length;
+    const activeTechs = users.filter((u) => u.role === 'Technician' && u.status === 'Active').length;
+    const activeDispatchers = users.filter((u) => u.role === 'Dispatcher' && u.status === 'Active').length;
+    const registeredTokens = users.filter((u) => u.devicePushToken !== null && u.devicePushToken !== '').length;
 
-  // Save changes back to user DB and synchronize with Technician API
-  const saveUsersList = async (updatedList: UserAccount[]) => {
-    setUsers(updatedList);
-    localStorage.setItem('mock_users', JSON.stringify(updatedList));
-  };
+    return { total, activeTechs, activeDispatchers, registeredTokens };
+  }, [users]);
 
-  // Filtered Users List
+  // 3. INTERACTIVE SEARCH & ROW FILTERING:
+  // Real-time runtime filtering against name, email, phone, role, and status
   const filteredUsers = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
     return users.filter((u) => {
       const matchSearch =
-        u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.phone.includes(searchQuery);
+        !query ||
+        u.name.toLowerCase().includes(query) ||
+        u.email.toLowerCase().includes(query) ||
+        u.phone.toLowerCase().includes(query);
 
       const matchRole = roleFilter === 'All' || u.role === roleFilter;
       const matchStatus = statusFilter === 'All' || u.status === statusFilter;
@@ -303,17 +288,7 @@ export default function UserManagement() {
     });
   }, [users, searchQuery, roleFilter, statusFilter]);
 
-  // Statistics counters
-  const stats = useMemo(() => {
-    const total = users.length;
-    const activeTechs = users.filter((u) => u.role === 'Technician' && u.status === 'Active').length;
-    const activeDispatchers = users.filter((u) => u.role === 'Dispatcher' && u.status === 'Active').length;
-    const registeredTokens = users.filter((u) => u.devicePushToken !== null).length;
-
-    return { total, activeTechs, activeDispatchers, registeredTokens };
-  }, [users]);
-
-  // Initialize form for new user
+  // Open Create Modal
   const handleOpenAddModal = () => {
     setSelectedUser(null);
     setFormName('');
@@ -326,7 +301,7 @@ export default function UserManagement() {
     setModalOpen(true);
   };
 
-  // Initialize form for editing user
+  // Open Edit Modal with pre-populated fields
   const handleOpenEditModal = (user: UserAccount) => {
     setSelectedUser(user);
     setFormName(user.name);
@@ -335,7 +310,7 @@ export default function UserManagement() {
     setFormRole(user.role);
     setFormStatus(user.status);
     setFormSpecialty(user.specialty || 'General');
-    setFormPermissions(user.permissions || []);
+    setFormPermissions(user.permissions || [...ROLE_PRESETS[user.role]]);
     setModalOpen(true);
   };
 
@@ -354,49 +329,73 @@ export default function UserManagement() {
     );
   };
 
-  // Quick Activation/Deactivation Toggle
+  // 4. CRUD: Status Toggle via background sandbox patch update
   const handleToggleStatus = async (user: UserAccount) => {
     const newStatus: 'Active' | 'Inactive' = user.status === 'Active' ? 'Inactive' : 'Active';
-    const updated = users.map((u) => {
-      if (u.id === user.id) {
-        return { ...u, status: newStatus, updatedAt: new Date().toISOString() };
-      }
-      return u;
-    });
+
+    // Optimistic UI state update
+    setUsers((prev) =>
+      prev.map((u) => (u.id === user.id ? { ...u, status: newStatus, updatedAt: new Date().toISOString() } : u))
+    );
 
     try {
-      // If it is a technician, sync with Technician API
       if (user.role === 'Technician') {
+        // Issue AWS Amplify sandbox patch mutation
         await technicianAPI.updateTechnician(user.id, {
           isAvailable: newStatus === 'Active',
         });
       }
-
-      await saveUsersList(updated);
-      showSnackbar(`${user.name} is now ${newStatus.toLowerCase()}`, 'success');
+      showSnackbar(`${user.name} is now marked ${newStatus.toLowerCase()}`, 'success');
     } catch (err) {
-      console.error(err);
-      showSnackbar('Failed to toggle status', 'error');
+      console.error('Failed to patch status in AWS Amplify sandbox:', err);
+      // Revert optimistic update on failure
+      setUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, status: user.status } : u))
+      );
+      showSnackbar('Failed to update status in sandbox', 'error');
     }
   };
 
-  // Handle Create or Update User submission
+  // 4. CRUD: Submit Create or Update User Mutation
   const handleSubmitForm = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formName.trim() || !formEmail.trim() || !formPhone.trim()) {
-      showSnackbar('Please fill all mandatory fields', 'error');
+    const cleanName = formName.trim();
+    const cleanEmail = formEmail.trim().toLowerCase();
+    const cleanPhone = formPhone.trim();
+
+    if (!cleanName || !cleanEmail || !cleanPhone) {
+      showSnackbar('Please fill all mandatory fields (Name, Email, Phone)', 'error');
       return;
     }
 
+    setSavingForm(true);
     try {
+      const avatar = getInitials(cleanName);
+      const color = getAvatarColor(formRole, cleanName);
+
+      // Construct schema payload aligned with Amplify Technician model
+      const technicianPayload = {
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        specialty: formRole === 'Technician' ? formSpecialty : 'General',
+        isAvailable: formStatus === 'Active',
+        avatar,
+        color,
+      };
+
       if (selectedUser) {
-        // Edit Mode
+        // EDIT / UPDATE MUTATION
+        if (formRole === 'Technician') {
+          await technicianAPI.updateTechnician(selectedUser.id, technicianPayload);
+        }
+
         const updatedUser: UserAccount = {
           ...selectedUser,
-          name: formName,
-          email: formEmail,
-          phone: formPhone,
+          name: cleanName,
+          email: cleanEmail,
+          phone: cleanPhone,
           role: formRole,
           status: formStatus,
           specialty: formRole === 'Technician' ? formSpecialty : undefined,
@@ -404,41 +403,23 @@ export default function UserManagement() {
           updatedAt: new Date().toISOString(),
         };
 
-        // Sync with technician API if role is Technician
-        if (formRole === 'Technician') {
-          await technicianAPI.updateTechnician(selectedUser.id, {
-            name: formName,
-            email: formEmail,
-            phone: formPhone,
-            specialty: formSpecialty,
-            isAvailable: formStatus === 'Active',
-          });
-        }
-
-        const updated = users.map((u) => (u.id === selectedUser.id ? updatedUser : u));
-        await saveUsersList(updated);
-        showSnackbar('User account updated successfully', 'success');
+        setUsers((prev) => prev.map((u) => (u.id === selectedUser.id ? updatedUser : u)));
+        showSnackbar(`User account for ${cleanName} updated successfully`, 'success');
       } else {
-        // Create Mode
-        let newId = '';
+        // CREATE MUTATION
+        let createdId = '';
         if (formRole === 'Technician') {
-          // Sync and create in Technician API first to get technician structure
-          const createdTech = await technicianAPI.createTechnician({
-            name: formName,
-            email: formEmail,
-            phone: formPhone,
-            specialty: formSpecialty,
-          });
-          newId = createdTech.id!;
+          const createdTech = await technicianAPI.createTechnician(technicianPayload);
+          createdId = createdTech?.id || `tech-${Math.floor(100 + Math.random() * 900)}`;
         } else {
-          newId = `disp-${Math.floor(100 + Math.random() * 900)}`;
+          createdId = `disp-${Math.floor(100 + Math.random() * 900)}`;
         }
 
         const newUser: UserAccount = {
-          id: newId,
-          name: formName,
-          email: formEmail,
-          phone: formPhone,
+          id: createdId,
+          name: cleanName,
+          email: cleanEmail,
+          phone: cleanPhone,
           role: formRole,
           status: formStatus,
           devicePushToken: null,
@@ -450,37 +431,90 @@ export default function UserManagement() {
           updatedAt: new Date().toISOString(),
         };
 
-        await saveUsersList([...users, newUser]);
-        showSnackbar('New user account registered successfully', 'success');
+        setUsers((prev) => [...prev.filter((u) => u.id !== createdId), newUser]);
+        showSnackbar(`New user registered successfully: ${cleanName}`, 'success');
       }
 
+      // Close modal on success
       setModalOpen(false);
-    } catch (err) {
-      console.error(err);
-      showSnackbar('Error saving account changes', 'error');
+    } catch (error: any) {
+      // 2. ROBUST ERROR CATCHING & DETAILED LOGGING
+      console.error('Amplify Sandbox Detail Error:', error);
+
+      let detailedErrorMessage = 'Error saving account to sandbox API';
+
+      if (error?.errors && Array.isArray(error.errors)) {
+        console.error(`Validation Mismatch Count: ${error.errors.length}`);
+        error.errors.forEach((err: any, idx: number) => {
+          const message = err?.message || JSON.stringify(err);
+          console.error(`Validation Mismatch [${idx + 1}]:`, message);
+          if (idx === 0) {
+            detailedErrorMessage = message;
+          }
+        });
+      } else if (error?.message) {
+        console.error('Amplify Validation Message:', error.message);
+        detailedErrorMessage = error.message;
+      }
+
+      // 3. FRIENDLY FALLBACK UI HANDLING
+      // Keep form entries intact (modal remains open) and show dynamic error toast
+      showSnackbar(detailedErrorMessage, 'error');
+    } finally {
+      setSavingForm(false);
     }
   };
 
-  // Quick Register Push Token simulation (to make it easy to demonstrate registered tokens)
+  // 4. CRUD: Open Delete Confirmation
+  const handleDeleteClick = (user: UserAccount) => {
+    setUserToDelete(user);
+    setDeleteDialogOpen(true);
+  };
+
+  // 4. CRUD: Execute Delete Operation
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
+
+    setDeletingUser(true);
+    try {
+      if (userToDelete.role === 'Technician') {
+        // Execute live delete mutation on AWS Amplify sandbox API
+        await technicianAPI.deleteTechnician(userToDelete.id);
+      }
+
+      setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+      showSnackbar(`User account ${userToDelete.name} permanently purged`, 'success');
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+    } catch (err) {
+      console.error('Failed to delete user from sandbox API:', err);
+      showSnackbar('Failed to delete user profile from sandbox', 'error');
+    } finally {
+      setDeletingUser(false);
+    }
+  };
+
+  // Simulate registering a device push token
   const handleSimulateRegisterToken = async (user: UserAccount) => {
     const generatedToken = `fcm-push-token-${user.id}-${Math.floor(100000 + Math.random() * 900000)}`;
     const randomOS: 'iOS' | 'Android' | 'Web' = user.role === 'Technician' ? (Math.random() > 0.5 ? 'iOS' : 'Android') : 'Web';
-    
-    const updated = users.map((u) => {
-      if (u.id === user.id) {
-        return {
-          ...u,
-          devicePushToken: generatedToken,
-          deviceType: randomOS,
-          deviceRegisteredAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-      }
-      return u;
-    });
 
-    await saveUsersList(updated);
-    showSnackbar(`Simulated push device token registered for ${user.name}`, 'success');
+    setUsers((prev) =>
+      prev.map((u) => {
+        if (u.id === user.id) {
+          return {
+            ...u,
+            devicePushToken: generatedToken,
+            deviceType: randomOS,
+            deviceRegisteredAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return u;
+      })
+    );
+
+    showSnackbar(`Push device token registered for ${user.name}`, 'success');
   };
 
   // Simulate Sending push notification
@@ -497,7 +531,6 @@ export default function UserManagement() {
       setTokenDialogOpen(false);
       showSnackbar('Push notification dispatched successfully!', 'success');
 
-      // Trigger sliding toast visual notification representation
       setSimulatedNotification({
         open: true,
         title: `🔔 PUSH RECEIVED: ${userName}'s Device`,
@@ -505,26 +538,10 @@ export default function UserManagement() {
         device: `${deviceType} (${pushToken.substring(0, 15)}...)`,
       });
 
-      // Auto dismiss push simulation after 6 seconds
       setTimeout(() => {
         setSimulatedNotification(null);
       }, 6000);
     }, 1200);
-  };
-
-  // Get initials for Avatar
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
-
-  // Render visual Avatar colors based on user index
-  const getAvatarColor = (role: string) => {
-    return role === 'Dispatcher' ? '#ff9800' : '#2563eb';
   };
 
   return (
@@ -556,7 +573,7 @@ export default function UserManagement() {
               variant="outlined"
               size="small"
               startIcon={<SpeedIcon className={styles.userManagementNavIcon} />}
-              onClick={() => (window.location.href = '/')}
+              onClick={() => navigate('/')}
               className={styles.userManagementNavButton}
             >
               Dispatch Board
@@ -565,7 +582,7 @@ export default function UserManagement() {
               variant="outlined"
               size="small"
               startIcon={<EngineeringIcon className={styles.userManagementNavIcon} />}
-              onClick={() => (window.location.href = '/admin/technicians')}
+              onClick={() => navigate('/admin/technicians')}
               className={styles.userManagementNavButton}
             >
               Technicians
@@ -574,7 +591,7 @@ export default function UserManagement() {
               variant="outlined"
               size="small"
               startIcon={<PeopleIcon className={styles.userManagementNavIcon} />}
-              onClick={() => (window.location.href = '/crm')}
+              onClick={() => navigate('/crm')}
               className={styles.userManagementNavButton}
             >
               CRM Record
@@ -809,7 +826,7 @@ export default function UserManagement() {
                 </TableHead>
                 <TableBody>
                   {filteredUsers.map((user) => {
-                    const isRegistered = user.devicePushToken !== null;
+                    const isRegistered = user.devicePushToken !== null && user.devicePushToken !== '';
                     return (
                       <TableRow key={user.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                         {/* Column 1: User & Avatar */}
@@ -817,10 +834,11 @@ export default function UserManagement() {
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Avatar
                               sx={{
-                                bgcolor: getAvatarColor(user.role),
+                                bgcolor: getAvatarColor(user.role, user.name),
                                 width: 30,
                                 height: 30,
                                 fontSize: '0.72rem',
+                                fontWeight: 700,
                               }}
                             >
                               {getInitials(user.name)}
@@ -931,7 +949,7 @@ export default function UserManagement() {
                           {isRegistered ? (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <Chip
-                                label={`Registered (${user.deviceType})`}
+                                label={`Registered (${user.deviceType || 'Client'})`}
                                 size="small"
                                 sx={{
                                   bgcolor: '#eff6ff',
@@ -996,9 +1014,10 @@ export default function UserManagement() {
                           )}
                         </TableCell>
 
-                        {/* Column 6: Actions buttons */}
+                        {/* Column 6: Actions buttons (Edit, Status Toggle, Delete) */}
                         <TableCell align="right" sx={{ py: 1 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 0.5 }}>
+                            {/* Edit Button */}
                             <Tooltip title="Edit Profile Details" arrow>
                               <IconButton
                                 size="small"
@@ -1017,6 +1036,7 @@ export default function UserManagement() {
                               </IconButton>
                             </Tooltip>
 
+                            {/* Status Toggle Switch */}
                             <Tooltip title={user.status === 'Active' ? 'Deactivate Account' : 'Activate Account'} arrow>
                               <IconButton
                                 size="small"
@@ -1043,6 +1063,30 @@ export default function UserManagement() {
                                 />
                               </IconButton>
                             </Tooltip>
+
+                            {/* Delete Option Button */}
+                            <Tooltip title="Delete Account" arrow>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleDeleteClick(user)}
+                                sx={{
+                                  width: 26,
+                                  height: 26,
+                                  p: 0,
+                                  border: '1px solid #fecaca',
+                                  borderRadius: '6px',
+                                  color: '#ef4444',
+                                  backgroundColor: '#fef2f2',
+                                  '&:hover': {
+                                    backgroundColor: '#fee2e2',
+                                    borderColor: '#fca5a5',
+                                  },
+                                }}
+                              >
+                                <DeleteIcon sx={{ fontSize: '15px' }} />
+                              </IconButton>
+                            </Tooltip>
                           </Box>
                         </TableCell>
                       </TableRow>
@@ -1058,7 +1102,7 @@ export default function UserManagement() {
       {/* CREATE & EDIT ACCOUNT MODAL */}
       <Modal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => !savingForm && setModalOpen(false)}
         aria-labelledby="user-modal-title"
         sx={{
           display: 'flex',
@@ -1155,7 +1199,7 @@ export default function UserManagement() {
                   labelId="modal-role-label"
                   value={formRole}
                   label="System Role"
-                  onChange={(e) => handleRoleChange(e.target.value)}
+                  onChange={(e) => handleRoleChange(e.target.value as 'Technician' | 'Dispatcher')}
                   sx={{ borderRadius: '8px' }}
                 >
                   <MenuItem value="Technician">Technician (Field Execution)</MenuItem>
@@ -1170,7 +1214,7 @@ export default function UserManagement() {
                     labelId="modal-specialty-label"
                     value={formSpecialty}
                     label="Trade Specialty"
-                    onChange={(e) => setFormSpecialty(e.target.value)}
+                    onChange={(e) => setFormSpecialty(e.target.value as 'Plumbing' | 'HVAC' | 'Electrical' | 'General')}
                     sx={{ borderRadius: '8px' }}
                   >
                     <MenuItem value="Plumbing">Plumbing</MenuItem>
@@ -1285,6 +1329,7 @@ export default function UserManagement() {
               variant="outlined"
               startIcon={<CancelIcon />}
               onClick={() => setModalOpen(false)}
+              disabled={savingForm}
               sx={{ textTransform: 'none', borderRadius: '8px', fontWeight: 600, color: '#475569', borderColor: '#cbd5e1' }}
             >
               Cancel
@@ -1292,7 +1337,8 @@ export default function UserManagement() {
             <Button
               variant="contained"
               type="submit"
-              startIcon={<SaveIcon />}
+              disabled={savingForm}
+              startIcon={savingForm ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
               sx={{
                 textTransform: 'none',
                 borderRadius: '8px',
@@ -1301,11 +1347,49 @@ export default function UserManagement() {
                 '&:hover': { backgroundColor: '#1d4ed8' },
               }}
             >
-              Save Profile
+              {savingForm ? 'Saving to Cloud...' : 'Save Profile'}
             </Button>
           </Box>
         </Box>
       </Modal>
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => !deletingUser && setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+        sx={{ '& .MuiDialog-paper': { borderRadius: '12px', width: '100%', maxWidth: '440px' } }}
+      >
+        <DialogTitle id="delete-dialog-title" sx={{ fontWeight: 800, color: '#0f172a', py: 2 }}>
+          Delete User Account
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description" sx={{ color: '#475569', fontSize: '0.875rem' }}>
+            Are you sure you want to permanently delete <strong>{userToDelete?.name}</strong>? This action will purge the record from the active AWS Amplify sandbox database and cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0, gap: 1 }}>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            disabled={deletingUser}
+            variant="outlined"
+            sx={{ textTransform: 'none', borderRadius: '8px', fontWeight: 600, color: '#475569', borderColor: '#cbd5e1' }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            disabled={deletingUser}
+            variant="contained"
+            color="error"
+            startIcon={deletingUser ? <CircularProgress size={16} color="inherit" /> : <DeleteIcon />}
+            sx={{ textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}
+          >
+            {deletingUser ? 'Deleting...' : 'Delete Account'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* PUSH TOKEN DETAILED DIALOG & TESTER */}
       <Dialog

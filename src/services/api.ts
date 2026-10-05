@@ -321,8 +321,20 @@ export const technicianAPI = {
 
   async createTechnician(data: any) {
     if (client) {
-      const response = await client.models.Technician.create(data);
-      return response.data;
+      try {
+        const response = await client.models.Technician.create(data);
+        if (response.errors && response.errors.length > 0) {
+          const err: any = new Error(response.errors.map((e: any) => e.message).join(', '));
+          err.errors = response.errors;
+          throw err;
+        }
+        return response.data;
+      } catch (err: any) {
+        if (!err.errors && (err as any).errors) {
+          err.errors = (err as any).errors;
+        }
+        throw err;
+      }
     }
     const list = getLocal('mock_technicians', MOCK_TECHNICIANS);
     const newTech = {
@@ -342,8 +354,20 @@ export const technicianAPI = {
 
   async updateTechnician(id: string, data: any) {
     if (client) {
-      const response = await client.models.Technician.update({ id, ...data });
-      return response.data;
+      try {
+        const response = await client.models.Technician.update({ id, ...data });
+        if (response.errors && response.errors.length > 0) {
+          const err: any = new Error(response.errors.map((e: any) => e.message).join(', '));
+          err.errors = response.errors;
+          throw err;
+        }
+        return response.data;
+      } catch (err: any) {
+        if (!err.errors && (err as any).errors) {
+          err.errors = (err as any).errors;
+        }
+        throw err;
+      }
     }
     const list = getLocal('mock_technicians', MOCK_TECHNICIANS);
     let updatedItem: any = null;
@@ -361,8 +385,20 @@ export const technicianAPI = {
 
   async deleteTechnician(id: string) {
     if (client) {
-      const response = await client.models.Technician.delete({ id });
-      return response.data;
+      try {
+        const response = await client.models.Technician.delete({ id });
+        if (response.errors && response.errors.length > 0) {
+          const err: any = new Error(response.errors.map((e: any) => e.message).join(', '));
+          err.errors = response.errors;
+          throw err;
+        }
+        return response.data;
+      } catch (err: any) {
+        if (!err.errors && (err as any).errors) {
+          err.errors = (err as any).errors;
+        }
+        throw err;
+      }
     }
     const list = getLocal('mock_technicians', MOCK_TECHNICIANS);
     const itemToDelete = list.find(t => t.id === id);
