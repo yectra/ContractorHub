@@ -86,17 +86,26 @@ export default function Dashboard() {
   const profileUser = user as ProfileUser | undefined;
 
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [rightPanelOpen, setRightPanelOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
+  const [userRightPanelOpen, setUserRightPanelOpen] = useState<boolean | undefined>(undefined);
+  const [userSelectedRequestId, setUserSelectedRequestId] = useState<string | null | undefined>(undefined);
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationType, setNotificationType] = useState<'success' | 'error' | 'warning'>('success');
   const [isDragging, setIsDragging] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
+  const [userSelectedDate, setUserSelectedDate] = useState<string | undefined>(undefined);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
+
+  // Synchronize state resets when URL parameters change
+  const [prevUrlState, setPrevUrlState] = useState({ urlJobId, urlDate });
+  if (prevUrlState.urlJobId !== urlJobId || prevUrlState.urlDate !== urlDate) {
+    setPrevUrlState({ urlJobId, urlDate });
+    setUserSelectedRequestId(undefined);
+    setUserRightPanelOpen(undefined);
+    setUserSelectedDate(undefined);
+  }
 
   // ── Dispatcher Checklist Modal state ────────────────────────────────────────
   const [checklistModalOpen, setChecklistModalOpen] = useState(false);
@@ -138,6 +147,69 @@ export default function Dashboard() {
       .toUpperCase();
   }, [profileEmail]);
 
+  // Fetch real data from Amplify / LocalStorage
+  const { serviceRequests, loading: srLoading, error: srError, updateServiceRequest, deleteServiceRequest } = useServiceRequests();
+  const { technicians, loading: techLoading, error: techError, createTechnician } = useTechnicians();
+  const { scheduledJobs, createScheduledJob, updateScheduledJob, deleteScheduledJob } = useScheduledJobs();
+  const { clients, loading: clLoading } = useClients();
+
+  // Resolve target request / scheduled job from URL parameters (e.g. deep-linking from Client CRM)
+  const targetRequestFromUrl = useMemo(() => {
+    if (!urlJobId) return null;
+    return serviceRequests.find((r) => r.id === urlJobId) || null;
+  }, [urlJobId, serviceRequests]);
+
+  const targetScheduledJobFromUrl = useMemo(() => {
+    if (!urlJobId) return null;
+    return scheduledJobs.find((j) => j.serviceRequestId === urlJobId || j.id === urlJobId) || null;
+  }, [urlJobId, scheduledJobs]);
+
+  const urlResolvedRequestId = useMemo(() => {
+    if (!urlJobId) return null;
+    return targetRequestFromUrl?.id || targetScheduledJobFromUrl?.serviceRequestId || urlJobId;
+  }, [urlJobId, targetRequestFromUrl, targetScheduledJobFromUrl]);
+
+  // Derived active state: user selections take precedence, falling back to URL / data-derived values
+  const selectedRequest = userSelectedRequestId !== undefined
+    ? userSelectedRequestId
+    : (urlJobId ? urlResolvedRequestId : null);
+
+  const rightPanelOpen = userRightPanelOpen !== undefined
+    ? userRightPanelOpen
+    : Boolean(urlJobId && (targetRequestFromUrl || targetScheduledJobFromUrl || urlResolvedRequestId));
+
+  const selectedDate = userSelectedDate !== undefined
+    ? userSelectedDate
+    : (urlDate || targetScheduledJobFromUrl?.scheduledDate || getTodayString());
+
+  const setSelectedRequest = (val: string | null | ((prev: string | null) => string | null)) => {
+    if (typeof val === 'function') {
+      setUserSelectedRequestId((prev) => val(prev !== undefined ? prev : (urlJobId ? urlResolvedRequestId : null)));
+    } else {
+      setUserSelectedRequestId(val);
+    }
+  };
+
+  const setRightPanelOpen = (val: boolean | ((prev: boolean) => boolean)) => {
+    if (typeof val === 'function') {
+      setUserRightPanelOpen((prev) =>
+        val(prev !== undefined ? prev : Boolean(urlJobId && (targetRequestFromUrl || targetScheduledJobFromUrl || urlResolvedRequestId)))
+      );
+    } else {
+      setUserRightPanelOpen(val);
+    }
+  };
+
+  const setSelectedDate = (val: string | ((prev: string) => string)) => {
+    if (typeof val === 'function') {
+      setUserSelectedDate((prev) =>
+        val(prev !== undefined ? prev : (urlDate || targetScheduledJobFromUrl?.scheduledDate || getTodayString()))
+      );
+    } else {
+      setUserSelectedDate(val);
+    }
+  };
+
   const getScheduleByDate = (date: string) => {
     console.log(`Fetching schedule for date: ${date}`);
     // Future API integration: getScheduleByDate(date).then(...)
@@ -167,42 +239,11 @@ export default function Dashboard() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [profileMenuOpen]);
 
-  // Fetch real data from Amplify / LocalStorage
-  const { serviceRequests, loading: srLoading, error: srError, updateServiceRequest, deleteServiceRequest } = useServiceRequests();
-  const { technicians, loading: techLoading, error: techError, createTechnician } = useTechnicians();
-  const { scheduledJobs, createScheduledJob, updateScheduledJob, deleteScheduledJob } = useScheduledJobs();
-  const { clients, loading: clLoading } = useClients();
-
-  // Handle deep-linking from URL query parameters (e.g. from Client CRM page)
-  useEffect(() => {
-    if (!urlJobId) return;
-
-    const targetRequest = serviceRequests.find((r) => r.id === urlJobId);
-    const targetScheduledJob = scheduledJobs.find((j) => j.serviceRequestId === urlJobId || j.id === urlJobId);
-
-    if (targetRequest || targetScheduledJob) {
-      const resolvedRequestId = targetRequest?.id || targetScheduledJob?.serviceRequestId || urlJobId;
-      setSelectedRequest(resolvedRequestId);
-      setRightPanelOpen(true);
-
-      if (urlDate) {
-        setSelectedDate(urlDate);
-      } else if (targetScheduledJob?.scheduledDate) {
-        setSelectedDate(targetScheduledJob.scheduledDate);
-      }
-
-      // If it is an unassigned request in queue, ensure the left panel is open
-      if (targetRequest?.status === 'Unassigned') {
-        setLeftPanelOpen(true);
-      }
-    }
-  }, [urlJobId, urlDate, serviceRequests, scheduledJobs]);
-
   const handleCreateTechnician = async (techData: CreateTechnicianData) => {
     try {
       const created = await createTechnician(techData);
       showNotification_(`Technician "${created.name}" created successfully!`, 'success');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to create technician:', err);
       const msg = err instanceof Error ? err.message : 'Failed to create technician';
       showNotification_(msg, 'error');
