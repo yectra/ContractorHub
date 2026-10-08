@@ -21,6 +21,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import styles from '../styles/UI/Dashboard.module.scss';
 import DispatchCenter from '../components/DispatchCenter';
 import CreateTechnicianModal, { type CreateTechnicianData } from '../components/admin/modals/CreateTechnicianModal';
+import DeleteServiceRequestModal from '../components/modals/DeleteServiceRequestModal';
 import { serviceRequestAPI } from '../services/api';
 
 // Hours for the schedule grid (7 AM to 7 PM inclusive - 13 hourly slots)
@@ -114,6 +115,10 @@ export default function Dashboard() {
 
   // ── Create Technician Modal state ───────────────────────────────────────────
   const [createTechModalOpen, setCreateTechModalOpen] = useState(false);
+
+  // ── Delete Service Request Modal state ──────────────────────────────────────
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [jobIdToDelete, setJobIdToDelete] = useState<string | null>(null);
 
   const profileEmail =
     profileUser?.attributes?.email ||
@@ -488,39 +493,57 @@ export default function Dashboard() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!selectedServiceReq) {
+  const handleDeleteClick = (id?: string) => {
+    const targetId = id || selectedServiceReq?.id;
+    if (!targetId) {
       showNotification_('No work order selected to delete', 'error');
       return;
     }
+    setJobIdToDelete(targetId);
+    setIsDeleteModalOpen(true);
+  };
 
-    if (window.confirm('Are you sure you want to delete this service request? This will also remove any scheduled assignments.')) {
-      try {
-        setIsSaving(true);
-
-        // Find associated job
-        const associatedJob = scheduledJobs.find(
-          (job) => job.serviceRequestId === selectedServiceReq.id
-        );
-        if (associatedJob) {
-          await deleteScheduledJob(associatedJob.id!);
-        }
-
-        // Delete request
-        await deleteServiceRequest(selectedServiceReq.id!);
-
-        // Clear selection and close right panel
-        setSelectedRequest(null);
-        setRightPanelOpen(false);
-        showNotification_('Work order deleted successfully.', 'success');
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Delete failed';
-        showNotification_(`Failed to delete: ${errorMsg}`, 'error');
-        console.error('Delete error:', error);
-      } finally {
-        setIsSaving(false);
-      }
+  const handleConfirmDelete = async () => {
+    const targetId = jobIdToDelete || selectedServiceReq?.id;
+    if (!targetId) {
+      setIsDeleteModalOpen(false);
+      setJobIdToDelete(null);
+      return;
     }
+
+    try {
+      setIsSaving(true);
+
+      // Find associated job
+      const associatedJob = scheduledJobs.find(
+        (job) => job.serviceRequestId === targetId
+      );
+      if (associatedJob) {
+        await deleteScheduledJob(associatedJob.id!);
+      }
+
+      // Live AWS Amplify backend database deletion mutation request
+      await deleteServiceRequest(targetId);
+
+      // Clear selection, close modal, and close right panel
+      setSelectedRequest(null);
+      setRightPanelOpen(false);
+      setIsDeleteModalOpen(false);
+      setJobIdToDelete(null);
+      showNotification_('Work order deleted successfully.', 'success');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Delete failed';
+      showNotification_(`Failed to delete: ${errorMsg}`, 'error');
+      console.error('Delete error:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    if (isSaving) return;
+    setIsDeleteModalOpen(false);
+    setJobIdToDelete(null);
   };
 
   const showNotification_ = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
@@ -1411,9 +1434,10 @@ export default function Dashboard() {
                     </Button>
 
                     <Button
+                      id="delete-work-order-btn"
                       variant="outlined"
                       color="error"
-                      onClick={handleDelete}
+                      onClick={() => handleDeleteClick()}
                       disabled={isSaving}
                       startIcon={<DeleteIcon />}
                       fullWidth
@@ -1485,6 +1509,17 @@ export default function Dashboard() {
         isOpen={createTechModalOpen}
         onClose={() => setCreateTechModalOpen(false)}
         onSubmit={handleCreateTechnician}
+      />
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          DELETE SERVICE REQUEST CONFIRMATION MODAL
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <DeleteServiceRequestModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        jobId={jobIdToDelete}
+        isDeleting={isSaving}
       />
 
       {/* Image Preview Modal */}
