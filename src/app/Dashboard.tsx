@@ -23,6 +23,12 @@ import DispatchCenter from '../components/DispatchCenter';
 import CreateTechnicianModal, { type CreateTechnicianData } from '../components/admin/modals/CreateTechnicianModal';
 import DeleteServiceRequestModal from '../components/modals/DeleteServiceRequestModal';
 import { serviceRequestAPI } from '../services/api';
+import {
+  sendJobUpdatedNotification,
+  sendJobDeletedNotification,
+  resolveClientForJob,
+} from '../services/mailService';
+
 
 // Hours for the schedule grid (7 AM to 7 PM inclusive - 13 hourly slots)
 const hours = Array.from({ length: 13 }, (_, i) => i + 7);
@@ -483,6 +489,41 @@ export default function Dashboard() {
         }
       }
 
+      // Non-blocking automated client email notification via AWS SES
+      try {
+        const client = clients.find((c) => c.name === selectedServiceReq.client || c.id === selectedServiceReq.client) ||
+          await resolveClientForJob(selectedServiceReq.client, clients);
+        const dynamicClientEmail = client?.email?.trim();
+        if (dynamicClientEmail && client) {
+          const effectiveTechId = editStatus === 'Unassigned' ? null : (selectedServiceReq.assignedTechnicianId || associatedJob?.techId);
+          const techName = effectiveTechId ? getTechnicianName(effectiveTechId) : undefined;
+          sendJobUpdatedNotification({
+            clientName: client.name,
+            clientEmail: dynamicClientEmail,
+            job: {
+              id: selectedServiceReq.id,
+              service: editService,
+              client: client.name,
+              location: editLocation,
+              type: editType,
+              priority: editPriority,
+              status: editStatus,
+              scheduledDate: associatedJob?.scheduledDate,
+              requestTime: selectedServiceReq.requestTime,
+              estimatedDuration: selectedServiceReq.estimatedDuration,
+              assignedTechnicianName: techName,
+              notes: editNotes,
+            },
+            changesSummary: `Status updated to ${editStatus}, Service: ${editService}`,
+            cachedClients: clients,
+          }).catch((err) => console.error('[Dashboard] Failed to send job updated email notification:', err));
+        } else {
+          console.warn(`[Dashboard] Client "${selectedServiceReq.client}" has no email configured in database. Skipping notification email.`);
+        }
+      } catch (notifyErr) {
+        console.error('[Dashboard] Error preparing job updated email notification:', notifyErr);
+      }
+
       showNotification_('Work order saved successfully!', 'success');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save work order';
@@ -514,7 +555,8 @@ export default function Dashboard() {
     try {
       setIsSaving(true);
 
-      // Find associated job
+      // Capture target details before deletion
+      const targetReq = serviceRequests.find((r) => r.id === targetId) || selectedServiceReq;
       const associatedJob = scheduledJobs.find(
         (job) => job.serviceRequestId === targetId
       );
@@ -524,6 +566,34 @@ export default function Dashboard() {
 
       // Live AWS Amplify backend database deletion mutation request
       await deleteServiceRequest(targetId);
+
+      // Non-blocking automated client email notification via AWS SES
+      try {
+        const client = clients.find((c) => c.name === targetReq?.client || c.id === targetReq?.client) ||
+          (targetReq?.client ? await resolveClientForJob(targetReq.client, clients) : null);
+        const dynamicEmail = client?.email?.trim();
+        if (dynamicEmail && targetReq && client) {
+          sendJobDeletedNotification({
+            clientName: client.name,
+            clientEmail: dynamicEmail,
+            job: {
+              id: targetId,
+              service: targetReq.service,
+              client: client.name,
+              location: targetReq.location,
+              scheduledDate: associatedJob?.scheduledDate,
+              status: 'Cancelled',
+              notes: targetReq.notes,
+            },
+            reason: 'Removed from dispatch calendar & service queue',
+            cachedClients: clients,
+          }).catch((err) => console.error('[Dashboard] Failed to send job deleted email notification:', err));
+        } else {
+          console.warn(`[Dashboard] Client for deleted job #${targetId} has no email configured. Skipping notification email.`);
+        }
+      } catch (notifyErr) {
+        console.error('[Dashboard] Error preparing job deleted email notification:', notifyErr);
+      }
 
       // Clear selection, close modal, and close right panel
       setSelectedRequest(null);
@@ -659,6 +729,37 @@ export default function Dashboard() {
           assignedTechnicianId: techId,
         });
 
+        // Non-blocking automated client email notification via AWS SES
+        try {
+          const client = clients.find((c) => c.name === request.client || c.id === request.client) ||
+            await resolveClientForJob(request.client, clients);
+          const dynamicEmail = client?.email?.trim();
+          if (dynamicEmail && client) {
+            sendJobUpdatedNotification({
+              clientName: client.name,
+              clientEmail: dynamicEmail,
+              job: {
+                id: request.id,
+                service: request.service,
+                client: client.name,
+                location: request.location,
+                type: request.type,
+                priority: request.priority,
+                status: 'Assigned',
+                scheduledDate: selectedDate,
+                requestTime: `${startHour}:00`,
+                estimatedDuration: request.estimatedDuration || '2 hours',
+                assignedTechnicianName: getTechnicianName(techId),
+                notes: request.notes,
+              },
+              changesSummary: `Assigned to ${getTechnicianName(techId)} for ${selectedDate} at ${startHour}:00`,
+              cachedClients: clients,
+            }).catch((err) => console.error('[Dashboard] Failed to send drop schedule email:', err));
+          }
+        } catch (notifyErr) {
+          console.error('[Dashboard] Error preparing drop schedule email:', notifyErr);
+        }
+
         showNotification_(`Job ${data.id} assigned to ${getTechnicianName(techId)}`, 'success');
       }
 
@@ -681,6 +782,36 @@ export default function Dashboard() {
           status: 'Assigned',
           assignedTechnicianId: techId,
         });
+
+        // Non-blocking automated client email notification via AWS SES
+        try {
+          const relatedReq = serviceRequests.find((r) => r.id === job.serviceRequestId);
+          const clientName = relatedReq?.client || '';
+          const client = clients.find((c) => c.name === clientName || c.id === clientName) ||
+            await resolveClientForJob(clientName, clients);
+          const dynamicEmail = client?.email?.trim();
+          if (dynamicEmail && client) {
+            sendJobUpdatedNotification({
+              clientName: client.name,
+              clientEmail: dynamicEmail,
+              job: {
+                id: job.serviceRequestId || job.id,
+                service: relatedReq?.service || 'Scheduled Job',
+                client: client.name,
+                location: relatedReq?.location,
+                status: 'Assigned',
+                scheduledDate: selectedDate,
+                requestTime: `${startHour}:00`,
+                assignedTechnicianName: getTechnicianName(techId),
+                notes: job.notes || relatedReq?.notes,
+              },
+              changesSummary: `Reassigned to ${getTechnicianName(techId)} for ${selectedDate} at ${startHour}:00`,
+              cachedClients: clients,
+            }).catch((err) => console.error('[Dashboard] Failed to send drop reassign email:', err));
+          }
+        } catch (notifyErr) {
+          console.error('[Dashboard] Error preparing drop reassign email:', notifyErr);
+        }
 
         showNotification_(`Job reassigned to ${getTechnicianName(techId)}`, 'success');
       }

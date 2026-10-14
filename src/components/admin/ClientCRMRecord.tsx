@@ -10,6 +10,13 @@ import ClientModal, { type ClientFormData } from './modals/ClientModal';
 import JobModal, { type JobFormData } from './modals/JobModal';
 import DeleteConfirmModal from './modals/DeleteConfirmModal';
 import DeleteClientModal from './modals/DeleteClientModal';
+import {
+  sendJobCreatedNotification,
+  sendJobUpdatedNotification,
+  sendJobDeletedNotification,
+  resolveClientForJob,
+} from '../../services/mailService';
+
 
 type Client = Schema['Client']['type'];
 type ServiceRequest = Schema['ServiceRequest']['type'];
@@ -342,6 +349,38 @@ export default function ClientCRMRecord(): React.JSX.Element {
         });
       }
 
+      // Non-blocking automated client email notification via AWS SES
+      try {
+        const client = selectedClient;
+        const dynamicEmail = client?.email?.trim();
+        if (dynamicEmail && client) {
+          const assignedTech = technicians.find((t) => t.id === formData.assignedTechnicianId);
+          sendJobCreatedNotification({
+            clientName: client.name,
+            clientEmail: dynamicEmail,
+            job: {
+              id: created?.id,
+              service: formData.service,
+              client: client.name,
+              location: clientAddress || client.address || 'Client Address',
+              type: formData.type,
+              priority: formData.priority,
+              status: formData.status,
+              scheduledDate: isAssigned ? scheduledDate : undefined,
+              requestTime: formData.requestTime || '08:00 AM',
+              estimatedDuration: formData.estimatedDuration || '2 hours',
+              assignedTechnicianName: assignedTech?.name,
+              notes: formData.notes,
+            },
+            cachedClients: clients,
+          }).catch((err) => console.error('[ClientCRMRecord] Failed to send job created email notification:', err));
+        } else {
+          console.warn(`[ClientCRMRecord] Client "${selectedClient?.name}" has no email configured in database record. Skipping notification email.`);
+        }
+      } catch (notifyErr) {
+        console.error('[ClientCRMRecord] Error preparing job created email notification:', notifyErr);
+      }
+
       const idStr = created?.id ? ` (${created.id})` : '';
       const destMsg = isAssigned ? 'technician schedule & dispatch board' : 'dispatch service queue';
       setSuccessAlert({
@@ -415,6 +454,39 @@ export default function ClientCRMRecord(): React.JSX.Element {
         await deleteScheduledJob(existingSchedJob.id);
       }
 
+      // Non-blocking automated client email notification via AWS SES
+      try {
+        const client = selectedClient || await resolveClientForJob(selectedJob.client, clients);
+        const dynamicEmail = client?.email?.trim();
+        if (dynamicEmail && client) {
+          const assignedTech = technicians.find((t) => t.id === formData.assignedTechnicianId);
+          sendJobUpdatedNotification({
+            clientName: client.name,
+            clientEmail: dynamicEmail,
+            job: {
+              id: selectedJob.id,
+              service: formData.service,
+              client: client.name,
+              location: selectedJob.location,
+              type: formData.type,
+              priority: formData.priority,
+              status: formData.status,
+              scheduledDate: isAssigned ? scheduledDate : undefined,
+              requestTime: formData.requestTime,
+              estimatedDuration: formData.estimatedDuration,
+              assignedTechnicianName: assignedTech?.name,
+              notes: formData.notes,
+            },
+            changesSummary: `Status: ${formData.status}, Service: ${formData.service}`,
+            cachedClients: clients,
+          }).catch((err) => console.error('[ClientCRMRecord] Failed to send job updated email notification:', err));
+        } else {
+          console.warn(`[ClientCRMRecord] Client for job #${selectedJob.id} has no email configured in database. Skipping notification email.`);
+        }
+      } catch (notifyErr) {
+        console.error('[ClientCRMRecord] Error preparing job updated email notification:', notifyErr);
+      }
+
       setSuccessAlert({
         message: `Job #${selectedJob.id} updated successfully!`,
         jobId: selectedJob.id,
@@ -448,6 +520,34 @@ export default function ClientCRMRecord(): React.JSX.Element {
       }
 
       await deleteServiceRequest(jobId);
+
+      // Non-blocking automated client email notification via AWS SES
+      try {
+        const client = selectedClient || (jobToDelete.client ? await resolveClientForJob(jobToDelete.client, clients) : null);
+        const dynamicEmail = client?.email?.trim();
+        if (dynamicEmail && client) {
+          sendJobDeletedNotification({
+            clientName: client.name,
+            clientEmail: dynamicEmail,
+            job: {
+              id: jobId,
+              service: jobToDelete.service,
+              client: client.name,
+              location: jobToDelete.location,
+              scheduledDate: existingSchedJob?.scheduledDate,
+              status: 'Cancelled',
+              notes: jobToDelete.notes,
+            },
+            reason: 'Removed from dispatch calendar & service queue',
+            cachedClients: clients,
+          }).catch((err) => console.error('[ClientCRMRecord] Failed to send job deleted email notification:', err));
+        } else {
+          console.warn(`[ClientCRMRecord] Client for deleted job #${jobId} has no email configured in database. Skipping notification email.`);
+        }
+      } catch (notifyErr) {
+        console.error('[ClientCRMRecord] Error preparing job deleted email notification:', notifyErr);
+      }
+
       setSuccessAlert({
         message: `Job #${jobId} deleted successfully from dispatch queue & calendar!`,
       });

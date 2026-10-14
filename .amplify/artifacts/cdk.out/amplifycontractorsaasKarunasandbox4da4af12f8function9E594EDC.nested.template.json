@@ -36,10 +36,6 @@
       "Value": "sandbox"
      },
      {
-      "Key": "amplify:friendly-name",
-      "Value": "post-confirmation"
-     },
-     {
       "Key": "created-by",
       "Value": "amplify"
      }
@@ -51,111 +47,10 @@
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/post-confirmation-lambda/ServiceRole/Resource"
    }
   },
-  "postconfirmationlambdaServiceRoleDefaultPolicyCD4BF2C1": {
-   "Type": "AWS::IAM::Policy",
-   "Properties": {
-    "PolicyDocument": {
-     "Statement": [
-      {
-       "Action": "ssm:GetParameters",
-       "Effect": "Allow",
-       "Resource": {
-        "Fn::Join": [
-         "",
-         [
-          "arn:",
-          {
-           "Ref": "AWS::Partition"
-          },
-          ":ssm:",
-          {
-           "Ref": "AWS::Region"
-          },
-          ":",
-          {
-           "Ref": "AWS::AccountId"
-          },
-          ":parameter/amplify/resource_reference/contractorsaas/Karuna-sandbox-4da4af12f8/AMPLIFY_AUTH_USERPOOL_ID"
-         ]
-        ]
-       }
-      }
-     ],
-     "Version": "2012-10-17"
-    },
-    "PolicyName": "postconfirmationlambdaServiceRoleDefaultPolicyCD4BF2C1",
-    "Roles": [
-     {
-      "Ref": "postconfirmationlambdaServiceRoleD88F89BD"
-     }
-    ]
-   },
-   "Metadata": {
-    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/post-confirmation-lambda/ServiceRole/DefaultPolicy/Resource"
-   }
-  },
-  "postconfirmationlambda195D98D2": {
-   "Type": "AWS::Lambda::Function",
-   "Properties": {
-    "Architectures": [
-     "x86_64"
-    ],
-    "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
-     },
-     "S3Key": "26673e8798c2540436a96f7be905ed42c3787045482d8daea416b871e5bcb360.zip"
-    },
-    "Environment": {
-     "Variables": {
-      "AMPLIFY_SSM_ENV_CONFIG": "{\"AMPLIFY_AUTH_USERPOOL_ID\":{\"path\":\"/amplify/resource_reference/contractorsaas/Karuna-sandbox-4da4af12f8/AMPLIFY_AUTH_USERPOOL_ID\"}}",
-      "AMPLIFY_AUTH_USERPOOL_ID": "<value will be resolved during runtime>"
-     }
-    },
-    "EphemeralStorage": {
-     "Size": 512
-    },
-    "Handler": "index.handler",
-    "MemorySize": 512,
-    "Role": {
-     "Fn::GetAtt": [
-      "postconfirmationlambdaServiceRoleD88F89BD",
-      "Arn"
-     ]
-    },
-    "Runtime": "nodejs22.x",
-    "Tags": [
-     {
-      "Key": "amplify:deployment-type",
-      "Value": "sandbox"
-     },
-     {
-      "Key": "amplify:friendly-name",
-      "Value": "post-confirmation"
-     },
-     {
-      "Key": "created-by",
-      "Value": "amplify"
-     }
-    ],
-    "Timeout": 3
-   },
-   "DependsOn": [
-    "postconfirmationlambdaServiceRoleD88F89BD"
-   ],
-   "UpdateReplacePolicy": "Delete",
-   "DeletionPolicy": "Delete",
-   "Metadata": {
-    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/post-confirmation-lambda/Resource",
-    "aws:asset:path": "asset.26673e8798c2540436a96f7be905ed42c3787045482d8daea416b871e5bcb360",
-    "aws:asset:is-bundled": true,
-    "aws:asset:property": "Code"
-   }
-  },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zXNOw6DQAxF0bXQG4dAlNQBiZICFoDMjEHmM0jxEArE3iNAqU7zdF+M8SvCKKBVQ2OHcJQGt4LVs608mQFo1XobaWos1W623CsWJ/nijJfZgdCEWzmPDFnrDnfQpCZV9orvA9AE08UM7FNShquGWev+jR3OXeWpE9ftcBxhr7dv/MD7E6OgV5HwszgvE2N5+QOIPcI7uwAAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yXMsQ6CMBAA0G9hL2dFo7MxcWSAD2gOepIrcE28IgPpvxtweturoLpbsAWuWvZ+LCfuYKtJE/k2YT8aXNVtE86dRyfRU1CoD16L9ImjGMYZtiZOZJ5v2c1GLw5VKSk8drI5aBMOLEM2+wNBT9/qCucb2CIoc/lZJPFM0Pz9AUT2NXmaAAAA"
    },
    "Metadata": {
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/CDKMetadata/Default"
@@ -427,26 +322,6 @@
      ]
     }
    ]
-  }
- },
- "Outputs": {
-  "amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn": {
-   "Value": {
-    "Fn::GetAtt": [
-     "postconfirmationlambda195D98D2",
-     "Arn"
-    ]
-   }
-  },
-  "amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaServiceRole84051F14Ref": {
-   "Value": {
-    "Ref": "postconfirmationlambdaServiceRoleD88F89BD"
-   }
-  },
-  "amplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9ARef": {
-   "Value": {
-    "Ref": "postconfirmationlambda195D98D2"
-   }
   }
  }
 }

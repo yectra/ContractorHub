@@ -22,7 +22,10 @@
     "EmailVerificationSubject": "Verify your new account",
     "LambdaConfig": {
      "PostConfirmation": {
-      "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn"
+      "Fn::GetAtt": [
+       "postconfirmationlambda195D98D2",
+       "Arn"
+      ]
      }
     },
     "Policies": {
@@ -82,7 +85,10 @@
    "Properties": {
     "Action": "lambda:InvokeFunction",
     "FunctionName": {
-     "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn"
+     "Fn::GetAtt": [
+      "postconfirmationlambda195D98D2",
+      "Arn"
+     ]
     },
     "Principal": "cognito-idp.amazonaws.com",
     "SourceArn": {
@@ -464,6 +470,95 @@
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/amplifyAuth/TechnicianGroup"
    }
   },
+  "postconfirmationlambdaServiceRoleD88F89BD": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/post-confirmation-lambda/ServiceRole/Resource"
+   }
+  },
+  "postconfirmationlambda195D98D2": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ZipFile": "\nconst {\n  AdminAddUserToGroupCommand,\n  CognitoIdentityProviderClient,\n} = require('@aws-sdk/client-cognito-identity-provider');\n\nconst cognitoClient = new CognitoIdentityProviderClient({});\nconst validRoles = ['Admin', 'Technician'];\n\nexports.handler = async (event) => {\n  const customRole = event.request?.userAttributes?.['custom:role'];\n\n  if (!validRoles.includes(customRole)) {\n    console.warn(\n      `User ${event.userName} does not have a valid custom:role. ` +\n        `Received: ${customRole ?? 'undefined'}`\n    );\n    return event;\n  }\n\n  await cognitoClient.send(\n    new AdminAddUserToGroupCommand({\n      UserPoolId: event.userPoolId,\n      Username: event.userName,\n      GroupName: customRole,\n    })\n  );\n\n  console.log(\n    `Successfully added user ${event.userName} to group ${customRole}`\n  );\n\n  return event;\n};\n"
+    },
+    "Environment": {
+     "Variables": {
+      "AMPLIFY_SSM_ENV_CONFIG": "{}"
+     }
+    },
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "postconfirmationlambdaServiceRoleD88F89BD",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "post-confirmation-lambda"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "DependsOn": [
+    "postconfirmationlambdaServiceRoleD88F89BD"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/post-confirmation-lambda/Resource"
+   }
+  },
   "AMPLIFYAUTHUSERPOOLIDParameterCC466CA3": {
    "Type": "AWS::SSM::Parameter",
    "Properties": {
@@ -504,7 +599,7 @@
     "PolicyName": "userpoolAccess13FEE5419",
     "Roles": [
      {
-      "Ref": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaServiceRole84051F14Ref"
+      "Ref": "postconfirmationlambdaServiceRoleD88F89BD"
      }
     ]
    },
@@ -517,7 +612,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12LQWsCMRCFf4v37LhdpJ7LHkovZVE8S0xGO5pMSmZUJOS/l1W2lZ7e997j66BbttDO7FUa509NoB2UTxRFv1brTsZeZVtcOjBpgrIRzENKwfR7/uUJ+kDI+nz9LR8eWUlvk/zcVyngm6p1X/Gf/57T+buaYOPOW+j3PGCOJEKJDdkIZVRH4Z5DCuRuY31QNSIRyloz8WGw2UZUzPd/KrVWw8kjHGV+6Rbw8grt7ChETT6zUkRYPfIH0Vkm9CgBAAA="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12MUUsDMRCEf0vfc+t5iD7LgdIXOVp8ljTZq9smG8nuWUrIf5drOS0+zTczzHTQPbXQruxJGuePTaAdlDcURb9V647GnuSjuLRn0gTlXTAPKQXTj/zLC/SBkPW2+kvWHllJz8v41m9SwGdV6z7jv/1rTtNXNcHGnbdQ+pEHzJFEKLF5mdjpDP3IC1dDNkKZH+f4okMK5M6zvVI1IhHKVjPxfrDZRlTMl34xtVbDySMc5O67e4D7R2hXByFq8sRKEWFz1R8weT2fPwEAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/auth/CDKMetadata/Default"
@@ -791,14 +886,6 @@
    ]
   }
  },
- "Parameters": {
-  "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaAC9A1B9AArn": {
-   "Type": "String"
-  },
-  "referencetoamplifycontractorsaasKarunasandbox4da4af12f8functionNestedStackfunctionNestedStackResourceA3FE50AEOutputsamplifycontractorsaasKarunasandbox4da4af12f8functionpostconfirmationlambdaServiceRole84051F14Ref": {
-   "Type": "String"
-  }
- },
  "Outputs": {
   "amplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthUserPool69B51D66Ref": {
    "Value": {
@@ -813,6 +900,11 @@
   "amplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef": {
    "Value": {
     "Ref": "amplifyAuthIdentityPool3FDE84CC"
+   }
+  },
+  "amplifycontractorsaasKarunasandbox4da4af12f8authpostconfirmationlambda920AAC2FRef": {
+   "Value": {
+    "Ref": "postconfirmationlambda195D98D2"
    }
   },
   "amplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef": {
