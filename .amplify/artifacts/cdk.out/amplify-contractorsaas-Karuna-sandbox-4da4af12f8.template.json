@@ -158,6 +158,13 @@
         "Outputs.amplifycontractorsaasKarunasandbox4da4af12f8authpostconfirmationlambda920AAC2FRef"
        ]
       },
+      "\",\"",
+      {
+       "Fn::GetAtt": [
+        "data7552DF31",
+        "Outputs.amplifycontractorsaasKarunasandbox4da4af12f8datasendnotificationlambdaBB461425Ref"
+       ]
+      },
       "\"]"
      ]
     ]
@@ -326,7 +333,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/8e43003a6dabbb69961b519207df3a0648e869e13e31a6bfd91b5970d975a96f.json"
+       "/a5da132a79cb08bdbf095ebfdb905a8dbed60efd7b15f76f0abff6b90ea651c5.json"
       ]
      ]
     }

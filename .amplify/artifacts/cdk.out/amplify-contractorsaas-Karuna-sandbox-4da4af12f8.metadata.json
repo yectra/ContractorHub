@@ -4,7 +4,7 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...defineBackend in @aws-amplify\\backend...",
-        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:5:24)",
+        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:7:24)",
         "...node internals, @aws-amplify/sandbox, @aws-cdk\\toolkit-lib..."
       ]
     },
@@ -33,7 +33,7 @@
         "...<anonymous> in @aws-amplify\\backend-output-storage...",
         "Array.forEach (:)",
         "...@aws-amplify\\backend-output-storage, defineBackend in @aws-amplify\\backend...",
-        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:5:24)",
+        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:7:24)",
         "...node internals, @aws-amplify/sandbox, @aws-cdk\\toolkit-lib..."
       ]
     }
@@ -49,7 +49,7 @@
         "...<anonymous> in @aws-amplify\\backend-output-storage...",
         "Array.forEach (:)",
         "...@aws-amplify\\backend-output-storage, defineBackend in @aws-amplify\\backend...",
-        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:5:24)",
+        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:7:24)",
         "...node internals, @aws-amplify/sandbox, @aws-cdk\\toolkit-lib..."
       ]
     }
@@ -61,7 +61,7 @@
         "...<anonymous> in @aws-amplify\\backend...",
         "Array.forEach (:)",
         "...defineBackend in @aws-amplify\\backend...",
-        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:5:24)",
+        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:7:24)",
         "...node internals..."
       ]
     }
@@ -403,7 +403,7 @@
         "...<anonymous> in @aws-amplify\\backend...",
         "Array.forEach (:)",
         "...defineBackend in @aws-amplify\\backend...",
-        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:5:24)",
+        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:7:24)",
         "...node internals..."
       ]
     }
@@ -613,7 +613,7 @@
         "...aws-cdk-lib, <anonymous> in @aws-amplify\\backend...",
         "Array.forEach (:)",
         "...defineBackend in @aws-amplify\\backend...",
-        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:5:24)",
+        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:7:24)",
         "...node internals..."
       ]
     }
@@ -710,6 +710,19 @@
     {
       "type": "aws:cdk:is-custom-resource-handler-runtime-family",
       "data": 2
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifycontractorsaasKarunasandbox4da4af12f8datasendnotificationlambdaBB461425Ref": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifycontractorsaasKarunasandbox4da4af12f8datasendnotificationlambdaBB461425Ref"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
     }
   ],
   "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/reference-to-amplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348Outputs.amplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthUserPool69B51D66Ref": [
@@ -814,7 +827,7 @@
         "...aws-cdk-lib, <anonymous> in @aws-amplify\\backend...",
         "Array.forEach (:)",
         "...defineBackend in @aws-amplify\\backend...",
-        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:5:24)",
+        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:7:24)",
         "...node internals..."
       ]
     }
@@ -856,7 +869,7 @@
         "...@aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
         "Array.forEach (:)",
         "...defineBackend in @aws-amplify\\backend...",
-        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:5:24)"
+        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:7:24)"
       ]
     }
   ],
@@ -871,7 +884,7 @@
         "...@aws-amplify\\auth-construct, @aws-amplify\\backend-auth, <anonymous> in @aws-amplify\\backend...",
         "Array.forEach (:)",
         "...defineBackend in @aws-amplify\\backend...",
-        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:5:24)"
+        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:7:24)"
       ]
     }
   ],
@@ -978,6 +991,22 @@
       ]
     }
   ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/send-notification-lambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "sendnotificationlambdaD10EB6D8"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "ProvidedFunctionGenerator.defineFunction.resourceGroupName (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\functions\\send-notification\\resource.ts:14:5)",
+        "...@aws-amplify\\backend-function, <anonymous> in @aws-amplify\\backend...",
+        "Array.map (:)",
+        "...@aws-amplify\\backend-data..."
+      ]
+    }
+  ],
   "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/AmplifyTableManager": [
     {
       "type": "aws:cdk:creationStack",
@@ -1045,6 +1074,15 @@
         "...<anonymous> in @aws-amplify\\graphql-api-construct...",
         "Map.forEach (:)",
         "...@aws-amplify\\graphql-api-construct..."
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...@aws-amplify\\graphql-api-construct, @aws-amplify\\backend-data, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
       ]
     }
   ],
@@ -1301,6 +1339,21 @@
         "ProvidedFunctionGenerator.defineFunction.resourceGroupName (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\functions\\post-confirmation-lambda\\resource.ts:16:5)",
         "...@aws-amplify\\backend-function, <anonymous> in @aws-amplify\\backend...",
         "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/send-notification-lambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "sendnotificationlambdaServiceRoleFCF78BDB"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "ProvidedFunctionGenerator.defineFunction.resourceGroupName (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\functions\\send-notification\\resource.ts:14:5)",
+        "...@aws-amplify\\backend-function, <anonymous> in @aws-amplify\\backend...",
+        "Array.map (:)"
       ]
     }
   ],
@@ -3531,6 +3584,191 @@
       ]
     }
   ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/HasEnvironmentParameter": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HasEnvironmentParameter"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...@aws-amplify\\graphql-api-construct, @aws-amplify\\backend-data, <anonymous> in @aws-amplify\\backend...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\backend..."
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/FnSendEmailNotificationLambdaDataSource": [
+    {
+      "type": "graphqltransformer:resourceName",
+      "data": "FnSendEmailNotificationLambdaDataSource"
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/mutationSendEmailNotificationResolver": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "MutationsendEmailNotificationResolver"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Array.forEach (:)",
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Map.forEach (:)",
+        "...@aws-amplify\\graphql-api-construct..."
+      ]
+    },
+    {
+      "type": "graphqltransformer:resourceName",
+      "data": "Mutation.sendEmailNotification"
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/FnSendNotificationLambdaDataSource": [
+    {
+      "type": "graphqltransformer:resourceName",
+      "data": "FnSendNotificationLambdaDataSource"
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/mutationSendNotificationResolver": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "MutationsendNotificationResolver"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Array.forEach (:)",
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Map.forEach (:)",
+        "...@aws-amplify\\graphql-api-construct..."
+      ]
+    },
+    {
+      "type": "graphqltransformer:resourceName",
+      "data": "Mutation.sendNotification"
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/reference-to-amplifycontractorsaasKarunasandbox4da4af12f8datasendnotificationlambdaBB461425Arn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8datasendnotificationlambdaBB461425Arn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/reference-to-amplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPI30B378BDApiId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/reference-to-amplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348Outputs.amplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthauthenticatedUserRoleE464807CRef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/reference-to-amplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348Outputs.amplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthunauthenticatedUserRole027D4C3ARef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/reference-to-amplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348Outputs.amplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8authNestedStackauthNestedStackResourceD74CB348OutputsamplifycontractorsaasKarunasandbox4da4af12f8authamplifyAuthIdentityPoolDBE1984BRef"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/reference-to-amplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "referencetoamplifycontractorsaasKarunasandbox4da4af12f8dataamplifyDataGraphQLAPINONEDS17C9969EName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\backend, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack.NestedStack/FunctionDirectiveStack.NestedStackResource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyDataFunctionDirectiveStackNestedStackFunctionDirectiveStackNestedStackResource1246A302"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, @aws-amplify\\graphql-api-construct, @aws-amplify\\backend-data, @aws-amplify\\backend...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/AuthRolePolicy01/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyDataAuthRolePolicy01567A5654"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\graphql-api-construct..."
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/UnauthRolePolicy01/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "amplifyDataUnauthRolePolicy01355B9DCF"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Array.forEach (:)",
+        "...@aws-amplify\\graphql-api-construct..."
+      ]
+    }
+  ],
   "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiB/ServiceRole/Resource": [
     {
       "type": "aws:cdk:logicalId",
@@ -3602,6 +3840,20 @@
       ]
     }
   ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/send-notification-lambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "sendnotificationlambdaServiceRoleDefaultPolicy0FB7B25C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addToRolePolicy in aws-cdk-lib...",
+        "<anonymous> (C:\\Projects\\Yectra\\My Yectra Projects\\contractor-saas\\amplify\\backend.ts:14:43)",
+        "...node internals, @aws-amplify/sandbox..."
+      ]
+    }
+  ],
   "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/GraphQLAPI/NONE_DS/Resource": [
     {
       "type": "aws:cdk:logicalId",
@@ -3610,8 +3862,9 @@
     {
       "type": "aws:cdk:creationStack",
       "data": [
-        "...aws-cdk-lib, @aws-amplify\\graphql-api-construct...",
-        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Map.forEach (:)",
+        "...@aws-amplify\\graphql-api-construct..."
       ]
     },
     {
@@ -6739,6 +6992,146 @@
       ]
     }
   ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/FnSendEmailNotificationLambdaDataSource/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FnSendEmailNotificationLambdaDataSource"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Array.forEach (:)",
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Map.forEach (:)"
+      ]
+    },
+    {
+      "type": "graphqltransformer:resourceName",
+      "data": "FnSendEmailNotificationLambdaDataSource"
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/InvokeFnSendEmailNotificationLambdaDataSource/InvokeFnSendEmailNotificationLambdaDataSource.AppSyncFunction": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "InvokeFnSendEmailNotificationLambdaDataSourceInvokeFnSendEmailNotificationLambdaDataSourceAppSyncFunction19FF378B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Array.forEach (:)",
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Map.forEach (:)",
+        "...@aws-amplify\\graphql-api-construct..."
+      ]
+    },
+    {
+      "type": "graphqltransformer:resourceName",
+      "data": "InvokeFnSendEmailNotificationLambdaDataSource"
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/FnSendNotificationLambdaDataSource/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FnSendNotificationLambdaDataSource"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Array.forEach (:)",
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Map.forEach (:)"
+      ]
+    },
+    {
+      "type": "graphqltransformer:resourceName",
+      "data": "FnSendNotificationLambdaDataSource"
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/InvokeFnSendNotificationLambdaDataSource/InvokeFnSendNotificationLambdaDataSource.AppSyncFunction": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "InvokeFnSendNotificationLambdaDataSourceInvokeFnSendNotificationLambdaDataSourceAppSyncFunction4094E4A8"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Array.forEach (:)",
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Map.forEach (:)",
+        "...@aws-amplify\\graphql-api-construct..."
+      ]
+    },
+    {
+      "type": "graphqltransformer:resourceName",
+      "data": "InvokeFnSendNotificationLambdaDataSource"
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/MutationSendEmailNotificationAuthFN/MutationSendEmailNotificationAuthFN.AppSyncFunction": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "MutationSendEmailNotificationAuthFNMutationSendEmailNotificationAuthFNAppSyncFunctionAB968EB6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Map.forEach (:)",
+        "...@aws-amplify\\graphql-api-construct..."
+      ]
+    },
+    {
+      "type": "graphqltransformer:resourceName",
+      "data": "MutationSendEmailNotificationAuthFN"
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/MutationSendNotificationAuthFN/MutationSendNotificationAuthFN.AppSyncFunction": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "MutationSendNotificationAuthFNMutationSendNotificationAuthFNAppSyncFunction655E44CD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...<anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Map.forEach (:)",
+        "...@aws-amplify\\graphql-api-construct..."
+      ]
+    },
+    {
+      "type": "graphqltransformer:resourceName",
+      "data": "MutationSendNotificationAuthFN"
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/CDKMetadata/Condition": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadataAvailable"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
   "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsBucket/Resource": [
     {
       "type": "aws:cdk:logicalId",
@@ -6921,6 +7314,32 @@
       "data": "ServiceHistory"
     }
   ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/FnSendEmailNotificationLambdaDataSource/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FnSendEmailNotificationLambdaDataSourceServiceRoleB348DD4C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/FnSendNotificationLambdaDataSource/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FnSendNotificationLambdaDataSourceServiceRoleB0FC9634"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, <anonymous> in @aws-amplify\\graphql-api-construct...",
+        "Array.forEach (:)"
+      ]
+    }
+  ],
   "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsBucket/Policy/Resource": [
     {
       "type": "aws:cdk:logicalId",
@@ -6988,6 +7407,32 @@
       "type": "aws:cdk:creationStack",
       "data": [
         "...aws-cdk-lib, @aws-amplify\\graphql-api-construct...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/FnSendEmailNotificationLambdaDataSource/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FnSendEmailNotificationLambdaDataSourceServiceRoleDefaultPolicy11388659"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/amplify-contractorsaas-Karuna-sandbox-4da4af12f8/data/amplifyData/FunctionDirectiveStack/FnSendNotificationLambdaDataSource/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FnSendNotificationLambdaDataSourceServiceRoleDefaultPolicyC6473515"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
         "(no user code in 10 frames, use --stack-trace-limit to capture more)"
       ]
     }

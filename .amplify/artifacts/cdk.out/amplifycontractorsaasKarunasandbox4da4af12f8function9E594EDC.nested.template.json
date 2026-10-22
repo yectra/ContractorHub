@@ -1,7 +1,7 @@
 {
  "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.19.0\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
  "Resources": {
-  "postconfirmationlambdaServiceRoleD88F89BD": {
+  "sendnotificationlambdaServiceRoleFCF78BDB": {
    "Type": "AWS::IAM::Role",
    "Properties": {
     "AssumeRolePolicyDocument": {
@@ -44,7 +44,7 @@
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
    "Metadata": {
-    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/post-confirmation-lambda/ServiceRole/Resource"
+    "aws:cdk:path": "amplify-contractorsaas-Karuna-sandbox-4da4af12f8/function/send-notification-lambda/ServiceRole/Resource"
    }
   },
   "CDKMetadata": {

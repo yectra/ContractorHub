@@ -1,5 +1,4 @@
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
-import { clientAPI } from './api';
+import { client, clientAPI } from './api';
 import type { Schema } from '../../amplify/data/resource';
 
 declare const process: any;
@@ -24,39 +23,11 @@ export const getEnvVar = (key: string): string | undefined => {
   return undefined;
 };
 
-/**
- * Lazy initialization of SESClient to ensure environment variables are evaluated on invocation
- */
-let cachedSesClient: SESClient | null = null;
-
-export const getSESClient = (): SESClient => {
-  if (cachedSesClient) return cachedSesClient;
-
-  const region = getEnvVar('AWS_REGION') || 'us-east-1';
-  const accessKeyId = getEnvVar('AWS_ACCESS_KEY_ID');
-  const secretAccessKey = getEnvVar('AWS_SECRET_ACCESS_KEY');
-
-  const clientConfig: {
-    region: string;
-    credentials?: { accessKeyId: string; secretAccessKey: string };
-  } = { region };
-
-  if (accessKeyId && secretAccessKey) {
-    clientConfig.credentials = {
-      accessKeyId: accessKeyId.trim(),
-      secretAccessKey: secretAccessKey.trim(),
-    };
-  }
-
-  cachedSesClient = new SESClient(clientConfig);
-  return cachedSesClient;
-};
-
-export const VERIFIED_SYSTEM_FROM_EMAIL = 'notifications@contractorhub.com';
+export const VERIFIED_SYSTEM_FROM_EMAIL = 'kumar@yectra.com';
 
 /**
  * Returns the verified system email for AWS SES sender compliance.
- * Reads FROM_EMAIL or VITE_FROM_EMAIL, defaulting to notifications@contractorhub.com.
+ * Reads FROM_EMAIL or VITE_FROM_EMAIL, defaulting to kumar@yectra.com.
  */
 export const getVerifiedSenderEmail = (): string => {
   const configured = getEnvVar('FROM_EMAIL') || getEnvVar('VITE_FROM_EMAIL');
@@ -80,8 +51,57 @@ export interface SendEmailResult {
   error?: string;
 }
 
+const SEND_NOTIFICATION_MUTATION = /* GraphQL */ `
+  mutation SendNotification(
+    $to: String!
+    $subject: String!
+    $html: String
+    $body: String
+    $text: String
+    $from: String
+  ) {
+    sendNotification(
+      to: $to
+      subject: $subject
+      html: $html
+      body: $body
+      text: $text
+      from: $from
+    ) {
+      success
+      messageId
+      error
+    }
+  }
+`;
+
+const SEND_EMAIL_MUTATION = /* GraphQL */ `
+  mutation SendEmailNotification(
+    $to: String!
+    $subject: String!
+    $html: String
+    $body: String
+    $text: String
+    $from: String
+  ) {
+    sendEmailNotification(
+      to: $to
+      subject: $subject
+      html: $html
+      body: $body
+      text: $text
+      from: $from
+    ) {
+      success
+      messageId
+      error
+    }
+  }
+`;
+
 /**
- * Core utility to send an email using AWS SES SendEmailCommand
+ * Core utility to send an email securely via backend Lambda / AppSync mutation.
+ * Completely encapsulates AWS SES on the backend so no AWS credentials are required in the browser.
  */
 export async function sendEmail(payload: SendEmailPayload): Promise<SendEmailResult> {
   const rawAddresses = Array.isArray(payload.to) ? payload.to : [payload.to];
@@ -90,7 +110,7 @@ export async function sendEmail(payload: SendEmailPayload): Promise<SendEmailRes
     .filter((addr) => addr && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr));
 
   if (toAddresses.length === 0) {
-    console.warn('[SES MailService] sendEmail aborted: No valid dynamic recipient email address provided.', { received: payload.to });
+    console.warn('[MailService] sendEmail aborted: No valid dynamic recipient email address provided.', { received: payload.to });
     return { success: false, error: 'Recipient email is missing or invalid' };
   }
 
@@ -105,43 +125,141 @@ export async function sendEmail(payload: SendEmailPayload): Promise<SendEmailRes
       .replace(/\s{2,}/g, ' ')
       .trim();
 
-  try {
-    const ses = getSESClient();
-    const command = new SendEmailCommand({
-      Source: fromAddress,
-      Destination: {
-        ToAddresses: toAddresses,
-      },
-      Message: {
-        Subject: {
-          Data: payload.subject,
-          Charset: 'UTF-8',
-        },
-        Body: {
-          Html: {
-            Data: payload.html,
-            Charset: 'UTF-8',
-          },
-          Text: {
-            Data: plainText,
-            Charset: 'UTF-8',
-          },
-        },
-      },
-    });
+  const variables = {
+    to: toAddresses.join(', '),
+    subject: payload.subject,
+    html: payload.html,
+    body: payload.html,
+    text: plainText,
+    from: fromAddress,
+  };
 
-    const response = await ses.send(command);
-    console.log(`[SES MailService] Email sent successfully from ${fromAddress} to ${toAddresses.join(', ')} (MessageId: ${response.MessageId})`);
-    return {
-      success: true,
-      messageId: response.MessageId,
-    };
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`[SES MailService] Failed to send email to ${toAddresses.join(', ')}:`, error);
+  try {
+    let resultData: { success: boolean; messageId?: string | null; error?: string | null } | undefined;
+
+    // 1. Try typed model mutations if available in client
+    if (typeof (client as any)?.mutations?.sendNotification === 'function') {
+      let response: any;
+      try {
+        response = await (client as any).mutations.sendNotification(variables);
+      } catch (mutateErr: any) {
+        if (
+          mutateErr?.message?.includes('jwt') ||
+          mutateErr?.message?.includes('token') ||
+          mutateErr?.message?.includes('Auth') ||
+          mutateErr?.name === 'NoValidAuthTokens' ||
+          mutateErr?.recoverySuggestion
+        ) {
+          response = await (client as any).mutations.sendNotification(variables, { authMode: 'iam' });
+        } else {
+          throw mutateErr;
+        }
+      }
+
+      if (response?.errors && response.errors.length > 0) {
+        const firstErrMsg = response.errors[0]?.message || 'GraphQL mutation error';
+        console.error(`[MailService] Backend notification mutation error: ${firstErrMsg}`, response.errors[0]);
+        return { success: false, error: firstErrMsg };
+      }
+      resultData = response?.data;
+    } else if (typeof (client as any)?.mutations?.sendEmailNotification === 'function') {
+      let response: any;
+      try {
+        response = await (client as any).mutations.sendEmailNotification(variables);
+      } catch (mutateErr: any) {
+        if (
+          mutateErr?.message?.includes('jwt') ||
+          mutateErr?.message?.includes('token') ||
+          mutateErr?.message?.includes('Auth') ||
+          mutateErr?.name === 'NoValidAuthTokens' ||
+          mutateErr?.recoverySuggestion
+        ) {
+          response = await (client as any).mutations.sendEmailNotification(variables, { authMode: 'iam' });
+        } else {
+          throw mutateErr;
+        }
+      }
+
+      if (response?.errors && response.errors.length > 0) {
+        const firstErrMsg = response.errors[0]?.message || 'GraphQL mutation error';
+        console.error(`[MailService] Backend notification mutation error: ${firstErrMsg}`, response.errors[0]);
+        return { success: false, error: firstErrMsg };
+      }
+      resultData = response?.data;
+    } else if (typeof (client as any)?.graphql === 'function') {
+      // 2. Direct AppSync GraphQL invocation: try sendNotification first, fallback to sendEmailNotification
+      let response: any;
+      try {
+        response = await (client as any).graphql({
+          query: SEND_NOTIFICATION_MUTATION,
+          variables,
+        });
+      } catch (primaryGqlErr: any) {
+        const primaryMsg = primaryGqlErr?.errors?.[0]?.message || primaryGqlErr?.message || '';
+        if (
+          primaryMsg.includes('jwt') ||
+          primaryMsg.includes('token') ||
+          primaryMsg.includes('Auth') ||
+          primaryGqlErr?.name === 'NoValidAuthTokens' ||
+          primaryGqlErr?.recoverySuggestion
+        ) {
+          response = await (client as any).graphql({
+            query: SEND_NOTIFICATION_MUTATION,
+            variables,
+            authMode: 'iam',
+          });
+        } else if (primaryMsg.includes('FieldUndefined') || primaryMsg.includes('sendNotification')) {
+          response = await (client as any).graphql({
+            query: SEND_EMAIL_MUTATION,
+            variables,
+          });
+        } else {
+          throw primaryGqlErr;
+        }
+      }
+
+      if (response?.errors && response.errors.length > 0) {
+        const firstErrMsg = response.errors[0]?.message || 'GraphQL error';
+        console.error(`[MailService] Backend notification GraphQL error: ${firstErrMsg}`, response.errors[0]);
+        return { success: false, error: firstErrMsg };
+      }
+      resultData = response?.data?.sendNotification || response?.data?.sendEmailNotification;
+    } else {
+      console.warn('[MailService] Backend Amplify client unavailable. Skipping notification.');
+      return { success: false, error: 'Backend Amplify client unavailable' };
+    }
+
+    if (resultData && resultData.success) {
+      console.log(`[MailService] Email successfully sent via backend Lambda to ${toAddresses.join(', ')} (MessageId: ${resultData.messageId})`);
+      return {
+        success: true,
+        messageId: resultData.messageId || undefined,
+      };
+    }
+
+    const failureReason = resultData?.error || 'Failed to dispatch email via backend Lambda';
+    console.warn(`[MailService] Backend mailer reported non-success: ${failureReason}`);
     return {
       success: false,
-      error: errorMessage,
+      error: failureReason,
+    };
+  } catch (error: any) {
+    const graphQLErrors = error?.errors || error?.response?.errors;
+    const firstErrorMessage =
+      graphQLErrors && graphQLErrors.length > 0 && graphQLErrors[0]?.message
+        ? graphQLErrors[0].message
+        : error instanceof Error
+        ? error.message
+        : String(error);
+
+    console.error(`[MailService] Failed to send email via backend Lambda: ${firstErrorMessage}`, {
+      errorMessage: firstErrorMessage,
+      error: graphQLErrors ? graphQLErrors[0] : error,
+    });
+
+    return {
+      success: false,
+      error: firstErrorMessage,
     };
   }
 }
@@ -718,6 +836,29 @@ export async function resolveClientEmailForJob(
   return clientRecord?.email?.trim() || null;
 }
 
+export interface NotifyJobCreatedOptions {
+  clientName?: string;
+  clientEmail?: string;
+  clientInfo?: { name?: string; email?: string };
+  cachedClients?: Schema['Client']['type'][];
+}
+
+export interface NotifyJobUpdatedOptions {
+  clientName?: string;
+  clientEmail?: string;
+  clientInfo?: { name?: string; email?: string };
+  changesSummary?: string;
+  cachedClients?: Schema['Client']['type'][];
+}
+
+export interface NotifyJobDeletedOptions {
+  clientName?: string;
+  clientEmail?: string;
+  clientInfo?: { name?: string; email?: string };
+  reason?: string;
+  cachedClients?: Schema['Client']['type'][];
+}
+
 /**
  * High-level dynamic controller for job creation notification:
  * Automatically pulls the client's email directly from the database record
@@ -725,16 +866,13 @@ export async function resolveClientEmailForJob(
  */
 export async function notifyJobCreated(
   job: JobEmailDetails,
-  options?: {
-    clientName?: string;
-    clientEmail?: string;
-    cachedClients?: Schema['Client']['type'][];
-  }
+  options?: NotifyJobCreatedOptions
 ): Promise<SendEmailResult> {
-  const clientName = options?.clientName || job.client || 'Valued Client';
+  const clientName = options?.clientName || options?.clientInfo?.name || job.client || 'Valued Client';
+  const clientEmail = options?.clientEmail || options?.clientInfo?.email;
   return sendJobCreatedNotification({
     clientName,
-    clientEmail: options?.clientEmail,
+    clientEmail,
     job,
     cachedClients: options?.cachedClients,
   });
@@ -747,17 +885,13 @@ export async function notifyJobCreated(
  */
 export async function notifyJobUpdated(
   job: JobEmailDetails,
-  options?: {
-    clientName?: string;
-    clientEmail?: string;
-    changesSummary?: string;
-    cachedClients?: Schema['Client']['type'][];
-  }
+  options?: NotifyJobUpdatedOptions
 ): Promise<SendEmailResult> {
-  const clientName = options?.clientName || job.client || 'Valued Client';
+  const clientName = options?.clientName || options?.clientInfo?.name || job.client || 'Valued Client';
+  const clientEmail = options?.clientEmail || options?.clientInfo?.email;
   return sendJobUpdatedNotification({
     clientName,
-    clientEmail: options?.clientEmail,
+    clientEmail,
     job,
     changesSummary: options?.changesSummary,
     cachedClients: options?.cachedClients,
@@ -771,17 +905,13 @@ export async function notifyJobUpdated(
  */
 export async function notifyJobDeleted(
   job: JobEmailDetails,
-  options?: {
-    clientName?: string;
-    clientEmail?: string;
-    reason?: string;
-    cachedClients?: Schema['Client']['type'][];
-  }
+  options?: NotifyJobDeletedOptions
 ): Promise<SendEmailResult> {
-  const clientName = options?.clientName || job.client || 'Valued Client';
+  const clientName = options?.clientName || options?.clientInfo?.name || job.client || 'Valued Client';
+  const clientEmail = options?.clientEmail || options?.clientInfo?.email;
   return sendJobDeletedNotification({
     clientName,
-    clientEmail: options?.clientEmail,
+    clientEmail,
     job,
     reason: options?.reason,
     cachedClients: options?.cachedClients,

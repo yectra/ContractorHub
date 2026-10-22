@@ -1,10 +1,10 @@
 import type { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
-export const VERIFIED_SYSTEM_FROM_EMAIL = 'notifications@contractorhub.com';
+export const VERIFIED_SYSTEM_FROM_EMAIL = 'kumar@yectra.com';
 
 const ses = new SESClient({
-  region: process.env.AWS_REGION || 'us-east-1',
+  region: process.env.SES_REGION || process.env.AWS_REGION || 'us-east-1',
   credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY ? {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -14,8 +14,9 @@ const ses = new SESClient({
 interface EmailRequest {
   to: string | string[];
   subject: string;
-  html: string;
+  html?: string;
   text?: string;
+  body?: string;
   from?: string;
 }
 
@@ -53,9 +54,12 @@ async function sendEmail(request: EmailRequest) {
   // Ensure the sender complies with AWS SES verification rules by using the verified system email
   const fromAddress = request.from?.trim() || process.env.FROM_EMAIL?.trim() || VERIFIED_SYSTEM_FROM_EMAIL;
 
+  const htmlContent = request.html || request.body || `<p>${request.text || ''}</p>`;
+
   const plainText =
     request.text ||
-    request.html
+    request.body ||
+    htmlContent
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s{2,}/g, ' ')
@@ -73,7 +77,7 @@ async function sendEmail(request: EmailRequest) {
       },
       Body: {
         Html: {
-          Data: request.html,
+          Data: htmlContent,
           Charset: 'UTF-8',
         },
         Text: {
@@ -93,9 +97,52 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Methods': 'OPTIONS,POST',
 };
 
-export const handler: APIGatewayProxyHandlerV2 = async (event) => {
-  const path = event.rawPath;
-  const method = event.requestContext.http.method;
+export const handler = async (event: any): Promise<any> => {
+  // 1. AppSync GraphQL Mutation Handler (via client.mutations.sendNotification / sendEmailNotification)
+  if (event && event.arguments) {
+    const { to, subject, html, text, body, from } = event.arguments;
+    console.log(`[send-notification] AppSync mutation received for recipient(s): ${to}`);
+    try {
+      const result = await sendEmail({ to, subject, html, text, body, from });
+      console.log(`[send-notification] AppSync email sent successfully. MessageId: ${result.MessageId}`);
+      return {
+        success: true,
+        messageId: result.MessageId || null,
+        error: null,
+      };
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error('[send-notification] AppSync email send failed:', err);
+      return {
+        success: false,
+        messageId: null,
+        error: errorMsg,
+      };
+    }
+  }
+
+  // 2. Direct Invocation Handler (e.g. AWS Lambda invoke with direct JSON payload)
+  if (event && event.to && event.subject && event.html) {
+    try {
+      const result = await sendEmail(event);
+      return {
+        success: true,
+        messageId: result.MessageId || null,
+        error: null,
+      };
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      return {
+        success: false,
+        messageId: null,
+        error: errorMsg,
+      };
+    }
+  }
+
+  // 3. API Gateway / HTTP Proxy Handler
+  const path = event?.rawPath || event?.path;
+  const method = event?.requestContext?.http?.method || event?.httpMethod;
 
   if (method === 'OPTIONS') {
     return {

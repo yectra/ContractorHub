@@ -1,14 +1,59 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
 import outputs from '../../amplify_outputs.json';
 
 // Detect if Amplify is configured with a backend
-export const isAmplifyConfigured = outputs && Object.keys(outputs).length > 0 && (outputs as any).data?.url;
+export const isAmplifyConfigured = Boolean(
+  outputs && Object.keys(outputs).length > 0 && (outputs as any).data?.url
+);
 
-// Generate Amplify client only if configured
-// const client = isAmplifyConfigured ? generateClient<Schema>() : null;
-const client = generateClient<Schema>();
+/**
+ * Ensures Amplify is configured with outputs before any data operations
+ */
+export function ensureAmplifyConfigured(): void {
+  try {
+    const config = Amplify.getConfig();
+    if (!config || Object.keys(config).length === 0) {
+      if (outputs && Object.keys(outputs).length > 0) {
+        Amplify.configure(outputs);
+      }
+    }
+  } catch {
+    if (outputs && Object.keys(outputs).length > 0) {
+      Amplify.configure(outputs);
+    }
+  }
+}
+
+let cachedClient: ReturnType<typeof generateClient<Schema>> | null = null;
+
+/**
+ * Lazy getter for Amplify Data client: initializes only after Amplify is configured
+ */
+export function getClient(): ReturnType<typeof generateClient<Schema>> {
+  if (!cachedClient) {
+    ensureAmplifyConfigured();
+    cachedClient = generateClient<Schema>();
+  }
+  return cachedClient;
+}
+
+/**
+ * Backward-compatible client proxy so existing `client.models...` calls continue
+ * working seamlessly without evaluating `generateClient()` at module load time.
+ */
+export const client = new Proxy({} as ReturnType<typeof generateClient<Schema>>, {
+  get(_target, prop) {
+    const instance = getClient();
+    const val = (instance as any)[prop];
+    if (typeof val === 'function') {
+      return val.bind(instance);
+    }
+    return val;
+  },
+});
 
 /**
  * LOCAL STORAGE MOCK DATABASE (DEMO MODE FALLBACK)

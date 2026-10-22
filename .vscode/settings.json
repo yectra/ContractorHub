@@ -1,0 +1,14 @@
+{
+  "files.watcherExclude": {
+    "**/.amplify/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true
+  },
+  "search.exclude": {
+    "**/.amplify/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true
+  }
+}

@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { sendNotification } from '../functions/send-notification/resource';
 
 const schema = a.schema({
   // Service Requests - jobs that need to be dispatched
@@ -100,6 +101,48 @@ const schema = a.schema({
       allow.owner(),
       allow.authenticated().to(['read', 'create', 'update', 'delete']),
     ]),
+
+  // Secure backend email notification mutation connected to Lambda
+  sendEmailNotification: a
+    .mutation()
+    .arguments({
+      to: a.string().required(),
+      subject: a.string().required(),
+      html: a.string(),
+      body: a.string(),
+      text: a.string(),
+      from: a.string(),
+    })
+    .returns(
+      a.customType({
+        success: a.boolean().required(),
+        messageId: a.string(),
+        error: a.string(),
+      })
+    )
+    .handler(a.handler.function(sendNotification))
+    .authorization((allow) => [allow.authenticated(), allow.guest()]),
+
+  // Function-name aligned mutation
+  sendNotification: a
+    .mutation()
+    .arguments({
+      to: a.string().required(),
+      subject: a.string().required(),
+      html: a.string(),
+      body: a.string(),
+      text: a.string(),
+      from: a.string(),
+    })
+    .returns(
+      a.customType({
+        success: a.boolean().required(),
+        messageId: a.string(),
+        error: a.string(),
+      })
+    )
+    .handler(a.handler.function(sendNotification))
+    .authorization((allow) => [allow.authenticated(), allow.guest()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;

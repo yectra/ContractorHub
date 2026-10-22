@@ -757,7 +757,154 @@
           ]
         }
       },
-      "nonModels": {}
+      "nonModels": {
+        "SendEmailNotificationReturnType": {
+          "name": "SendEmailNotificationReturnType",
+          "fields": {
+            "success": {
+              "name": "success",
+              "isArray": false,
+              "type": "Boolean",
+              "isRequired": true,
+              "attributes": []
+            },
+            "messageId": {
+              "name": "messageId",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "error": {
+              "name": "error",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            }
+          }
+        },
+        "SendNotificationReturnType": {
+          "name": "SendNotificationReturnType",
+          "fields": {
+            "success": {
+              "name": "success",
+              "isArray": false,
+              "type": "Boolean",
+              "isRequired": true,
+              "attributes": []
+            },
+            "messageId": {
+              "name": "messageId",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "error": {
+              "name": "error",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            }
+          }
+        }
+      },
+      "mutations": {
+        "sendEmailNotification": {
+          "name": "sendEmailNotification",
+          "isArray": false,
+          "type": {
+            "nonModel": "SendEmailNotificationReturnType"
+          },
+          "isRequired": false,
+          "arguments": {
+            "to": {
+              "name": "to",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true
+            },
+            "subject": {
+              "name": "subject",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true
+            },
+            "html": {
+              "name": "html",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
+            },
+            "body": {
+              "name": "body",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
+            },
+            "text": {
+              "name": "text",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
+            },
+            "from": {
+              "name": "from",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
+            }
+          }
+        },
+        "sendNotification": {
+          "name": "sendNotification",
+          "isArray": false,
+          "type": {
+            "nonModel": "SendNotificationReturnType"
+          },
+          "isRequired": false,
+          "arguments": {
+            "to": {
+              "name": "to",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true
+            },
+            "subject": {
+              "name": "subject",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true
+            },
+            "html": {
+              "name": "html",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
+            },
+            "body": {
+              "name": "body",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
+            },
+            "text": {
+              "name": "text",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
+            },
+            "from": {
+              "name": "from",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
+            }
+          }
+        }
+      }
     }
   },
   "version": "1.5"
