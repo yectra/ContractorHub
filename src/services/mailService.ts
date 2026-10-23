@@ -37,12 +37,55 @@ export const getVerifiedSenderEmail = (): string => {
   return VERIFIED_SYSTEM_FROM_EMAIL;
 };
 
+/**
+ * Formats an email sender string according to RFC 5322 / AWS SES standards:
+ * e.g., "Admin Name" <karunambigai1990@gmail.com> or "Operations" <kumar@yectra.com>
+ *
+ * Ensures:
+ * 1. The verified AWS SES email is always preserved intact inside angle brackets <...>.
+ * 2. Any dynamic display name appears before the email in quotes (e.g., "Admin Name" <email>).
+ * 3. Special characters and newlines in the display name are properly sanitized.
+ */
+export function formatSenderAddress(
+  displayName?: string | null,
+  verifiedEmailOverride?: string | null
+): string {
+  const rawEmail = (verifiedEmailOverride || getVerifiedSenderEmail()).trim();
+  const emailMatch = rawEmail.match(/<([^>]+)>/);
+  const cleanEmail = (emailMatch ? emailMatch[1] : rawEmail).trim();
+
+  let name = displayName?.trim();
+  if (!name && emailMatch) {
+    const extractedName = rawEmail.substring(0, rawEmail.indexOf('<')).replace(/["']/g, '').trim();
+    if (extractedName) {
+      name = extractedName;
+    }
+  }
+
+  if (!name) {
+    const envName = getEnvVar('FROM_NAME') || getEnvVar('VITE_FROM_NAME') || getEnvVar('SENDER_NAME');
+    if (envName && envName.trim()) {
+      name = envName.trim();
+    }
+  }
+
+  if (!name) {
+    name = 'ContractorHub Dispatch';
+  }
+
+  const sanitizedName = name.replace(/["\r\n\t]/g, '').trim();
+  return sanitizedName ? `"${sanitizedName}" <${cleanEmail}>` : `<${cleanEmail}>`;
+}
+
 export interface SendEmailPayload {
   to: string | string[];
   subject: string;
   html: string;
   text?: string;
   from?: string;
+  senderName?: string;
+  fromName?: string;
+  displayName?: string;
 }
 
 export interface SendEmailResult {
@@ -59,6 +102,8 @@ const SEND_NOTIFICATION_MUTATION = /* GraphQL */ `
     $body: String
     $text: String
     $from: String
+    $senderName: String
+    $fromName: String
   ) {
     sendNotification(
       to: $to
@@ -67,6 +112,8 @@ const SEND_NOTIFICATION_MUTATION = /* GraphQL */ `
       body: $body
       text: $text
       from: $from
+      senderName: $senderName
+      fromName: $fromName
     ) {
       success
       messageId
@@ -83,6 +130,8 @@ const SEND_EMAIL_MUTATION = /* GraphQL */ `
     $body: String
     $text: String
     $from: String
+    $senderName: String
+    $fromName: String
   ) {
     sendEmailNotification(
       to: $to
@@ -91,6 +140,8 @@ const SEND_EMAIL_MUTATION = /* GraphQL */ `
       body: $body
       text: $text
       from: $from
+      senderName: $senderName
+      fromName: $fromName
     ) {
       success
       messageId
@@ -114,8 +165,10 @@ export async function sendEmail(payload: SendEmailPayload): Promise<SendEmailRes
     return { success: false, error: 'Recipient email is missing or invalid' };
   }
 
-  // Ensure the sender complies with AWS SES verification rules by using the verified system email
-  const fromAddress = payload.from?.trim() || getVerifiedSenderEmail();
+  // Format sender to ensure the verified email is strictly maintained inside <...>,
+  // while applying any dynamic sender display name provided.
+  const dynamicSenderName = payload.senderName || payload.fromName || payload.displayName;
+  const fromAddress = formatSenderAddress(dynamicSenderName, payload.from);
 
   const plainText =
     payload.text ||
@@ -125,7 +178,7 @@ export async function sendEmail(payload: SendEmailPayload): Promise<SendEmailRes
       .replace(/\s{2,}/g, ' ')
       .trim();
 
-  const variables = {
+  const variables: Record<string, any> = {
     to: toAddresses.join(', '),
     subject: payload.subject,
     html: payload.html,
@@ -133,6 +186,11 @@ export async function sendEmail(payload: SendEmailPayload): Promise<SendEmailRes
     text: plainText,
     from: fromAddress,
   };
+
+  if (dynamicSenderName) {
+    variables.senderName = dynamicSenderName;
+    variables.fromName = dynamicSenderName;
+  }
 
   try {
     let resultData: { success: boolean; messageId?: string | null; error?: string | null } | undefined;
@@ -434,16 +492,23 @@ function renderEmailShell(content: string, preheader: string = ''): string {
 </html>`;
 }
 
-/**
- * 1. Send Job Created Notification
- */
-export async function sendJobCreatedNotification(params: {
+export interface SendJobCreatedNotificationParams {
   clientName: string;
   clientEmail?: string | null;
   job: JobEmailDetails;
   cachedClients?: Schema['Client']['type'][];
-}): Promise<SendEmailResult> {
-  const { clientName, job, cachedClients } = params;
+  senderName?: string;
+  fromName?: string;
+  adminName?: string;
+}
+
+/**
+ * 1. Send Job Created Notification
+ */
+export async function sendJobCreatedNotification(
+  params: SendJobCreatedNotificationParams
+): Promise<SendEmailResult> {
+  const { clientName, job, cachedClients, senderName, fromName, adminName } = params;
   const jobIdStr = job.id ? `#${job.id}` : 'New Request';
 
   // Pull recipient email dynamically from database if not explicitly supplied
@@ -549,20 +614,28 @@ Thank you for choosing ContractorHub!
     subject,
     html,
     text,
+    senderName: senderName || fromName || adminName,
   });
 }
 
-/**
- * 2. Send Job Updated Notification
- */
-export async function sendJobUpdatedNotification(params: {
+export interface SendJobUpdatedNotificationParams {
   clientName: string;
   clientEmail?: string | null;
   job: JobEmailDetails;
   changesSummary?: string;
   cachedClients?: Schema['Client']['type'][];
-}): Promise<SendEmailResult> {
-  const { clientName, job, changesSummary, cachedClients } = params;
+  senderName?: string;
+  fromName?: string;
+  adminName?: string;
+}
+
+/**
+ * 2. Send Job Updated Notification
+ */
+export async function sendJobUpdatedNotification(
+  params: SendJobUpdatedNotificationParams
+): Promise<SendEmailResult> {
+  const { clientName, job, changesSummary, cachedClients, senderName, fromName, adminName } = params;
   const jobIdStr = job.id ? `#${job.id}` : 'Job Details';
 
   // Pull recipient email dynamically from database if not explicitly supplied
@@ -673,20 +746,28 @@ ContractorHub Operations Team
     subject,
     html,
     text,
+    senderName: senderName || fromName || adminName,
   });
 }
 
-/**
- * 3. Send Job Deleted / Cancelled Notification
- */
-export async function sendJobDeletedNotification(params: {
+export interface SendJobDeletedNotificationParams {
   clientName: string;
   clientEmail?: string | null;
   job: JobEmailDetails;
   reason?: string;
   cachedClients?: Schema['Client']['type'][];
-}): Promise<SendEmailResult> {
-  const { clientName, job, reason, cachedClients } = params;
+  senderName?: string;
+  fromName?: string;
+  adminName?: string;
+}
+
+/**
+ * 3. Send Job Deleted / Cancelled Notification
+ */
+export async function sendJobDeletedNotification(
+  params: SendJobDeletedNotificationParams
+): Promise<SendEmailResult> {
+  const { clientName, job, reason, cachedClients, senderName, fromName, adminName } = params;
   const jobIdStr = job.id ? `#${job.id}` : 'Service Request';
 
   // Pull recipient email dynamically from database if not explicitly supplied
@@ -773,6 +854,7 @@ If you need to reschedule or have questions, please contact our dispatch team.
     subject,
     html,
     text,
+    senderName: senderName || fromName || adminName,
   });
 }
 
@@ -841,6 +923,9 @@ export interface NotifyJobCreatedOptions {
   clientEmail?: string;
   clientInfo?: { name?: string; email?: string };
   cachedClients?: Schema['Client']['type'][];
+  senderName?: string;
+  fromName?: string;
+  adminName?: string;
 }
 
 export interface NotifyJobUpdatedOptions {
@@ -849,6 +934,9 @@ export interface NotifyJobUpdatedOptions {
   clientInfo?: { name?: string; email?: string };
   changesSummary?: string;
   cachedClients?: Schema['Client']['type'][];
+  senderName?: string;
+  fromName?: string;
+  adminName?: string;
 }
 
 export interface NotifyJobDeletedOptions {
@@ -857,6 +945,9 @@ export interface NotifyJobDeletedOptions {
   clientInfo?: { name?: string; email?: string };
   reason?: string;
   cachedClients?: Schema['Client']['type'][];
+  senderName?: string;
+  fromName?: string;
+  adminName?: string;
 }
 
 /**
@@ -875,6 +966,9 @@ export async function notifyJobCreated(
     clientEmail,
     job,
     cachedClients: options?.cachedClients,
+    senderName: options?.senderName,
+    fromName: options?.fromName,
+    adminName: options?.adminName,
   });
 }
 
@@ -895,6 +989,9 @@ export async function notifyJobUpdated(
     job,
     changesSummary: options?.changesSummary,
     cachedClients: options?.cachedClients,
+    senderName: options?.senderName,
+    fromName: options?.fromName,
+    adminName: options?.adminName,
   });
 }
 
@@ -915,6 +1012,9 @@ export async function notifyJobDeleted(
     job,
     reason: options?.reason,
     cachedClients: options?.cachedClients,
+    senderName: options?.senderName,
+    fromName: options?.fromName,
+    adminName: options?.adminName,
   });
 }
 

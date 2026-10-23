@@ -112,6 +112,8 @@ const schema = a.schema({
       body: a.string(),
       text: a.string(),
       from: a.string(),
+      senderName: a.string(),
+      fromName: a.string(),
     })
     .returns(
       a.customType({
@@ -133,6 +135,8 @@ const schema = a.schema({
       body: a.string(),
       text: a.string(),
       from: a.string(),
+      senderName: a.string(),
+      fromName: a.string(),
     })
     .returns(
       a.customType({

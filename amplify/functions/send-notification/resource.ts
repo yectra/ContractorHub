@@ -16,6 +16,7 @@ export const sendNotification = defineFunction(
       handler: 'index.handler',
       environment: {
         FROM_EMAIL: process.env.FROM_EMAIL || 'kumar@yectra.com',
+        FROM_NAME: process.env.FROM_NAME || 'ContractorHub Dispatch',
         SES_REGION: process.env.AWS_REGION || 'us-east-1',
       },
       code: Code.fromInline(`
@@ -27,6 +28,29 @@ const ses = new SESClient({
   region: process.env.SES_REGION || process.env.AWS_REGION || 'us-east-1',
 });
 
+function formatSenderAddress(displayName, fromOverride) {
+  const baseVerifiedEmail = (process.env.FROM_EMAIL || VERIFIED_SYSTEM_FROM_EMAIL || 'kumar@yectra.com').trim();
+  const emailMatch = baseVerifiedEmail.match(/<([^>]+)>/);
+  const cleanVerifiedEmail = (emailMatch ? emailMatch[1] : baseVerifiedEmail).trim();
+
+  let name = displayName && typeof displayName === 'string' ? displayName.trim() : null;
+  if (!name && fromOverride && typeof fromOverride === 'string') {
+    const overrideMatch = fromOverride.match(/^"?([^"<]+)"?\\s*<[^>]+>$/);
+    if (overrideMatch && overrideMatch[1]) {
+      name = overrideMatch[1].trim();
+    } else if (!fromOverride.includes('@')) {
+      name = fromOverride.trim();
+    }
+  }
+
+  if (!name) {
+    name = process.env.FROM_NAME?.trim() || process.env.SENDER_NAME?.trim() || 'ContractorHub Dispatch';
+  }
+
+  const sanitizedName = name.replace(/["\\r\\n\\t]/g, '').trim();
+  return sanitizedName ? \`"\${sanitizedName}" <\${cleanVerifiedEmail}>\` : \`<\${cleanVerifiedEmail}>\`;
+}
+
 async function sendEmail(request) {
   const rawAddresses = Array.isArray(request.to) ? request.to : [request.to];
   const toAddresses = rawAddresses
@@ -37,7 +61,8 @@ async function sendEmail(request) {
     throw new Error('No valid dynamic recipient email address provided.');
   }
 
-  const fromAddress = request.from?.trim() || process.env.FROM_EMAIL?.trim() || VERIFIED_SYSTEM_FROM_EMAIL;
+  const senderDisplayName = request.senderName || request.fromName || request.displayName;
+  const fromAddress = formatSenderAddress(senderDisplayName, request.from);
   const htmlContent = request.html || request.body || \`<p>\${request.text || ''}</p>\`;
   const plainText =
     request.text ||
@@ -79,9 +104,17 @@ exports.handler = async (event) => {
 
   // 1. AppSync GraphQL Mutation (via sendNotification / sendEmailNotification)
   if (event && event.arguments) {
-    const { to, subject, html, text, body, from } = event.arguments;
+    const { to, subject, html, text, body, from, senderName, fromName, displayName } = event.arguments;
     try {
-      const result = await sendEmail({ to, subject, html, text, body, from });
+      const result = await sendEmail({
+        to,
+        subject,
+        html,
+        text,
+        body,
+        from,
+        senderName: senderName || fromName || displayName,
+      });
       console.log('[send-notification] Email sent successfully via AppSync. MessageId:', result.MessageId);
       return {
         success: true,
@@ -102,7 +135,10 @@ exports.handler = async (event) => {
   // 2. Direct Invocation
   if (event && event.to && event.subject) {
     try {
-      const result = await sendEmail(event);
+      const result = await sendEmail({
+        ...event,
+        senderName: event.senderName || event.fromName || event.displayName,
+      });
       return {
         success: true,
         messageId: result.MessageId || null,
@@ -126,6 +162,7 @@ exports.handler = async (event) => {
       to: body.clientEmail,
       subject: \`Job Notification: \${body.job.service || 'Service Appointment'}\`,
       html: \`<h2>\${body.clientName}</h2><p>Job Details: \${JSON.stringify(body.job)}</p>\`,
+      senderName: body.senderName || body.fromName || body.adminName,
     } : body;
 
     const result = await sendEmail(emailReq);

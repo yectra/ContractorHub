@@ -855,6 +855,18 @@
               "isArray": false,
               "type": "String",
               "isRequired": false
+            },
+            "senderName": {
+              "name": "senderName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
+            },
+            "fromName": {
+              "name": "fromName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
             }
           }
         },
@@ -898,6 +910,18 @@
             },
             "from": {
               "name": "from",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
+            },
+            "senderName": {
+              "name": "senderName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false
+            },
+            "fromName": {
+              "name": "fromName",
               "isArray": false,
               "type": "String",
               "isRequired": false

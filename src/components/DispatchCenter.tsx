@@ -466,6 +466,12 @@ export const DispatchCenter: React.FC = () => {
       .toUpperCase();
   }, [profileEmail]);
 
+  const adminDisplayName =
+    profileUser?.attributes?.name ||
+    profileUser?.attributes?.given_name ||
+    (profileEmail ? profileEmail.split('@')[0] : '') ||
+    'ContractorHub Dispatch';
+
   // Real-time data streams
   const {
     serviceRequests,
@@ -932,6 +938,7 @@ export const DispatchCenter: React.FC = () => {
             },
             changesSummary: `Status updated to ${editStatus}, Service: ${editService}`,
             cachedClients: clients,
+            senderName: adminDisplayName,
           }).catch((err) =>
             console.error('[DispatchCenter] Failed to send update email:', err)
           );
@@ -1006,6 +1013,7 @@ export const DispatchCenter: React.FC = () => {
             },
             reason: 'Removed from dispatch calendar & service queue',
             cachedClients: clients,
+            senderName: adminDisplayName,
           }).catch((err) =>
             console.error('[DispatchCenter] Failed to send delete email:', err)
           );
@@ -1168,6 +1176,7 @@ export const DispatchCenter: React.FC = () => {
                 techId
               )} for ${selectedDate} at ${startHour}:00`,
               cachedClients: clients,
+              senderName: adminDisplayName,
             }).catch((err) =>
               console.error('[DispatchCenter] Failed to send drop schedule email:', err)
             );
@@ -1232,6 +1241,7 @@ export const DispatchCenter: React.FC = () => {
                 techId
               )} for ${selectedDate} at ${startHour}:00`,
               cachedClients: clients,
+              senderName: adminDisplayName,
             }).catch((err) =>
               console.error('[DispatchCenter] Failed to send drop reassign email:', err)
             );

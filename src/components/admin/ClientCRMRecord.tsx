@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useAuthenticator } from '@aws-amplify/ui-react';
 import { useClients, useServiceRequests, useTechnicians, useScheduledJobs } from '../../hooks/useDispatchData';
 import { parseStartHour, parseDurationHours, getTodayString, mapServiceStatusToJobStatus, formatDisplayDate } from '../../utils/jobHelpers';
 import type { Schema } from '../../../amplify/data/resource';
@@ -90,6 +91,14 @@ const DispatchIcon: React.FC = () => (
 );
 
 export default function ClientCRMRecord(): React.JSX.Element {
+  const { user } = useAuthenticator((context) => [context.user]);
+  const adminDisplayName =
+    (user as any)?.attributes?.name ||
+    (user as any)?.attributes?.given_name ||
+    ((user as any)?.signInDetails?.loginId ? (user as any).signInDetails.loginId.split('@')[0] : '') ||
+    (user as any)?.username ||
+    'ContractorHub Dispatch';
+
   const { clients, updateClient, createClient, deleteClient, loading: loadingClients } = useClients();
   const { serviceRequests, createServiceRequest, updateServiceRequest, deleteServiceRequest, loading: loadingRequests } = useServiceRequests();
   const { scheduledJobs, createScheduledJob, updateScheduledJob, deleteScheduledJob } = useScheduledJobs();
@@ -373,6 +382,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
               notes: formData.notes,
             },
             cachedClients: clients,
+            senderName: adminDisplayName,
           }).catch((err) => console.error('[ClientCRMRecord] Failed to send job created email notification:', err));
         } else {
           console.warn(`[ClientCRMRecord] Client "${selectedClient?.name}" has no email configured in database record. Skipping notification email.`);
@@ -479,6 +489,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
             },
             changesSummary: `Status: ${formData.status}, Service: ${formData.service}`,
             cachedClients: clients,
+            senderName: adminDisplayName,
           }).catch((err) => console.error('[ClientCRMRecord] Failed to send job updated email notification:', err));
         } else {
           console.warn(`[ClientCRMRecord] Client for job #${selectedJob.id} has no email configured in database. Skipping notification email.`);
@@ -540,6 +551,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
             },
             reason: 'Removed from dispatch calendar & service queue',
             cachedClients: clients,
+            senderName: adminDisplayName,
           }).catch((err) => console.error('[ClientCRMRecord] Failed to send job deleted email notification:', err));
         } else {
           console.warn(`[ClientCRMRecord] Client for deleted job #${jobId} has no email configured in database. Skipping notification email.`);

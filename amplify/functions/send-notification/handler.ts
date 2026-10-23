@@ -11,6 +11,46 @@ const ses = new SESClient({
   } : undefined,
 });
 
+/**
+ * Formats an email sender string according to RFC 5322 / AWS SES standards:
+ * e.g., "Admin Name" <karunambigai1990@gmail.com> or "Operations" <kumar@yectra.com>
+ *
+ * Ensures:
+ * 1. The verified SES email address is ALWAYS preserved intact inside angle brackets <...>.
+ * 2. Any dynamic display name appears before the email in quotes (e.g. "Admin Name" <email>).
+ * 3. Special characters and newlines in the display name are properly sanitized.
+ */
+export function formatSenderAddress(
+  displayName?: string | null,
+  fromOverride?: string | null
+): string {
+  // Always resolve the static, verified system email
+  const baseVerifiedEmail = (process.env.FROM_EMAIL?.trim() || VERIFIED_SYSTEM_FROM_EMAIL).trim();
+  const emailMatch = baseVerifiedEmail.match(/<([^>]+)>/);
+  const cleanVerifiedEmail = (emailMatch ? emailMatch[1] : baseVerifiedEmail).trim();
+
+  // Extract display name: prefer explicitly provided display name,
+  // or parse name from `fromOverride` if formatted as "Display Name" <email>
+  let name = displayName?.trim();
+  if (!name && fromOverride) {
+    const overrideMatch = fromOverride.match(/^"?([^"<]+)"?\s*<[^>]+>$/);
+    if (overrideMatch && overrideMatch[1]) {
+      name = overrideMatch[1].trim();
+    } else if (!fromOverride.includes('@')) {
+      name = fromOverride.trim();
+    }
+  }
+
+  // Fallback to configured environment variable or default brand name
+  if (!name) {
+    name = process.env.FROM_NAME?.trim() || process.env.SENDER_NAME?.trim() || 'ContractorHub Dispatch';
+  }
+
+  // Sanitize double quotes and newlines for RFC 5322 compliance
+  const sanitizedName = name.replace(/["\r\n\t]/g, '').trim();
+  return sanitizedName ? `"${sanitizedName}" <${cleanVerifiedEmail}>` : `<${cleanVerifiedEmail}>`;
+}
+
 interface EmailRequest {
   to: string | string[];
   subject: string;
@@ -18,11 +58,17 @@ interface EmailRequest {
   text?: string;
   body?: string;
   from?: string;
+  senderName?: string;
+  fromName?: string;
+  displayName?: string;
 }
 
 interface JobNotificationRequest {
   clientName: string;
   clientEmail: string;
+  senderName?: string;
+  fromName?: string;
+  adminName?: string;
   job: {
     id?: string | null;
     service?: string | null;
@@ -51,8 +97,10 @@ async function sendEmail(request: EmailRequest) {
     throw new Error('No valid dynamic recipient email address provided.');
   }
 
-  // Ensure the sender complies with AWS SES verification rules by using the verified system email
-  const fromAddress = request.from?.trim() || process.env.FROM_EMAIL?.trim() || VERIFIED_SYSTEM_FROM_EMAIL;
+  // Format sender to ensure the verified email is strictly maintained inside <...>,
+  // while applying any dynamic sender display name provided.
+  const senderDisplayName = request.senderName || request.fromName || request.displayName;
+  const fromAddress = formatSenderAddress(senderDisplayName, request.from);
 
   const htmlContent = request.html || request.body || `<p>${request.text || ''}</p>`;
 
@@ -100,10 +148,18 @@ const CORS_HEADERS = {
 export const handler = async (event: any): Promise<any> => {
   // 1. AppSync GraphQL Mutation Handler (via client.mutations.sendNotification / sendEmailNotification)
   if (event && event.arguments) {
-    const { to, subject, html, text, body, from } = event.arguments;
+    const { to, subject, html, text, body, from, senderName, fromName, displayName } = event.arguments;
     console.log(`[send-notification] AppSync mutation received for recipient(s): ${to}`);
     try {
-      const result = await sendEmail({ to, subject, html, text, body, from });
+      const result = await sendEmail({
+        to,
+        subject,
+        html,
+        text,
+        body,
+        from,
+        senderName: senderName || fromName || displayName,
+      });
       console.log(`[send-notification] AppSync email sent successfully. MessageId: ${result.MessageId}`);
       return {
         success: true,
@@ -122,9 +178,12 @@ export const handler = async (event: any): Promise<any> => {
   }
 
   // 2. Direct Invocation Handler (e.g. AWS Lambda invoke with direct JSON payload)
-  if (event && event.to && event.subject && event.html) {
+  if (event && event.to && event.subject && (event.html || event.body || event.text)) {
     try {
-      const result = await sendEmail(event);
+      const result = await sendEmail({
+        ...event,
+        senderName: event.senderName || event.fromName || event.displayName,
+      });
       return {
         success: true,
         messageId: result.MessageId || null,
@@ -208,6 +267,7 @@ export const handler = async (event: any): Promise<any> => {
         to: dynamicRecipient,
         subject,
         html,
+        senderName: req.senderName || req.fromName || req.adminName,
       });
 
       return {
@@ -246,6 +306,7 @@ ${req.changesSummary ? `<p><strong>Changes:</strong> ${req.changesSummary}</p>` 
         to: dynamicRecipient,
         subject,
         html,
+        senderName: req.senderName || req.fromName || req.adminName,
       });
 
       return {
@@ -283,6 +344,7 @@ ${req.reason ? `<p><strong>Reason:</strong> ${req.reason}</p>` : ''}`;
         to: dynamicRecipient,
         subject,
         html,
+        senderName: req.senderName || req.fromName || req.adminName,
       });
 
       return {

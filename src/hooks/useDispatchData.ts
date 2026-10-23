@@ -37,7 +37,7 @@ export function useServiceRequests() {
 
   const deleteServiceRequest = async (
     id: string,
-    options?: { clientEmail?: string; notifyClient?: boolean; reason?: string }
+    options?: { clientEmail?: string; notifyClient?: boolean; reason?: string; senderName?: string; fromName?: string; adminName?: string }
   ) => {
     try {
       const targetReq = serviceRequests.find((r) => r.id === id);
@@ -59,6 +59,7 @@ export function useServiceRequests() {
                 notes: targetReq.notes,
               },
               reason: options.reason || 'Cancelled from service queue',
+              senderName: options.senderName || options.fromName || options.adminName,
             }).catch((err) => console.error('[useServiceRequests] Auto-notification error on delete:', err));
           }
         } catch (notifyErr) {
@@ -75,7 +76,7 @@ export function useServiceRequests() {
   const updateServiceRequest = async (
     id: string,
     data: Partial<Schema['ServiceRequest']['type']>,
-    options?: { clientEmail?: string; notifyClient?: boolean; changesSummary?: string }
+    options?: { clientEmail?: string; notifyClient?: boolean; changesSummary?: string; senderName?: string; fromName?: string; adminName?: string }
   ) => {
     try {
       const updated = await serviceRequestAPI.updateServiceRequest(id, data);
@@ -103,6 +104,7 @@ export function useServiceRequests() {
                 notes: updated.notes,
               },
               changesSummary: options.changesSummary,
+              senderName: options.senderName || options.fromName || options.adminName,
             }).catch((err) => console.error('[useServiceRequests] Auto-notification error on update:', err));
           }
         } catch (notifyErr) {
@@ -120,7 +122,7 @@ export function useServiceRequests() {
 
   const createServiceRequest = async (
     data: Partial<Schema['ServiceRequest']['type']>,
-    options?: { clientEmail?: string; notifyClient?: boolean }
+    options?: { clientEmail?: string; notifyClient?: boolean; senderName?: string; fromName?: string; adminName?: string }
   ) => {
     try {
       const created = await serviceRequestAPI.createServiceRequest(data);
@@ -145,6 +147,7 @@ export function useServiceRequests() {
                 estimatedDuration: created.estimatedDuration,
                 notes: created.notes,
               },
+              senderName: options.senderName || options.fromName || options.adminName,
             }).catch((err) => console.error('[useServiceRequests] Auto-notification error on create:', err));
           }
         } catch (notifyErr) {
@@ -274,7 +277,7 @@ export function useScheduledJobs() {
 
   const deleteScheduledJob = async (
     id: string,
-    options?: { clientEmail?: string; notifyClient?: boolean; reason?: string }
+    options?: { clientEmail?: string; notifyClient?: boolean; reason?: string; senderName?: string; fromName?: string; adminName?: string }
   ) => {
     try {
       const targetJob = scheduledJobs.find((j) => j.id === id);
@@ -299,6 +302,7 @@ export function useScheduledJobs() {
                 notes: targetJob.notes || req.notes,
               },
               reason: options.reason || 'Removed from dispatch calendar',
+              senderName: options.senderName || options.fromName || options.adminName,
             }).catch((err) => console.error('[useScheduledJobs] Auto-notification error on delete:', err));
           }
         } catch (notifyErr) {
@@ -315,7 +319,7 @@ export function useScheduledJobs() {
   const updateScheduledJob = async (
     id: string,
     data: Partial<Schema['ScheduledJob']['type']>,
-    options?: { clientEmail?: string; notifyClient?: boolean; changesSummary?: string }
+    options?: { clientEmail?: string; notifyClient?: boolean; changesSummary?: string; senderName?: string; fromName?: string; adminName?: string }
   ) => {
     try {
       const updated = await scheduledJobAPI.updateScheduledJob(id, data);
@@ -342,6 +346,7 @@ export function useScheduledJobs() {
                 notes: updated.notes || req.notes,
               },
               changesSummary: options.changesSummary,
+              senderName: options.senderName || options.fromName || options.adminName,
             }).catch((err) => console.error('[useScheduledJobs] Auto-notification error on update:', err));
           }
         } catch (notifyErr) {
@@ -367,7 +372,7 @@ export function useScheduledJobs() {
       notes?: string;
       scheduledDate?: string;
     },
-    options?: { clientEmail?: string; notifyClient?: boolean }
+    options?: { clientEmail?: string; notifyClient?: boolean; senderName?: string; fromName?: string; adminName?: string }
   ) => {
     try {
       const created = await scheduledJobAPI.createScheduledJob(data);
@@ -391,6 +396,7 @@ export function useScheduledJobs() {
                 requestTime: `${created.startHour}:00`,
                 notes: created.notes || req.notes,
               },
+              senderName: options.senderName || options.fromName || options.adminName,
             }).catch((err) => console.error('[useScheduledJobs] Auto-notification error on create:', err));
           }
         } catch (notifyErr) {
