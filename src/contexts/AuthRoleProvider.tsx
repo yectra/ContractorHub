@@ -3,15 +3,16 @@ import { fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { AuthRoleContext, type UserRole } from './AuthRoleContext';
+import { clearAuthSessionAndRedirect } from '../utils/authUtils';
 
 export function AuthRoleProvider({ children }: { children: ReactNode }) {
-  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
+  const { authStatus, signOut } = useAuthenticator((context) => [context.authStatus, context.signOut]);
   const [role, setRoleState] = useState<UserRole>(null);
   const [groups, setGroupsState] = useState<string[]>([]);
   const [isLoading, setIsLoadingState] = useState<boolean>(true);
   const [error, setErrorState] = useState<string | null>(null);
 
-  const isFetchingRef = useRef(false);
+  const activeFetchPromiseRef = useRef<Promise<UserRole> | null>(null);
   const isMountedRef = useRef(true);
 
   // Helpers to safely update state only when value has changed
@@ -37,116 +38,140 @@ export function AuthRoleProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const evaluateSession = useCallback(
-    async (forceRefresh = false) => {
+    async (forceRefresh = true): Promise<UserRole> => {
       if (authStatus !== 'authenticated') {
         setRole(null);
         setGroups([]);
         setIsLoading(false);
-        return;
+        setError(null);
+        return null;
       }
 
-      if (isFetchingRef.current) {
-        return;
+      // If a fetch is already in-flight, return the active promise to avoid duplicate race conditions
+      if (activeFetchPromiseRef.current) {
+        return activeFetchPromiseRef.current;
       }
 
-      isFetchingRef.current = true;
+      setIsLoading(true);
 
-      try {
-        const session = await fetchAuthSession({ forceRefresh });
-        if (!isMountedRef.current) return;
+      const fetchPromise = (async () => {
+        try {
+          // 1. Fetch auth session fresh from Cognito
+          let session;
+          try {
+            session = await fetchAuthSession({ forceRefresh });
+          } catch (sessionErr) {
+            console.warn('[AuthRole] fetchAuthSession with forceRefresh failed, falling back:', sessionErr);
+            session = await fetchAuthSession();
+          }
 
-        const accessToken = session.tokens?.accessToken;
-        const idToken = session.tokens?.idToken;
+          if (!isMountedRef.current) return null;
 
-        // 1. Inspect cognito:groups from accessToken payload (primary claim for Cognito User Groups)
-        const rawAccessTokenGroups = accessToken?.payload?.['cognito:groups'];
-        const accessTokenGroups: string[] = Array.isArray(rawAccessTokenGroups)
-          ? (rawAccessTokenGroups as string[])
-          : typeof rawAccessTokenGroups === 'string'
-          ? [rawAccessTokenGroups]
-          : [];
+          const accessToken = session.tokens?.accessToken;
+          const idToken = session.tokens?.idToken;
 
-        // Fallback inspection of idToken cognito:groups
-        const rawIdTokenGroups = idToken?.payload?.['cognito:groups'];
-        const idTokenGroups: string[] = Array.isArray(rawIdTokenGroups)
-          ? (rawIdTokenGroups as string[])
-          : typeof rawIdTokenGroups === 'string'
-          ? [rawIdTokenGroups]
-          : [];
+          // Inspect cognito:groups from accessToken and idToken payloads
+          const rawAccessTokenGroups = accessToken?.payload?.['cognito:groups'];
+          const accessTokenGroups: string[] = Array.isArray(rawAccessTokenGroups)
+            ? (rawAccessTokenGroups as string[])
+            : typeof rawAccessTokenGroups === 'string'
+            ? [rawAccessTokenGroups]
+            : [];
 
-        const userGroups = Array.from(new Set([...accessTokenGroups, ...idTokenGroups]));
-        setGroups(userGroups);
+          const rawIdTokenGroups = idToken?.payload?.['cognito:groups'];
+          const idTokenGroups: string[] = Array.isArray(rawIdTokenGroups)
+            ? (rawIdTokenGroups as string[])
+            : typeof rawIdTokenGroups === 'string'
+            ? [rawIdTokenGroups]
+            : [];
 
-        // Case-insensitive group matching
-        const hasAdminGroup = userGroups.some((g) => g.trim().toLowerCase() === 'admin');
-        const hasTechGroup = userGroups.some((g) => g.trim().toLowerCase() === 'technician');
+          const userGroups = Array.from(new Set([...accessTokenGroups, ...idTokenGroups]));
+          setGroups(userGroups);
 
-        // 2. Inspect custom:role user attribute from token payloads
-        let customRole = (idToken?.payload?.['custom:role'] ||
-          accessToken?.payload?.['custom:role']) as string | undefined;
+          // Group matching: Admin/Dispatcher vs Technician
+          const hasAdminGroup = userGroups.some((g) => {
+            const lower = g.trim().toLowerCase();
+            return lower === 'admin' || lower === 'dispatcher' || lower === 'dispatch';
+          });
+          const hasTechGroup = userGroups.some((g) => {
+            const lower = g.trim().toLowerCase();
+            return lower === 'technician' || lower === 'tech';
+          });
 
-        // If neither token payload has custom:role and groups are empty, fetch directly via GetUser
-        if (!customRole && !hasAdminGroup && !hasTechGroup) {
+          // 2. Fetch fresh user attributes directly from Cognito via GetUser
+          let customRole: string | undefined;
+          let userEmail: string | undefined;
+
           try {
             const attrs = await fetchUserAttributes();
-            customRole = attrs['custom:role'] || (attrs as any)['role'];
+            customRole = attrs['custom:role'] || (attrs as Record<string, string | undefined>)['role'];
+            userEmail = attrs.email;
           } catch (attrErr) {
-            console.warn('[AuthRole] Could not fetch user attributes from Cognito:', attrErr);
+            console.warn('[AuthRole] Could not fetch fresh user attributes from Cognito:', attrErr);
           }
-        }
 
-        const normalizedRole = customRole?.trim().toLowerCase();
+          // Fallback to token payload claims if attribute retrieval had missing fields
+          if (!customRole) {
+            customRole = (idToken?.payload?.['custom:role'] ||
+              accessToken?.payload?.['custom:role']) as string | undefined;
+          }
+          if (!userEmail) {
+            userEmail = (idToken?.payload?.email ||
+              accessToken?.payload?.username ||
+              '') as string;
+          }
 
-        // 3. Resolve Role
-        if (hasAdminGroup) {
-          setRole('Admin');
-        } else if (hasTechGroup) {
-          setRole('Technician');
-        } else if (normalizedRole === 'admin') {
-          console.info(
-            '[AuthRole] "cognito:groups" claim is missing "Admin" in token payload, but found "custom:role: Admin". Using attribute fallback.'
-          );
-          setRole('Admin');
-        } else if (normalizedRole === 'technician') {
-          console.info(
-            '[AuthRole] "cognito:groups" claim is missing "Technician" in token payload, but found "custom:role: Technician". Using attribute fallback.'
-          );
-          setRole('Technician');
-        } else {
-          // Intelligent fallback for test/staff accounts if neither claim exists yet:
-          const emailClaim = (
-            idToken?.payload?.email ||
-            accessToken?.payload?.username ||
-            ''
-          ) as string;
-          const emailLower = emailClaim.toLowerCase();
+          const normalizedRole = customRole?.trim().toLowerCase();
+          const isAdminAttr = normalizedRole === 'admin' || normalizedRole === 'dispatcher' || normalizedRole === 'dispatch';
+          const isTechAttr = normalizedRole === 'technician' || normalizedRole === 'tech';
 
-          if (emailLower.includes('admin') || emailLower.endsWith('@yectra.com')) {
-            console.info(
-              `[AuthRole] Auto-assigning Admin role based on verified email domain: ${emailClaim}`
-            );
-            setRole('Admin');
+          let resolvedRole: UserRole = null;
+
+          // 3. Resolve Role
+          if (hasAdminGroup || isAdminAttr) {
+            resolvedRole = 'Admin';
+          } else if (hasTechGroup || isTechAttr) {
+            resolvedRole = 'Technician';
           } else {
-            console.warn(
-              '[AuthRole] Neither "cognito:groups" nor "custom:role" contains Admin or Technician. Available claims:',
-              { groups: userGroups, customRole }
-            );
+            // Intelligent fallback for staff accounts based on email
+            const emailLower = (userEmail || '').toLowerCase();
+            if (emailLower.includes('admin') || emailLower.includes('dispatcher') || emailLower.endsWith('@yectra.com')) {
+              console.info(`[AuthRole] Auto-assigning Admin role based on email: ${userEmail}`);
+              resolvedRole = 'Admin';
+            } else if (emailLower.includes('tech')) {
+              console.info(`[AuthRole] Auto-assigning Technician role based on email: ${userEmail}`);
+              resolvedRole = 'Technician';
+            } else {
+              console.warn(
+                '[AuthRole] Neither "cognito:groups" nor "custom:role" contains Admin/Dispatcher or Technician. Available claims:',
+                { groups: userGroups, customRole, email: userEmail }
+              );
+              resolvedRole = null;
+            }
+          }
+
+          if (isMountedRef.current) {
+            setRole(resolvedRole);
+            setError(null);
+          }
+          return resolvedRole;
+        } catch (err) {
+          if (isMountedRef.current) {
+            console.error('[AuthRole] Error fetching user auth session and role groups:', err);
+            setError(err instanceof Error ? err.message : 'Failed to retrieve user role');
             setRole(null);
           }
+          return null;
+        } finally {
+          activeFetchPromiseRef.current = null;
+          if (isMountedRef.current) {
+            setIsLoading(false);
+          }
         }
-        setError(null);
-      } catch (err) {
-        if (isMountedRef.current) {
-          console.error('[AuthRole] Error fetching user auth session and role groups:', err);
-          setError(err instanceof Error ? err.message : 'Failed to retrieve user role');
-          setRole(null);
-        }
-      } finally {
-        isFetchingRef.current = false;
-        if (isMountedRef.current) {
-          setIsLoading(false);
-        }
-      }
+      })();
+
+      activeFetchPromiseRef.current = fetchPromise;
+      return fetchPromise;
     },
     [authStatus, setRole, setGroups, setIsLoading, setError]
   );
@@ -159,27 +184,42 @@ export function AuthRoleProvider({ children }: { children: ReactNode }) {
       switch (payload.event) {
         case 'signedIn':
         case 'tokenRefresh':
-          void evaluateSession();
+          void evaluateSession(true);
           break;
         case 'signedOut':
           setRole(null);
           setGroups([]);
           setIsLoading(false);
+          setError(null);
           break;
       }
     });
 
-    // Initial role fetch on mount / auth status change
-    const initTimer = setTimeout(() => {
-      void evaluateSession();
-    }, 0);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    if (authStatus === 'authenticated') {
+      timer = setTimeout(() => {
+        void evaluateSession(true);
+      }, 0);
+    } else {
+      timer = setTimeout(() => {
+        setRole(null);
+        setGroups([]);
+        setIsLoading(false);
+        setError(null);
+      }, 0);
+    }
 
     return () => {
       isMountedRef.current = false;
-      clearTimeout(initTimer);
+      if (timer) clearTimeout(timer);
       hubListener();
     };
-  }, [authStatus, evaluateSession, setRole, setGroups, setIsLoading]);
+  }, [authStatus, evaluateSession, setRole, setGroups, setIsLoading, setError]);
+
+  const logout = useCallback(async () => {
+    await clearAuthSessionAndRedirect(signOut);
+  }, [signOut]);
 
   const value = useMemo(
     () => ({
@@ -191,8 +231,9 @@ export function AuthRoleProvider({ children }: { children: ReactNode }) {
       isTechnician: role === 'Technician',
       setRole,
       refreshRole: () => evaluateSession(true),
+      logout,
     }),
-    [role, groups, isLoading, error, setRole, evaluateSession]
+    [role, groups, isLoading, error, setRole, evaluateSession, logout]
   );
 
   return <AuthRoleContext.Provider value={value}>{children}</AuthRoleContext.Provider>;

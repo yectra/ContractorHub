@@ -1,14 +1,23 @@
+import { useEffect } from 'react';
 import { CircularProgress } from '@mui/material';
 import SecurityIcon from '@mui/icons-material/Security';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useUserRole } from '../../hooks/useUserRole';
-import Dashboard from '../../app/Dashboard';
-import TechDashboard from '../TechDashboard';
 import styles from '../../styles/UI/RoleUI.module.scss';
 
 export default function RoleBasedRouter() {
   const { role, isLoading, error, setRole, refreshRole } = useUserRole();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && role) {
+      if (role === 'Admin') {
+        navigate('/admin', { replace: true });
+      } else if (role === 'Technician') {
+        navigate('/tech-dashboard', { replace: true });
+      }
+    }
+  }, [role, isLoading, navigate]);
 
   if (isLoading) {
     return (
@@ -24,14 +33,14 @@ export default function RoleBasedRouter() {
     );
   }
 
-  // Admin Role View
+  // Admin / Dispatcher Role View Redirection
   if (role === 'Admin') {
-    return <Dashboard />;
+    return <Navigate to="/admin" replace />;
   }
 
-  // Technician Role View
+  // Technician Role View Redirection
   if (role === 'Technician') {
-    return <TechDashboard />;
+    return <Navigate to="/tech-dashboard" replace />;
   }
 
   // Fallback state if user doesn't have an assigned Cognito group yet

@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import RoleBasedRouter from './components/auth/RoleBasedRouter';
+import RoleGuard from './components/auth/RoleGuard';
 import Dashboard from './app/Dashboard';
 import NotFoundPage from './app/NotFoundPage';
 import FieldExecution from './components/admin/FieldExecution';
@@ -15,31 +16,68 @@ export const router = createBrowserRouter([
     errorElement: <NotFoundPage />,
   },
   {
+    path: '/login',
+    element: <RoleBasedRouter />,
+    errorElement: <NotFoundPage />,
+  },
+  {
     path: '/admin',
-    element: <Dashboard />,
+    element: (
+      <RoleGuard allowedRoles={['Admin']}>
+        <Dashboard />
+      </RoleGuard>
+    ),
   },
   {
     path: '/admin/dashboard',
-    element: <Dashboard />,
+    element: (
+      <RoleGuard allowedRoles={['Admin']}>
+        <Dashboard />
+      </RoleGuard>
+    ),
   },
   {
     path: '/technician',
-    element: <FieldExecution />,
+    element: (
+      <RoleGuard allowedRoles={['Technician', 'Admin']}>
+        <FieldExecution />
+      </RoleGuard>
+    ),
   },
   {
     path: '/tech-dashboard',
-    element: <TechDashboard />,
+    element: (
+      <RoleGuard allowedRoles={['Technician', 'Admin']}>
+        <TechDashboard />
+      </RoleGuard>
+    ),
   },
   {
     path: '/crm',
-    element: <ClientCRMRecord />,
+    element: (
+      <RoleGuard allowedRoles={['Admin']}>
+        <ClientCRMRecord />
+      </RoleGuard>
+    ),
   },
   {
     path: '/admin/users',
-    element: <UserManagement />,
+    element: (
+      <RoleGuard allowedRoles={['Admin']}>
+        <UserManagement />
+      </RoleGuard>
+    ),
   },
   {
     path: '/admin/technicians',
-    element: <TechnicianManagement />,
-  }
+    element: (
+      <RoleGuard allowedRoles={['Admin']}>
+        <TechnicianManagement />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: '*',
+    element: <NotFoundPage />,
+  },
 ]);

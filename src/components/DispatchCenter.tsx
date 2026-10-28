@@ -38,7 +38,7 @@ import EngineeringIcon from '@mui/icons-material/Engineering';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthenticator } from '@aws-amplify/ui-react';
-import { signOut as amplifySignOut } from 'aws-amplify/auth';
+import { clearAuthSessionAndRedirect } from '../utils/authUtils';
 
 import {
   useServiceRequests,
@@ -651,55 +651,7 @@ export const DispatchCenter: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    try {
-      if (typeof signOut === 'function') {
-        await signOut();
-      } else {
-        await amplifySignOut();
-      }
-    } catch (authErr) {
-      console.warn('Amplify authorization clearance fallback:', authErr);
-      try {
-        await amplifySignOut();
-      } catch (fallbackErr) {
-        console.warn('Direct amplifySignOut fallback:', fallbackErr);
-      }
-    } finally {
-      try {
-        const standardCacheKeys = [
-          'mock_technicians',
-          'mock_service_requests',
-          'mock_scheduled_jobs',
-          'mock_clients',
-          'mock_users',
-        ];
-        standardCacheKeys.forEach((key) => localStorage.removeItem(key));
-
-        const keysToPurge: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (
-            key &&
-            (key.startsWith('checklist_job_') ||
-              key.startsWith('photos_job_') ||
-              key.startsWith('upload_queue_') ||
-              key.startsWith('comment_job_') ||
-              key.startsWith('job_activity_') ||
-              key.startsWith('amplify-') ||
-              key.startsWith('CognitoIdentityServiceProvider'))
-          ) {
-            keysToPurge.push(key);
-          }
-        }
-        keysToPurge.forEach((k) => localStorage.removeItem(k));
-        sessionStorage.clear();
-      } catch (storageErr) {
-        console.error('Error clearing local sandbox stores:', storageErr);
-      }
-
-      navigate('/');
-      window.location.href = '/';
-    }
+    await clearAuthSessionAndRedirect(signOut);
   };
 
   // Filter scheduled jobs by selectedDate

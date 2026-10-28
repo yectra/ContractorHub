@@ -18,7 +18,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 import { useAuthenticator } from '@aws-amplify/ui-react';
-import { signOut as amplifySignOut } from 'aws-amplify/auth';
+import { clearAuthSessionAndRedirect } from '../utils/authUtils';
 import { useServiceRequests, useScheduledJobs, useTechnicians } from '../hooks/useDispatchData';
 import styles from '../styles/UI/TechDashboard.module.scss';
 
@@ -254,55 +254,7 @@ export default function TechDashboard() {
 
   // ── Authentication & Sandbox Teardown Handler (Logout) ────────────────────
   const handleLogout = async () => {
-    try {
-      if (typeof signOut === 'function') {
-        await signOut();
-      } else {
-        await amplifySignOut();
-      }
-    } catch (authErr) {
-      console.warn('Amplify signOut clearance fallback:', authErr);
-      try {
-        await amplifySignOut();
-      } catch (fallbackErr) {
-        console.warn('Direct amplifySignOut fallback:', fallbackErr);
-      }
-    } finally {
-      try {
-        const standardCacheKeys = [
-          'mock_technicians',
-          'mock_service_requests',
-          'mock_scheduled_jobs',
-          'mock_clients',
-          'mock_users',
-        ];
-        standardCacheKeys.forEach((key) => localStorage.removeItem(key));
-
-        const keysToPurge: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (
-            key &&
-            (key.startsWith('checklist_job_') ||
-              key.startsWith('photos_job_') ||
-              key.startsWith('upload_queue_') ||
-              key.startsWith('comment_job_') ||
-              key.startsWith('job_activity_') ||
-              key.startsWith('amplify-') ||
-              key.startsWith('CognitoIdentityServiceProvider'))
-          ) {
-            keysToPurge.push(key);
-          }
-        }
-        keysToPurge.forEach((k) => localStorage.removeItem(k));
-        sessionStorage.clear();
-      } catch (storageErr) {
-        console.error('Error clearing local sandbox stores:', storageErr);
-      }
-
-      routerNavigate('/login');
-      window.location.href = '/login';
-    }
+    await clearAuthSessionAndRedirect(signOut);
   };
 
   // ── Navigation state ──────────────────────────────────────────────────────

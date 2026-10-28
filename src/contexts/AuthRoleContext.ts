@@ -10,7 +10,8 @@ export interface AuthRoleContextType {
   isAdmin: boolean;
   isTechnician: boolean;
   setRole: (role: UserRole) => void;
-  refreshRole: () => Promise<void>;
+  refreshRole: () => Promise<UserRole>;
+  logout: () => Promise<void>;
 }
 
 export const AuthRoleContext = createContext<AuthRoleContextType | undefined>(undefined);
