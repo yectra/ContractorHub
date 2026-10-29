@@ -51,6 +51,9 @@ import {
   sendJobUpdatedNotification,
   sendJobDeletedNotification,
   resolveClientForJob,
+  sendTechnicianJobAssignmentNotification,
+  sendTechnicianJobUpdateNotification,
+  resolveTechnicianForJob,
 } from '../services/mailService';
 import CreateTechnicianModal, {
   type CreateTechnicianData,
@@ -226,7 +229,7 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
 
         if (onNotification) {
           onNotification(
-            '✅ Checklist saved! Technician will see the updated steps immediately.',
+            'âœ… Checklist saved! Technician will see the updated steps immediately.',
             'success'
           );
         }
@@ -262,7 +265,7 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
             variant="h6"
             className={modalStyles.modalTitle}
           >
-            📋 Job Checklist Editor
+            ðŸ“‹ Job Checklist Editor
           </Typography>
           <Chip
             label="Task Editor"
@@ -387,7 +390,7 @@ export const DispatchCenter: React.FC = () => {
   ]);
   const profileUser = user as ProfileUser | undefined;
 
-  // ── Layout & Selection State Architecture ──────────────────────────────────
+  // â”€â”€ Layout & Selection State Architecture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [userRightPanelOpen, setUserRightPanelOpen] = useState<boolean | undefined>(
     undefined
@@ -420,17 +423,17 @@ export const DispatchCenter: React.FC = () => {
     setUserSelectedDate(undefined);
   }
 
-  // ── Dispatcher Checklist Modal state ────────────────────────────────────────
+  // â”€â”€ Dispatcher Checklist Modal state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [checklistModalOpen, setChecklistModalOpen] = useState(false);
   const [checklistModalJobId, setChecklistModalJobId] = useState<string | null>(null);
   const [checklistDraftItems, setChecklistDraftItems] = useState<
     DispatchChecklistItem[]
   >([]);
 
-  // ── Create Technician Modal state ───────────────────────────────────────────
+  // â”€â”€ Create Technician Modal state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [createTechModalOpen, setCreateTechModalOpen] = useState(false);
 
-  // ── Delete Service Request Modal state ──────────────────────────────────────
+  // â”€â”€ Delete Service Request Modal state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [jobIdToDelete, setJobIdToDelete] = useState<string | null>(null);
 
@@ -895,6 +898,42 @@ export const DispatchCenter: React.FC = () => {
             console.error('[DispatchCenter] Failed to send update email:', err)
           );
         }
+
+        const effectiveTechId =
+          editStatus === 'Unassigned'
+            ? null
+            : selectedServiceReq.assignedTechnicianId || associated?.techId;
+        if (effectiveTechId) {
+          const tech =
+            technicians.find((t) => t.id === effectiveTechId) ||
+            (await resolveTechnicianForJob(effectiveTechId, technicians));
+          const dynamicTechEmail = tech?.email?.trim();
+          if (dynamicTechEmail && tech) {
+            sendTechnicianJobUpdateNotification({
+              technicianName: tech.name,
+              technicianEmail: dynamicTechEmail,
+              technicianId: effectiveTechId,
+              job: {
+                id: selectedServiceReq.id,
+                service: editService,
+                client: client?.name || selectedServiceReq.client,
+                location: editLocation,
+                type: editType,
+                priority: editPriority,
+                status: editStatus,
+                scheduledDate: associated?.scheduledDate,
+                requestTime: selectedServiceReq.requestTime,
+                estimatedDuration: selectedServiceReq.estimatedDuration,
+                notes: editNotes,
+              },
+              changesSummary: `Status updated to ${editStatus}, Service: ${editService}`,
+              cachedTechnicians: technicians,
+              senderName: adminDisplayName,
+            }).catch((err) =>
+              console.error('[DispatchCenter] Failed to send technician update email:', err)
+            );
+          }
+        }
       } catch (notifyErr) {
         console.error('[DispatchCenter] Error preparing update email:', notifyErr);
       }
@@ -1019,7 +1058,7 @@ export const DispatchCenter: React.FC = () => {
       });
       localStorage.removeItem(`checklist_job_${checklistModalJobId}`);
       showNotification_(
-        '✅ Checklist saved! Technician will see the updated steps immediately.',
+        'âœ… Checklist saved! Technician will see the updated steps immediately.',
         'success'
       );
       setChecklistModalOpen(false);
@@ -1029,7 +1068,7 @@ export const DispatchCenter: React.FC = () => {
     }
   };
 
-  // ── Drag & Drop Handlers with Intact Schema Transfer ─────────────────────────
+  // â”€â”€ Drag & Drop Handlers with Intact Schema Transfer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleDragStart = (
     event: React.DragEvent<HTMLDivElement>,
     type: 'request' | 'job',
@@ -1137,6 +1176,39 @@ export const DispatchCenter: React.FC = () => {
           console.error('[DispatchCenter] Error preparing drop schedule email:', notifyErr);
         }
 
+        try {
+          const tech =
+            technicians.find((t) => t.id === techId) ||
+            (await resolveTechnicianForJob(techId, technicians));
+          const dynamicTechEmail = tech?.email?.trim();
+          if (dynamicTechEmail && tech) {
+            sendTechnicianJobAssignmentNotification({
+              technicianName: tech.name,
+              technicianEmail: dynamicTechEmail,
+              technicianId: techId,
+              job: {
+                id: request.id,
+                service: request.service,
+                client: request.client,
+                location: request.location,
+                type: request.type,
+                priority: request.priority,
+                status: 'Assigned',
+                scheduledDate: selectedDate,
+                requestTime: `${startHour}:00`,
+                estimatedDuration: request.estimatedDuration || '2 hours',
+                notes: request.notes,
+              },
+              cachedTechnicians: technicians,
+              senderName: adminDisplayName,
+            }).catch((err) =>
+              console.error('[DispatchCenter] Failed to send technician assignment email:', err)
+            );
+          }
+        } catch (techNotifyErr) {
+          console.error('[DispatchCenter] Error preparing technician assignment email:', techNotifyErr);
+        }
+
         showNotification_(
           `Job ${data.id} assigned to ${getTechnicianName(techId)}`,
           'success'
@@ -1164,11 +1236,12 @@ export const DispatchCenter: React.FC = () => {
         // Automatically preserve active selection on reassignment
         handleJobSelect(job.serviceRequestId || job.id);
 
+        const relatedReq = serviceRequests.find(
+          (r) => r.id === job.serviceRequestId
+        );
+        const clientName = relatedReq?.client || '';
+
         try {
-          const relatedReq = serviceRequests.find(
-            (r) => r.id === job.serviceRequestId
-          );
-          const clientName = relatedReq?.client || '';
           const client =
             clients.find(
               (c) => c.name === clientName || c.id === clientName
@@ -1202,6 +1275,62 @@ export const DispatchCenter: React.FC = () => {
           console.error('[DispatchCenter] Error preparing drop reassign email:', notifyErr);
         }
 
+        try {
+          const tech =
+            technicians.find((t) => t.id === techId) ||
+            (await resolveTechnicianForJob(techId, technicians));
+          const dynamicTechEmail = tech?.email?.trim();
+          if (dynamicTechEmail && tech) {
+            const isReassigned = job.techId !== techId;
+            if (isReassigned) {
+              sendTechnicianJobAssignmentNotification({
+                technicianName: tech.name,
+                technicianEmail: dynamicTechEmail,
+                technicianId: techId,
+                job: {
+                  id: job.serviceRequestId || job.id,
+                  service: relatedReq?.service || 'Scheduled Job',
+                  client: clientName,
+                  location: relatedReq?.location,
+                  status: 'Assigned',
+                  scheduledDate: selectedDate,
+                  requestTime: `${startHour}:00`,
+                  estimatedDuration: relatedReq?.estimatedDuration || `${job.duration || 2} hours`,
+                  notes: job.notes || relatedReq?.notes,
+                },
+                cachedTechnicians: technicians,
+                senderName: adminDisplayName,
+              }).catch((err) =>
+                console.error('[DispatchCenter] Failed to send technician reassignment email:', err)
+              );
+            } else {
+              sendTechnicianJobUpdateNotification({
+                technicianName: tech.name,
+                technicianEmail: dynamicTechEmail,
+                technicianId: techId,
+                job: {
+                  id: job.serviceRequestId || job.id,
+                  service: relatedReq?.service || 'Scheduled Job',
+                  client: clientName,
+                  location: relatedReq?.location,
+                  status: 'Assigned',
+                  scheduledDate: selectedDate,
+                  requestTime: `${startHour}:00`,
+                  estimatedDuration: relatedReq?.estimatedDuration || `${job.duration || 2} hours`,
+                  notes: job.notes || relatedReq?.notes,
+                },
+                changesSummary: `Rescheduled to ${selectedDate} at ${startHour}:00`,
+                cachedTechnicians: technicians,
+                senderName: adminDisplayName,
+              }).catch((err) =>
+                console.error('[DispatchCenter] Failed to send technician reschedule email:', err)
+              );
+            }
+          }
+        } catch (techNotifyErr) {
+          console.error('[DispatchCenter] Error preparing technician drop update email:', techNotifyErr);
+        }
+
         showNotification_(
           `Job reassigned to ${getTechnicianName(techId)}`,
           'success'
@@ -1231,7 +1360,7 @@ export const DispatchCenter: React.FC = () => {
 
   return (
     <Box className={styles.dashboardRoot}>
-      {/* ── Left Panel - Service Queue (320px) ────────────────────────── */}
+      {/* â”€â”€ Left Panel - Service Queue (320px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <Box
         className={`${styles.dashboardSidePanel} ${styles.dashboardLeftPanel} ${
           leftPanelOpen
@@ -1387,7 +1516,7 @@ export const DispatchCenter: React.FC = () => {
         )}
       </Box>
 
-      {/* ── Center Panel - Scheduling Matrix (Flexible) ────────────────── */}
+      {/* â”€â”€ Center Panel - Scheduling Matrix (Flexible) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <Box className={styles.dashboardCenterPanel}>
         <Box className={styles.dashboardCenterHeader}>
           <Box className={styles.dashboardNavRow}>
@@ -1653,21 +1782,21 @@ export const DispatchCenter: React.FC = () => {
 
           <Box className={styles.dashboardGuide}>
             <Typography variant="body2" className={styles.dashboardGuideTitle}>
-              💡 Quick Guide
+              ðŸ’¡ Quick Guide
             </Typography>
             <Typography variant="caption" className={styles.dashboardGuideCopy}>
-              • Click on service requests in the left queue to view details
+              â€¢ Click on service requests in the left queue to view details
               <br />
-              • Drag requests from the queue to technician time slots to schedule
+              â€¢ Drag requests from the queue to technician time slots to schedule
               <br />
-              • Click scheduled jobs in the center to view details
-              <br />• Drag existing jobs to reschedule or reassign technicians
+              â€¢ Click scheduled jobs in the center to view details
+              <br />â€¢ Drag existing jobs to reschedule or reassign technicians
             </Typography>
           </Box>
         </Box>
       </Box>
 
-      {/* ── Right Panel - Work Order Details (400px) ───────────────────── */}
+      {/* â”€â”€ Right Panel - Work Order Details (400px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <Box
         className={`${styles.dashboardSidePanel} ${styles.dashboardRightPanel} ${
           rightPanelOpen
@@ -2010,7 +2139,7 @@ export const DispatchCenter: React.FC = () => {
                         }
                         className={styles.dashboardPrimaryButton}
                       >
-                        📋 Manage Job Checklist
+                        ðŸ“‹ Manage Job Checklist
                       </Button>
                     </Box>
                   )}
@@ -2127,7 +2256,7 @@ export const DispatchCenter: React.FC = () => {
                         variant="body2"
                         className={styles.dashboardMapCopy}
                       >
-                        🗺️ Map Preview
+                        ðŸ—ºï¸ Map Preview
                       </Typography>
                     </Box>
                   </Box>

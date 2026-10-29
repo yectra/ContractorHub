@@ -64,8 +64,10 @@ interface EmailRequest {
 }
 
 interface JobNotificationRequest {
-  clientName: string;
-  clientEmail: string;
+  clientName?: string;
+  clientEmail?: string;
+  technicianName?: string;
+  technicianEmail?: string;
   senderName?: string;
   fromName?: string;
   adminName?: string;
@@ -352,6 +354,109 @@ ${req.reason ? `<p><strong>Reason:</strong> ${req.reason}</p>` : ''}`;
         headers: CORS_HEADERS,
         body: JSON.stringify({
           message: 'Job deletion notification sent successfully',
+          recipient: dynamicRecipient,
+          messageId: result.MessageId,
+        }),
+      };
+    }
+
+    // Technician Job Assignment notification route controller
+    if (
+      (path === '/technicians/assign' ||
+        path === '/technicians/assigned' ||
+        path === '/jobs/technician-assignment' ||
+        path === '/jobs/assign-technician') &&
+      method === 'POST'
+    ) {
+      const req = body as JobNotificationRequest;
+      const dynamicRecipient = req.technicianEmail?.trim() || req.clientEmail?.trim();
+
+      if (!dynamicRecipient) {
+        return {
+          statusCode: 400,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({
+            error: 'Missing dynamic technician recipient email (technicianEmail)',
+          }),
+        };
+      }
+
+      const jobIdStr = req.job?.id ? `#${req.job.id}` : 'Work Order';
+      const subject = `New Job Assignment: ${req.job?.service || 'Service Work Order'} (${jobIdStr})`;
+      const html = `<h2>New Work Order Assignment</h2>
+<p>Hello <strong>${req.technicianName || 'Technician'}</strong>,</p>
+<p>You have been assigned to a new work order (${jobIdStr}).</p>
+<p><strong>Client:</strong> ${req.job?.client || 'Valued Client'}<br>
+<strong>Location:</strong> ${req.job?.location || 'Site address on file'}<br>
+<strong>Scheduled Date:</strong> ${req.job?.scheduledDate || 'Standard Window'}<br>
+<strong>Time:</strong> ${req.job?.requestTime || 'Standard'} (${req.job?.estimatedDuration || '2 hours'})<br>
+<strong>Service:</strong> ${req.job?.service || 'Contractor Service'}<br>
+<strong>Notes:</strong> ${req.job?.notes || 'None'}</p>`;
+
+      const result = await sendEmail({
+        to: dynamicRecipient,
+        subject,
+        html,
+        senderName: req.senderName || req.fromName || req.adminName,
+      });
+
+      return {
+        statusCode: 200,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({
+          message: 'Technician job assignment notification sent successfully',
+          recipient: dynamicRecipient,
+          messageId: result.MessageId,
+        }),
+      };
+    }
+
+    // Technician Job Update / Status Change notification route controller
+    if (
+      (path === '/technicians/update' ||
+        path === '/technicians/updated' ||
+        path === '/jobs/technician-update' ||
+        path === '/jobs/update-technician') &&
+      method === 'POST'
+    ) {
+      const req = body as JobNotificationRequest;
+      const dynamicRecipient = req.technicianEmail?.trim() || req.clientEmail?.trim();
+
+      if (!dynamicRecipient) {
+        return {
+          statusCode: 400,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({
+            error: 'Missing dynamic technician recipient email (technicianEmail)',
+          }),
+        };
+      }
+
+      const jobIdStr = req.job?.id ? `#${req.job.id}` : 'Work Order';
+      const subject = `Job Update: ${req.job?.service || 'Work Order'} (${jobIdStr})`;
+      const html = `<h2>Work Order Update / Schedule Change</h2>
+<p>Hello <strong>${req.technicianName || 'Technician'}</strong>,</p>
+<p>Your assigned job (${jobIdStr}) has been updated.</p>
+${req.changesSummary ? `<p><strong>Changes:</strong> ${req.changesSummary}</p>` : ''}
+<p><strong>Client:</strong> ${req.job?.client || 'Valued Client'}<br>
+<strong>Location:</strong> ${req.job?.location || 'Site address on file'}<br>
+<strong>Status:</strong> ${req.job?.status || 'Updated'}<br>
+<strong>Scheduled Date:</strong> ${req.job?.scheduledDate || 'Standard'}<br>
+<strong>Time:</strong> ${req.job?.requestTime || 'Standard'}<br>
+<strong>Notes:</strong> ${req.job?.notes || 'None'}</p>`;
+
+      const result = await sendEmail({
+        to: dynamicRecipient,
+        subject,
+        html,
+        senderName: req.senderName || req.fromName || req.adminName,
+      });
+
+      return {
+        statusCode: 200,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({
+          message: 'Technician job update notification sent successfully',
           recipient: dynamicRecipient,
           messageId: result.MessageId,
         }),

@@ -1,4 +1,4 @@
-import { client, clientAPI } from './api';
+import { client, clientAPI, technicianAPI } from './api';
 import type { Schema } from '../../amplify/data/resource';
 
 declare const process: any;
@@ -460,6 +460,10 @@ function renderEmailShell(content: string, preheader: string = ''): string {
       background-color: #ffe4e6;
       color: #e11d48;
     }
+    .badge-assigned {
+      background-color: #e0e7ff;
+      color: #3730a3;
+    }
     .footer {
       background-color: #f8fafc;
       padding: 24px 28px;
@@ -858,6 +862,282 @@ If you need to reschedule or have questions, please contact our dispatch team.
   });
 }
 
+export interface SendTechnicianJobAssignmentParams {
+  technicianName: string;
+  technicianEmail?: string | null;
+  technicianId?: string | null;
+  job: JobEmailDetails;
+  cachedTechnicians?: Schema['Technician']['type'][];
+  senderName?: string;
+  fromName?: string;
+  adminName?: string;
+}
+
+/**
+ * 4. Send Technician Job Assignment Notification
+ * Dispatches AWS SES email notification to technician when a new job is assigned to them.
+ */
+export async function sendTechnicianJobAssignmentNotification(
+  params: SendTechnicianJobAssignmentParams
+): Promise<SendEmailResult> {
+  const { technicianName, job, cachedTechnicians, senderName, fromName, adminName } = params;
+  const jobIdStr = job.id ? `#${job.id}` : 'New Work Order';
+
+  // Pull technician email dynamically from database if not explicitly supplied
+  let dynamicToEmail = params.technicianEmail?.trim();
+  if (!dynamicToEmail) {
+    const resolved = await resolveTechnicianEmailForJob(
+      params.technicianId || job.assignedTechnicianName || technicianName,
+      cachedTechnicians
+    );
+    if (resolved) {
+      dynamicToEmail = resolved;
+    }
+  }
+
+  if (!dynamicToEmail) {
+    console.warn(
+      `[SES MailService] sendTechnicianJobAssignmentNotification aborted: No email found in database record for technician "${technicianName}" (Job: ${jobIdStr}).`
+    );
+    return {
+      success: false,
+      error: `No recipient email found in database record for technician "${technicianName}"`,
+    };
+  }
+
+  console.log(
+    `[SES MailService] Sending job assignment email to dynamic technician address: ${dynamicToEmail} for job ${jobIdStr}`
+  );
+
+  const subject = `New Job Assignment: ${job.service || 'Service Work Order'} (${jobIdStr})`;
+  const preheader = `You have been assigned to job ${jobIdStr}: ${job.service || 'Service Appointment'} on ${job.scheduledDate || 'Standard Schedule'}`;
+
+  const html = renderEmailShell(
+    `
+    <div style="margin-bottom: 20px;">
+      <span class="badge badge-assigned" style="background-color: #e0e7ff; color: #3730a3;">New Assignment</span>
+    </div>
+    <h2 class="h1-title">New Work Order Assignment</h2>
+    <p style="font-size: 15px; color: #334155; margin: 0 0 16px 0;">
+      Hello <strong>${technicianName}</strong>,
+    </p>
+    <p style="font-size: 14px; color: #475569; margin: 0 0 20px 0; line-height: 1.6;">
+      You have been assigned to a new work order. Please review the customer details, scheduled appointment window, and service address below:
+    </p>
+
+    <div class="card-box" style="border-left: 4px solid #3b82f6;">
+      <div class="detail-row">
+        <span class="detail-label">Job ID:</span>
+        <span class="detail-value" style="font-weight: 700; color: #1e3a8a;">${jobIdStr}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Client Name:</span>
+        <span class="detail-value" style="font-weight: 600;">${job.client || 'Valued Client'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Service Address:</span>
+        <span class="detail-value" style="color: #0f172a; font-weight: 600;">${job.location || 'Site address on file'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Scheduled Date:</span>
+        <span class="detail-value" style="color: #0f172a; font-weight: 700;">${job.scheduledDate || 'Pending Schedule'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Time Window:</span>
+        <span class="detail-value">${job.requestTime || '08:00 AM'} (${job.estimatedDuration || '2 hours'})</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Service Type:</span>
+        <span class="detail-value">${job.service || 'General Contractor Service'}</span>
+      </div>
+      ${job.priority ? `
+      <div class="detail-row">
+        <span class="detail-label">Priority:</span>
+        <span class="detail-value" style="text-transform: capitalize;">${job.priority}</span>
+      </div>` : ''}
+      ${job.notes ? `
+      <div class="detail-row" style="margin-top: 14px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+        <span class="detail-label" style="vertical-align: top;">Job Notes / Description:</span>
+        <span class="detail-value" style="color: #475569;">${job.notes}</span>
+      </div>` : ''}
+    </div>
+
+    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin: 20px 0; font-size: 13px; color: #166534; line-height: 1.5;">
+      <strong>Technician Next Steps:</strong> Log into your ContractorHub Technician Portal to view complete task specifications, customer contact options, and update your job progress.
+    </div>
+    `,
+    preheader
+  );
+
+  const text = `
+ContractorHub - New Work Order Assignment
+
+Hello ${technicianName},
+You have been assigned to a new service job (${jobIdStr}).
+
+Assignment Details:
+- Job ID: ${jobIdStr}
+- Client: ${job.client || 'Valued Client'}
+- Service Address: ${job.location || 'Site address on file'}
+- Scheduled Date: ${job.scheduledDate || 'Pending Schedule'}
+- Time Window: ${job.requestTime || '08:00 AM'} (${job.estimatedDuration || '2 hours'})
+- Service Type: ${job.service || 'General Contractor Service'}
+- Priority: ${job.priority || 'Normal'}
+- Job Notes / Description: ${job.notes || 'None'}
+
+Please check your ContractorHub Technician Portal for full details.
+  `.trim();
+
+  return sendEmail({
+    to: dynamicToEmail,
+    subject,
+    html,
+    text,
+    senderName: senderName || fromName || adminName,
+  });
+}
+
+export interface SendTechnicianJobUpdateParams {
+  technicianName: string;
+  technicianEmail?: string | null;
+  technicianId?: string | null;
+  job: JobEmailDetails;
+  changesSummary?: string;
+  cachedTechnicians?: Schema['Technician']['type'][];
+  senderName?: string;
+  fromName?: string;
+  adminName?: string;
+}
+
+/**
+ * 5. Send Technician Job Update / Status Change Notification
+ * Dispatches AWS SES email notification to technician when their assigned job is updated or status changes.
+ */
+export async function sendTechnicianJobUpdateNotification(
+  params: SendTechnicianJobUpdateParams
+): Promise<SendEmailResult> {
+  const { technicianName, job, changesSummary, cachedTechnicians, senderName, fromName, adminName } = params;
+  const jobIdStr = job.id ? `#${job.id}` : 'Work Order';
+
+  // Pull technician email dynamically from database if not explicitly supplied
+  let dynamicToEmail = params.technicianEmail?.trim();
+  if (!dynamicToEmail) {
+    const resolved = await resolveTechnicianEmailForJob(
+      params.technicianId || job.assignedTechnicianName || technicianName,
+      cachedTechnicians
+    );
+    if (resolved) {
+      dynamicToEmail = resolved;
+    }
+  }
+
+  if (!dynamicToEmail) {
+    console.warn(
+      `[SES MailService] sendTechnicianJobUpdateNotification aborted: No email found in database record for technician "${technicianName}" (Job: ${jobIdStr}).`
+    );
+    return {
+      success: false,
+      error: `No recipient email found in database record for technician "${technicianName}"`,
+    };
+  }
+
+  console.log(
+    `[SES MailService] Sending job update email to dynamic technician address: ${dynamicToEmail} for job ${jobIdStr}`
+  );
+
+  const subject = `Job Update: ${job.service || 'Work Order'} (${jobIdStr})`;
+  const preheader = `Schedule or status change for your assigned job (${jobIdStr}) - ${job.scheduledDate || 'Updated Schedule'}`;
+
+  const html = renderEmailShell(
+    `
+    <div style="margin-bottom: 20px;">
+      <span class="badge badge-updated">Job Updated</span>
+    </div>
+    <h2 class="h1-title">Work Order Update / Schedule Change</h2>
+    <p style="font-size: 15px; color: #334155; margin: 0 0 16px 0;">
+      Hello <strong>${technicianName}</strong>,
+    </p>
+    <p style="font-size: 14px; color: #475569; margin: 0 0 20px 0; line-height: 1.6;">
+      An update has been made to your assigned job <strong>${jobIdStr}</strong>. Please review the updated schedule, status, and specifications below:
+    </p>
+
+    ${changesSummary ? `
+    <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 14px 18px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; color: #92400e; line-height: 1.5;">
+      <strong>Changes Made:</strong> ${changesSummary}
+    </div>` : ''}
+
+    <div class="card-box">
+      <div class="detail-row">
+        <span class="detail-label">Job ID:</span>
+        <span class="detail-value" style="font-weight: 700; color: #1e3a8a;">${jobIdStr}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Client Name:</span>
+        <span class="detail-value" style="font-weight: 600;">${job.client || 'Valued Client'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Service Address:</span>
+        <span class="detail-value">${job.location || 'On-file client address'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Current Status:</span>
+        <span class="detail-value" style="font-weight: 700; color: #0284c7;">${job.status || 'Updated'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Scheduled Date:</span>
+        <span class="detail-value" style="font-weight: 700;">${job.scheduledDate || 'Standard Schedule'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Time Window:</span>
+        <span class="detail-value">${job.requestTime || 'Standard'} (${job.estimatedDuration || '2 hours'})</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Service Type:</span>
+        <span class="detail-value">${job.service || 'Contractor Service'}</span>
+      </div>
+      ${job.notes ? `
+      <div class="detail-row" style="margin-top: 14px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+        <span class="detail-label" style="vertical-align: top;">Job Notes / Description:</span>
+        <span class="detail-value" style="color: #475569;">${job.notes}</span>
+      </div>` : ''}
+    </div>
+
+    <p style="font-size: 14px; color: #475569; line-height: 1.6; margin-top: 24px;">
+      Your technician schedule in the ContractorHub portal has been synchronized with these updates.
+    </p>
+    `,
+    preheader
+  );
+
+  const text = `
+ContractorHub - Assigned Work Order Updated
+
+Hello ${technicianName},
+Updates have been recorded for your assigned job (${jobIdStr}).
+
+${changesSummary ? `Changes Made:\n${changesSummary}\n\n` : ''}
+Current Job Details:
+- Job ID: ${jobIdStr}
+- Client: ${job.client || 'Valued Client'}
+- Service Address: ${job.location || 'On-file client address'}
+- Status: ${job.status || 'Updated'}
+- Scheduled Date: ${job.scheduledDate || 'Standard Schedule'}
+- Time Window: ${job.requestTime || 'Standard'} (${job.estimatedDuration || '2 hours'})
+- Service Type: ${job.service || 'Contractor Service'}
+- Notes: ${job.notes || 'None'}
+
+Please view your ContractorHub Technician Portal for updated information.
+  `.trim();
+
+  return sendEmail({
+    to: dynamicToEmail,
+    subject,
+    html,
+    text,
+    senderName: senderName || fromName || adminName,
+  });
+}
+
 /**
  * Robust Client Lookup helper:
  * Finds a client from an in-memory list or queries the database via clientAPI.
@@ -916,6 +1196,77 @@ export async function resolveClientEmailForJob(
   if (!clientIdentifier) return null;
   const clientRecord = await resolveClientForJob(clientIdentifier, cachedClients);
   return clientRecord?.email?.trim() || null;
+}
+
+/**
+ * Robust Technician Lookup helper:
+ * Finds a technician from an in-memory list or queries the database via technicianAPI.
+ * Matches by exact ID, name (case-insensitive), or email.
+ */
+export async function resolveTechnicianForJob(
+  technicianIdentifier: string,
+  cachedTechnicians?: Schema['Technician']['type'][]
+): Promise<Schema['Technician']['type'] | null> {
+  if (!technicianIdentifier) return null;
+
+  const target = technicianIdentifier.trim().toLowerCase();
+
+  // 1. Check in-memory / state technicians first
+  if (cachedTechnicians && cachedTechnicians.length > 0) {
+    const found = cachedTechnicians.find(
+      (t) =>
+        t.id?.toLowerCase() === target ||
+        t.name?.toLowerCase() === target ||
+        t.email?.toLowerCase() === target
+    );
+    if (found) return found;
+  }
+
+  // 2. Query Technician database directly by ID if possible
+  try {
+    const directTech = await technicianAPI.getTechnician(technicianIdentifier.trim());
+    if (
+      directTech &&
+      (directTech.id?.toLowerCase() === target ||
+        directTech.name?.toLowerCase() === target ||
+        directTech.email?.toLowerCase() === target)
+    ) {
+      return directTech;
+    }
+  } catch {
+    // ID lookup might throw if technicianIdentifier is a freeform name rather than an ID
+  }
+
+  // 3. Query Technician database list via API
+  try {
+    const allTechnicians = await technicianAPI.listTechnicians();
+    if (allTechnicians && allTechnicians.length > 0) {
+      const match = allTechnicians.find(
+        (t) =>
+          t.id?.toLowerCase() === target ||
+          t.name?.toLowerCase() === target ||
+          t.email?.toLowerCase() === target
+      );
+      if (match) return match;
+    }
+  } catch (err) {
+    console.error('[SES MailService] Error looking up technician in database:', err);
+  }
+
+  return null;
+}
+
+/**
+ * Dynamically retrieves a technician's email address directly from their database record.
+ * Accepts a technician identifier (ID, name, or email) and queries the database.
+ */
+export async function resolveTechnicianEmailForJob(
+  technicianIdentifier?: string | null,
+  cachedTechnicians?: Schema['Technician']['type'][]
+): Promise<string | null> {
+  if (!technicianIdentifier) return null;
+  const techRecord = await resolveTechnicianForJob(technicianIdentifier, cachedTechnicians);
+  return techRecord?.email?.trim() || null;
 }
 
 export interface NotifyJobCreatedOptions {
@@ -1012,6 +1363,72 @@ export async function notifyJobDeleted(
     job,
     reason: options?.reason,
     cachedClients: options?.cachedClients,
+    senderName: options?.senderName,
+    fromName: options?.fromName,
+    adminName: options?.adminName,
+  });
+}
+
+export interface NotifyTechnicianAssignedOptions {
+  technicianName?: string;
+  technicianEmail?: string;
+  technicianId?: string;
+  cachedTechnicians?: Schema['Technician']['type'][];
+  senderName?: string;
+  fromName?: string;
+  adminName?: string;
+}
+
+export interface NotifyTechnicianUpdatedOptions {
+  technicianName?: string;
+  technicianEmail?: string;
+  technicianId?: string;
+  changesSummary?: string;
+  cachedTechnicians?: Schema['Technician']['type'][];
+  senderName?: string;
+  fromName?: string;
+  adminName?: string;
+}
+
+/**
+ * High-level dynamic controller for technician job assignment notification:
+ * Automatically pulls the technician's email directly from their database record
+ * associated with the job/techId and dispatches the SES notification.
+ */
+export async function notifyTechnicianJobAssigned(
+  job: JobEmailDetails,
+  options?: NotifyTechnicianAssignedOptions
+): Promise<SendEmailResult> {
+  const techName = options?.technicianName || job.assignedTechnicianName || 'Technician';
+  return sendTechnicianJobAssignmentNotification({
+    technicianName: techName,
+    technicianEmail: options?.technicianEmail,
+    technicianId: options?.technicianId,
+    job,
+    cachedTechnicians: options?.cachedTechnicians,
+    senderName: options?.senderName,
+    fromName: options?.fromName,
+    adminName: options?.adminName,
+  });
+}
+
+/**
+ * High-level dynamic controller for technician job update/status change notification:
+ * Automatically pulls the technician's email directly from their database record
+ * and dispatches the SES notification.
+ */
+export async function notifyTechnicianJobUpdated(
+  job: JobEmailDetails,
+  options?: NotifyTechnicianUpdatedOptions
+): Promise<SendEmailResult> {
+  const techName = options?.technicianName || job.assignedTechnicianName || 'Technician';
+  return sendTechnicianJobUpdateNotification({
+    technicianName: techName,
+    technicianEmail: options?.technicianEmail,
+    technicianId: options?.technicianId,
+    job,
+    changesSummary: options?.changesSummary,
+    cachedTechnicians: options?.cachedTechnicians,
     senderName: options?.senderName,
     fromName: options?.fromName,
     adminName: options?.adminName,

@@ -16,6 +16,9 @@ import {
   sendJobUpdatedNotification,
   sendJobDeletedNotification,
   resolveClientForJob,
+  sendTechnicianJobAssignmentNotification,
+  sendTechnicianJobUpdateNotification,
+  resolveTechnicianForJob,
 } from '../../services/mailService';
 
 
@@ -391,6 +394,42 @@ export default function ClientCRMRecord(): React.JSX.Element {
         console.error('[ClientCRMRecord] Error preparing job created email notification:', notifyErr);
       }
 
+      // Automated technician assignment email notification via AWS SES
+      if (isAssigned && formData.assignedTechnicianId) {
+        try {
+          const tech =
+            technicians.find((t) => t.id === formData.assignedTechnicianId) ||
+            (await resolveTechnicianForJob(formData.assignedTechnicianId, technicians));
+          const dynamicTechEmail = tech?.email?.trim();
+          if (dynamicTechEmail && tech) {
+            sendTechnicianJobAssignmentNotification({
+              technicianName: tech.name,
+              technicianEmail: dynamicTechEmail,
+              technicianId: formData.assignedTechnicianId,
+              job: {
+                id: created?.id,
+                service: formData.service,
+                client: selectedClient.name,
+                location: clientAddress || selectedClient.address || 'Client Address',
+                type: formData.type,
+                priority: formData.priority,
+                status: formData.status,
+                scheduledDate: scheduledDate,
+                requestTime: formData.requestTime || '08:00 AM',
+                estimatedDuration: formData.estimatedDuration || '2 hours',
+                notes: formData.notes,
+              },
+              cachedTechnicians: technicians,
+              senderName: adminDisplayName,
+            }).catch((err) =>
+              console.error('[ClientCRMRecord] Failed to send technician assignment email:', err)
+            );
+          }
+        } catch (techNotifyErr) {
+          console.error('[ClientCRMRecord] Error preparing technician assignment email:', techNotifyErr);
+        }
+      }
+
       const idStr = created?.id ? ` (${created.id})` : '';
       const destMsg = isAssigned ? 'technician schedule & dispatch board' : 'dispatch service queue';
       setSuccessAlert({
@@ -496,6 +535,67 @@ export default function ClientCRMRecord(): React.JSX.Element {
         }
       } catch (notifyErr) {
         console.error('[ClientCRMRecord] Error preparing job updated email notification:', notifyErr);
+      }
+
+      // Automated technician update/reassignment email notification via AWS SES
+      if (isAssigned && formData.assignedTechnicianId) {
+        try {
+          const tech =
+            technicians.find((t) => t.id === formData.assignedTechnicianId) ||
+            (await resolveTechnicianForJob(formData.assignedTechnicianId, technicians));
+          const dynamicTechEmail = tech?.email?.trim();
+          if (dynamicTechEmail && tech) {
+            const isReassigned = selectedJob.assignedTechnicianId !== formData.assignedTechnicianId;
+            if (isReassigned) {
+              sendTechnicianJobAssignmentNotification({
+                technicianName: tech.name,
+                technicianEmail: dynamicTechEmail,
+                technicianId: formData.assignedTechnicianId,
+                job: {
+                  id: selectedJob.id,
+                  service: formData.service,
+                  client: selectedClient?.name || selectedJob.client,
+                  location: selectedJob.location,
+                  type: formData.type,
+                  priority: formData.priority,
+                  status: formData.status,
+                  scheduledDate: scheduledDate,
+                  requestTime: formData.requestTime,
+                  estimatedDuration: formData.estimatedDuration,
+                  notes: formData.notes,
+                },
+                cachedTechnicians: technicians,
+                senderName: adminDisplayName,
+              }).catch((err) =>
+                console.error('[ClientCRMRecord] Failed to send technician assignment email:', err)
+              );
+            } else {
+              sendTechnicianJobUpdateNotification({
+                technicianName: tech.name,
+                technicianEmail: dynamicTechEmail,
+                technicianId: formData.assignedTechnicianId,
+                job: {
+                  id: selectedJob.id,
+                  service: formData.service,
+                  client: selectedClient?.name || selectedJob.client,
+                  location: selectedJob.location,
+                  status: formData.status,
+                  scheduledDate: scheduledDate,
+                  requestTime: formData.requestTime,
+                  estimatedDuration: formData.estimatedDuration,
+                  notes: formData.notes,
+                },
+                changesSummary: `Status: ${formData.status}, Service: ${formData.service}`,
+                cachedTechnicians: technicians,
+                senderName: adminDisplayName,
+              }).catch((err) =>
+                console.error('[ClientCRMRecord] Failed to send technician update email:', err)
+              );
+            }
+          }
+        } catch (techNotifyErr) {
+          console.error('[ClientCRMRecord] Error preparing technician update email:', techNotifyErr);
+        }
       }
 
       setSuccessAlert({
@@ -650,17 +750,17 @@ export default function ClientCRMRecord(): React.JSX.Element {
                 className={styles.alertActionBtn}
                 onClick={() => handleNavigateToDashboard(successAlert.jobId!, successAlert.date)}
               >
-                View in Dashboard →
+                View in Dashboard â†’
               </button>
             )}
           </div>
-          <button className={styles.alertCloseBtn} onClick={() => setSuccessAlert(null)}>×</button>
+          <button className={styles.alertCloseBtn} onClick={() => setSuccessAlert(null)}>Ã—</button>
         </div>
       )}
       {errorAlert && (
         <div className={styles.alertError}>
           <span>{errorAlert}</span>
-          <button className={styles.alertCloseBtn} onClick={() => setErrorAlert(null)}>×</button>
+          <button className={styles.alertCloseBtn} onClick={() => setErrorAlert(null)}>Ã—</button>
         </div>
       )}
 
