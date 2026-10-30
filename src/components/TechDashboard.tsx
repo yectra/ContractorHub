@@ -9,7 +9,6 @@ import {
   Select,
   MenuItem,
   IconButton,
-  Avatar,
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -20,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { clearAuthSessionAndRedirect } from '../utils/authUtils';
 import { useServiceRequests, useScheduledJobs, useTechnicians } from '../hooks/useDispatchData';
+import AukuraHeader from './AukuraHeader';
 import styles from '../styles/UI/TechDashboard.module.scss';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -356,184 +356,194 @@ export default function TechDashboard() {
   const isLoading = srLoading || jobsLoading;
 
   return (
-    <Box className={styles.techDashboardRoot} sx={{ width: '100%', maxWidth: '100vw' }}>
-      <Box className={styles.techDashboardPanel} sx={{ width: '100%' }}>
-        {/* ════════════════════════════════════════════════════════════════════
-            TOP HEADER BANNER (Responsive Mobile Stacking & Controls)
-        ════════════════════════════════════════════════════════════════════ */}
-        <Box className={styles.techDashboardHeader} sx={{ width: '100%' }}>
-          {/* Top Navigation Row: Aligned to the right side */}
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        width: '100vw',
+        overflow: 'hidden',
+        bgcolor: '#1e293b',
+      }}
+    >
+      {/* ── Aukura Unified Corporate Header Bar ────────────────────────── */}
+      <AukuraHeader
+        profileImageUrl={profileImageUrl}
+        profileAvatarInitials={profileAvatarInitials}
+        profileEmail={profileEmail}
+        profileName={profileName}
+        profileMenuOpen={profileMenuOpen}
+        setProfileMenuOpen={setProfileMenuOpen}
+        profileMenuRef={profileMenuRef}
+        triggerId="tech-profile-menu-trigger"
+        dropdownContent={
           <Box
-            className={styles.techDashboardNavRow}
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              gap: { xs: 1.5, sm: 1 },
-              alignItems: { xs: 'stretch', sm: 'center' },
-              justifyContent: { xs: 'flex-start', sm: 'flex-end' },
-              width: '100%',
-            }}
+            className={styles.profileDropdown}
+            role="menu"
+            aria-labelledby="tech-profile-menu-trigger"
           >
-            {/* Period Navigation Controls */}
+            {/* User Info Header */}
+            <Box className={styles.profileHeader}>
+              <Typography className={styles.profileName}>
+                {profileName}
+              </Typography>
+              <Typography className={styles.profileEmail}>
+                {profileEmail}
+              </Typography>
+              <span className={styles.profileRoleBadge}>Technician</span>
+            </Box>
+
+            <button
+              id="tech-logout-nav-btn"
+              type="button"
+              className={`${styles.profileMenuItem} ${styles.profileMenuItemDanger}`}
+              onClick={() => {
+                setProfileMenuOpen(false);
+                handleLogout();
+              }}
+              role="menuitem"
+            >
+              <LogoutIcon className={styles.profileMenuIcon} />
+              <span>Logout</span>
+            </button>
+          </Box>
+        }
+      />
+
+      {/* ── Technician Dashboard Content Panel ────────────────────────── */}
+      <Box
+        className={styles.techDashboardRoot}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          height: 'calc(100vh - 48px)',
+          width: '100%',
+          maxWidth: '100vw',
+          p: { xs: 1, sm: 1.5 },
+          overflow: 'hidden',
+          boxSizing: 'border-box',
+        }}
+      >
+        <Box className={styles.techDashboardPanel} sx={{ width: '100%', height: '100%' }}>
+          {/* ════════════════════════════════════════════════════════════════════
+              CALENDAR SUB-HEADER (Title, Stats & Period Navigation Controls)
+          ════════════════════════════════════════════════════════════════════ */}
+          <Box className={styles.techDashboardHeader} sx={{ width: '100%' }}>
+            {/* Calendar Controls & Navigation Row */}
             <Box
-              className={styles.techDashboardControls}
+              className={styles.techDashboardNavRow}
               sx={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                flexWrap: { xs: 'wrap', sm: 'nowrap' },
-                justifyContent: { xs: 'space-between', sm: 'flex-end' },
-                width: { xs: '100%', sm: 'auto' },
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: { xs: 1.5, md: 1 },
+                alignItems: { xs: 'stretch', md: 'center' },
+                justifyContent: { xs: 'flex-start', md: 'space-between' },
+                width: '100%',
+                margin: '0 0 8px',
+                padding: '0 0 8px',
               }}
             >
-              <Tooltip title="Previous Period" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() => navigate('prev')}
-                  className={styles.techDashboardArrowBtn}
-                  aria-label="Previous period"
-                >
-                  <ChevronLeftIcon />
-                </IconButton>
-              </Tooltip>
-
+              {/* Title & Stats */}
               <Box
-                className={styles.techDashboardPeriodPill}
                 sx={{
-                  flex: { xs: 1, sm: 'initial' },
-                  minWidth: { xs: 0, sm: 140 },
-                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  flexWrap: 'wrap',
                 }}
               >
-                {centerLabel}
+                <Typography variant="h5" className={styles.techDashboardCenterTitle}>
+                  Technician Calendar
+                </Typography>
+                <Chip
+                  label={centerLabel}
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                  className={styles.techDashboardDateChip}
+                />
+                <Chip
+                  label={`${scheduledJobs.length} Jobs Scheduled`}
+                  size="small"
+                  className={styles.techDashboardJobsChip}
+                />
               </Box>
 
-              <Tooltip title="Next Period" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() => navigate('next')}
-                  className={styles.techDashboardArrowBtn}
-                  aria-label="Next period"
-                >
-                  <ChevronRightIcon />
-                </IconButton>
-              </Tooltip>
-
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<TodayIcon className={styles.techDashboardNavIcon} />}
-                onClick={() => setCurrentDate(new Date())}
-                className={styles.techDashboardCompactButton}
+              {/* Period Navigation Controls */}
+              <Box
+                className={styles.techDashboardControls}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                  justifyContent: { xs: 'space-between', md: 'flex-end' },
+                  width: { xs: '100%', md: 'auto' },
+                }}
               >
-                Today
-              </Button>
-
-              <Select
-                value={viewMode}
-                size="small"
-                onChange={(e) => setViewMode(e.target.value as ViewMode)}
-                className={styles.techDashboardViewSelect}
-              >
-                <MenuItem value="week" sx={{ fontSize: '0.74rem', fontWeight: 600 }}>
-                  Week View
-                </MenuItem>
-                <MenuItem value="month" sx={{ fontSize: '0.74rem', fontWeight: 600 }}>
-                  Month View
-                </MenuItem>
-              </Select>
-
-              {/* Profile Navigation Menu */}
-              <Box className={styles.profileMenu} ref={profileMenuRef}>
-                <Tooltip title={`Account (${profileEmail})`} arrow>
+                <Tooltip title="Previous Period" arrow>
                   <IconButton
-                    id="tech-profile-menu-trigger"
-                    className={styles.profileMenuTrigger}
-                    onClick={() => setProfileMenuOpen((isOpen) => !isOpen)}
-                    aria-label="Open technician profile menu"
-                    aria-expanded={profileMenuOpen}
-                    aria-haspopup="menu"
+                    size="small"
+                    onClick={() => navigate('prev')}
+                    className={styles.techDashboardArrowBtn}
+                    aria-label="Previous period"
                   >
-                    <Avatar
-                      className={styles.profileAvatar}
-                      src={profileImageUrl || undefined}
-                      alt={profileEmail ? `${profileEmail} profile` : 'Technician profile'}
-                    >
-                      {!profileImageUrl ? profileAvatarInitials : null}
-                    </Avatar>
+                    <ChevronLeftIcon />
                   </IconButton>
                 </Tooltip>
 
-                {profileMenuOpen && (
-                  <Box
-                    className={styles.profileDropdown}
-                    role="menu"
-                    aria-labelledby="tech-profile-menu-trigger"
-                  >
-                    {/* User Info Header */}
-                    <Box className={styles.profileHeader}>
-                      <Typography className={styles.profileName}>
-                        {profileName}
-                      </Typography>
-                      <Typography className={styles.profileEmail}>
-                        {profileEmail}
-                      </Typography>
-                      <span className={styles.profileRoleBadge}>Technician</span>
-                    </Box>
+                <Box
+                  className={styles.techDashboardPeriodPill}
+                  sx={{
+                    flex: { xs: 1, sm: 'initial' },
+                    minWidth: { xs: 0, sm: 140 },
+                    textAlign: 'center',
+                  }}
+                >
+                  {centerLabel}
+                </Box>
 
-                    <button
-                      id="tech-logout-nav-btn"
-                      type="button"
-                      className={`${styles.profileMenuItem} ${styles.profileMenuItemDanger}`}
-                      onClick={() => {
-                        setProfileMenuOpen(false);
-                        handleLogout();
-                      }}
-                      role="menuitem"
-                    >
-                      <LogoutIcon className={styles.profileMenuIcon} />
-                      <span>Logout</span>
-                    </button>
-                  </Box>
-                )}
+                <Tooltip title="Next Period" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() => navigate('next')}
+                    className={styles.techDashboardArrowBtn}
+                    aria-label="Next period"
+                  >
+                    <ChevronRightIcon />
+                  </IconButton>
+                </Tooltip>
+
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<TodayIcon className={styles.techDashboardNavIcon} />}
+                  onClick={() => setCurrentDate(new Date())}
+                  className={styles.techDashboardCompactButton}
+                >
+                  Today
+                </Button>
+
+                <Select
+                  value={viewMode}
+                  size="small"
+                  onChange={(e) => setViewMode(e.target.value as ViewMode)}
+                  className={styles.techDashboardViewSelect}
+                >
+                  <MenuItem value="week" sx={{ fontSize: '0.74rem', fontWeight: 600 }}>
+                    Week View
+                  </MenuItem>
+                  <MenuItem value="month" sx={{ fontSize: '0.74rem', fontWeight: 600 }}>
+                    Month View
+                  </MenuItem>
+                </Select>
               </Box>
             </Box>
-          </Box>
 
-          {/* Title Row */}
-          <Box className={styles.techDashboardTitleRow} sx={{ width: '100%' }}>
-            <Box
-              className={styles.techDashboardTitleLeft}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                flexWrap: 'wrap',
-                width: '100%',
-              }}
-            >
-              <Typography variant="h5" className={styles.techDashboardCenterTitle}>
-                Technician Calendar
-              </Typography>
-              <Chip
-                label={centerLabel}
-                color="primary"
-                variant="outlined"
-                size="small"
-                className={styles.techDashboardDateChip}
-              />
-              <Chip
-                label={`${scheduledJobs.length} Jobs Scheduled`}
-                size="small"
-                className={styles.techDashboardJobsChip}
-              />
-            </Box>
+            <Typography variant="body2" className={styles.techDashboardSubtitle}>
+              Interactive multi-day chronological technician schedule & task overview
+            </Typography>
           </Box>
-
-          <Typography variant="body2" className={styles.techDashboardSubtitle}>
-            Interactive multi-day chronological technician schedule & task overview
-          </Typography>
-        </Box>
 
         {/* ════════════════════════════════════════════════════════════════════
             MAIN CONTENT AREA: CONDITIONAL DESKTOP MATRIX / MOBILE FEED
@@ -778,6 +788,7 @@ export default function TechDashboard() {
           </Box>
         )}
       </Box>
+    </Box>
     </Box>
   );
 }

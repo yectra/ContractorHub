@@ -56,6 +56,7 @@ import CreateTechnicianModal, {
   type CreateTechnicianData,
 } from './admin/modals/CreateTechnicianModal';
 import DeleteServiceRequestModal from './modals/DeleteServiceRequestModal';
+import AukuraHeader from './AukuraHeader';
 
 import styles from '../styles/UI/Dashboard.module.scss';
 import modalStyles from '../styles/UI/DispatchCenter.module.scss';
@@ -1230,7 +1231,98 @@ export const DispatchCenter: React.FC = () => {
   }, []);
 
   return (
-    <Box className={styles.dashboardRoot}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        width: '100vw',
+        overflow: 'hidden',
+        bgcolor: '#1e293b',
+      }}
+    >
+      {/* ── Aukura Unified Corporate Header Bar ────────────────────────── */}
+      <AukuraHeader
+        profileImageUrl={profileImageUrl}
+        profileAvatarInitials={profileAvatarInitials}
+        profileEmail={profileEmail}
+        profileName={profileEmail.split('@')[0]}
+        profileMenuOpen={profileMenuOpen}
+        setProfileMenuOpen={setProfileMenuOpen}
+        profileMenuRef={profileMenuRef}
+        triggerId="profile-menu-trigger"
+        dropdownContent={
+          <Box
+            className={styles.profileDropdown}
+            role="menu"
+            aria-labelledby="profile-menu-trigger"
+          >
+            <button
+              id="create-technician-nav-btn"
+              type="button"
+              className={styles.profileMenuItem}
+              onClick={() => {
+                navigate('/admin/technicians');
+                setProfileMenuOpen(false);
+              }}
+              role="menuitem"
+            >
+              <EngineeringIcon className={styles.profileMenuIcon} />
+              <span>Technicians</span>
+            </button>
+            <button
+              type="button"
+              className={styles.profileMenuItem}
+              onClick={() => {
+                navigate('/crm');
+                setProfileMenuOpen(false);
+              }}
+              role="menuitem"
+            >
+              <GroupsIcon className={styles.profileMenuIcon} />
+              <span>Client</span>
+            </button>
+            <button
+              id="user-management-nav-btn"
+              type="button"
+              className={styles.profileMenuItem}
+              onClick={() => {
+                navigate('/admin/users');
+                setProfileMenuOpen(false);
+              }}
+              role="menuitem"
+            >
+              <PersonAddIcon className={styles.profileMenuIcon} />
+              <span>Users</span>
+            </button>
+            <button
+              id="logout-nav-btn"
+              type="button"
+              className={`${styles.profileMenuItem} ${styles.profileMenuItemDanger}`}
+              onClick={() => {
+                setProfileMenuOpen(false);
+                handleLogout();
+              }}
+              role="menuitem"
+            >
+              <LogoutIcon className={styles.profileMenuIcon} />
+              <span>Logout</span>
+            </button>
+          </Box>
+        }
+      />
+
+      <Box
+        className={styles.dashboardRoot}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          height: 'calc(100vh - 48px)',
+          pt: 0,
+          pb: 0,
+          overflow: 'hidden',
+        }}
+      >
       {/* ── Left Panel - Service Queue (320px) ────────────────────────── */}
       <Box
         className={`${styles.dashboardSidePanel} ${styles.dashboardLeftPanel} ${
@@ -1389,87 +1481,7 @@ export const DispatchCenter: React.FC = () => {
 
       {/* ── Center Panel - Scheduling Matrix (Flexible) ────────────────── */}
       <Box className={styles.dashboardCenterPanel}>
-        <Box className={styles.dashboardCenterHeader}>
-          <Box className={styles.dashboardNavRow}>
-            <Box className={styles.profileMenu} ref={profileMenuRef}>
-              <IconButton
-                id="profile-menu-trigger"
-                className={styles.profileMenuTrigger}
-                onClick={() => setProfileMenuOpen((isOpen) => !isOpen)}
-                aria-label="Open profile navigation"
-                aria-expanded={profileMenuOpen}
-                aria-haspopup="menu"
-              >
-                <Avatar
-                  className={styles.profileAvatar}
-                  src={profileImageUrl || undefined}
-                  alt={profileEmail ? `${profileEmail} profile` : 'User profile'}
-                >
-                  {!profileImageUrl ? profileAvatarInitials : null}
-                </Avatar>
-              </IconButton>
-
-              {profileMenuOpen && (
-                <Box
-                  className={styles.profileDropdown}
-                  role="menu"
-                  aria-labelledby="profile-menu-trigger"
-                >
-                  <button
-                    id="create-technician-nav-btn"
-                    type="button"
-                    className={styles.profileMenuItem}
-                    onClick={() => {
-                      navigate('/admin/technicians');
-                      setProfileMenuOpen(false);
-                    }}
-                    role="menuitem"
-                  >
-                    <EngineeringIcon className={styles.profileMenuIcon} />
-                    <span>Technicians</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.profileMenuItem}
-                    onClick={() => {
-                      navigate('/crm');
-                      setProfileMenuOpen(false);
-                    }}
-                    role="menuitem"
-                  >
-                    <GroupsIcon className={styles.profileMenuIcon} />
-                    <span>Client</span>
-                  </button>
-                  <button
-                    id="user-management-nav-btn"
-                    type="button"
-                    className={styles.profileMenuItem}
-                    onClick={() => {
-                      navigate('/admin/users');
-                      setProfileMenuOpen(false);
-                    }}
-                    role="menuitem"
-                  >
-                    <PersonAddIcon className={styles.profileMenuIcon} />
-                    <span>Users</span>
-                  </button>
-                  <button
-                    id="logout-nav-btn"
-                    type="button"
-                    className={`${styles.profileMenuItem} ${styles.profileMenuItemDanger}`}
-                    onClick={() => {
-                      setProfileMenuOpen(false);
-                      handleLogout();
-                    }}
-                    role="menuitem"
-                  >
-                    <LogoutIcon className={styles.profileMenuIcon} />
-                    <span>Logout</span>
-                  </button>
-                </Box>
-              )}
-            </Box>
-          </Box>
+        <Box className={styles.dashboardCenterHeader} sx={{ pt: 1.5 }}>
 
           <Box
             className={`${styles.dashboardRowBetween} ${styles.dashboardCenterTitleRow}`}
@@ -2289,6 +2301,7 @@ export const DispatchCenter: React.FC = () => {
           </Box>
         </Dialog>
       )}
+      </Box>
     </Box>
   );
 };
