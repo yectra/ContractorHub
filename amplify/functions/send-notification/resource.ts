@@ -158,12 +158,17 @@ exports.handler = async (event) => {
     let body = JSON.parse(event.body || '{}');
     if (typeof body === 'string') body = JSON.parse(body);
 
-    const emailReq = body.job && body.clientEmail ? {
+    const emailReq = body.job && body.technicianEmail ? {
+      to: body.technicianEmail,
+      subject: \`Job Assignment: \${body.job.service || 'Work Order'}\`,
+      html: \`<h2>Hello \${body.technicianName || 'Technician'}</h2><p>Job Details: \${JSON.stringify(body.job)}</p>\`,
+      senderName: body.senderName || body.fromName || body.adminName,
+    } : (body.job && body.clientEmail ? {
       to: body.clientEmail,
       subject: \`Job Notification: \${body.job.service || 'Service Appointment'}\`,
       html: \`<h2>\${body.clientName}</h2><p>Job Details: \${JSON.stringify(body.job)}</p>\`,
       senderName: body.senderName || body.fromName || body.adminName,
-    } : body;
+    } : body);
 
     const result = await sendEmail(emailReq);
     return {

@@ -6,6 +6,9 @@ import {
   sendJobUpdatedNotification,
   sendJobDeletedNotification,
   resolveClientForJob,
+  sendTechnicianJobAssignmentNotification,
+  sendTechnicianJobUpdateNotification,
+  resolveTechnicianForJob,
 } from '../services/mailService';
 
 /**
@@ -76,9 +79,19 @@ export function useServiceRequests() {
   const updateServiceRequest = async (
     id: string,
     data: Partial<Schema['ServiceRequest']['type']>,
-    options?: { clientEmail?: string; notifyClient?: boolean; changesSummary?: string; senderName?: string; fromName?: string; adminName?: string }
+    options?: {
+      clientEmail?: string;
+      notifyClient?: boolean;
+      technicianEmail?: string;
+      notifyTechnician?: boolean;
+      changesSummary?: string;
+      senderName?: string;
+      fromName?: string;
+      adminName?: string;
+    }
   ) => {
     try {
+      const targetReq = serviceRequests.find((r) => r.id === id);
       const updated = await serviceRequestAPI.updateServiceRequest(id, data);
       setServiceRequests((prev) =>
         prev.map((req) => (req.id === id ? { ...req, ...updated } : req))
@@ -112,6 +125,56 @@ export function useServiceRequests() {
         }
       }
 
+      if (options?.notifyTechnician && updated && updated.assignedTechnicianId) {
+        try {
+          const tech = await resolveTechnicianForJob(updated.assignedTechnicianId);
+          const techEmail = options.technicianEmail || tech?.email;
+          if (techEmail) {
+            const isNewAssignment = data.assignedTechnicianId && !targetReq?.assignedTechnicianId;
+            if (isNewAssignment) {
+              sendTechnicianJobAssignmentNotification({
+                technicianName: tech?.name || 'Technician',
+                technicianEmail: techEmail,
+                technicianId: updated.assignedTechnicianId,
+                job: {
+                  id: updated.id,
+                  service: updated.service,
+                  client: updated.client,
+                  location: updated.location,
+                  type: updated.type,
+                  priority: updated.priority,
+                  status: updated.status,
+                  requestTime: updated.requestTime,
+                  estimatedDuration: updated.estimatedDuration,
+                  notes: updated.notes,
+                },
+                senderName: options.senderName || options.fromName || options.adminName,
+              }).catch((err) => console.error('[useServiceRequests] Auto-notification error on tech assignment:', err));
+            } else {
+              sendTechnicianJobUpdateNotification({
+                technicianName: tech?.name || 'Technician',
+                technicianEmail: techEmail,
+                technicianId: updated.assignedTechnicianId,
+                job: {
+                  id: updated.id,
+                  service: updated.service,
+                  client: updated.client,
+                  location: updated.location,
+                  status: updated.status,
+                  requestTime: updated.requestTime,
+                  estimatedDuration: updated.estimatedDuration,
+                  notes: updated.notes,
+                },
+                changesSummary: options.changesSummary || `Status updated to ${updated.status}`,
+                senderName: options.senderName || options.fromName || options.adminName,
+              }).catch((err) => console.error('[useServiceRequests] Auto-notification error on tech update:', err));
+            }
+          }
+        } catch (notifyErr) {
+          console.warn('[useServiceRequests] Failed to send tech notification:', notifyErr);
+        }
+      }
+
       return updated;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update service request';
@@ -122,7 +185,15 @@ export function useServiceRequests() {
 
   const createServiceRequest = async (
     data: Partial<Schema['ServiceRequest']['type']>,
-    options?: { clientEmail?: string; notifyClient?: boolean; senderName?: string; fromName?: string; adminName?: string }
+    options?: {
+      clientEmail?: string;
+      notifyClient?: boolean;
+      technicianEmail?: string;
+      notifyTechnician?: boolean;
+      senderName?: string;
+      fromName?: string;
+      adminName?: string;
+    }
   ) => {
     try {
       const created = await serviceRequestAPI.createServiceRequest(data);
@@ -152,6 +223,35 @@ export function useServiceRequests() {
           }
         } catch (notifyErr) {
           console.warn('[useServiceRequests] Failed to send create notification:', notifyErr);
+        }
+      }
+
+      if (options?.notifyTechnician && created && created.assignedTechnicianId) {
+        try {
+          const tech = await resolveTechnicianForJob(created.assignedTechnicianId);
+          const techEmail = options.technicianEmail || tech?.email;
+          if (techEmail) {
+            sendTechnicianJobAssignmentNotification({
+              technicianName: tech?.name || 'Technician',
+              technicianEmail: techEmail,
+              technicianId: created.assignedTechnicianId,
+              job: {
+                id: created.id,
+                service: created.service,
+                client: created.client,
+                location: created.location,
+                type: created.type,
+                priority: created.priority,
+                status: created.status,
+                requestTime: created.requestTime,
+                estimatedDuration: created.estimatedDuration,
+                notes: created.notes,
+              },
+              senderName: options.senderName || options.fromName || options.adminName,
+            }).catch((err) => console.error('[useServiceRequests] Auto-notification error on tech assignment:', err));
+          }
+        } catch (notifyErr) {
+          console.warn('[useServiceRequests] Failed to send tech assignment notification:', notifyErr);
         }
       }
 
@@ -319,9 +419,19 @@ export function useScheduledJobs() {
   const updateScheduledJob = async (
     id: string,
     data: Partial<Schema['ScheduledJob']['type']>,
-    options?: { clientEmail?: string; notifyClient?: boolean; changesSummary?: string; senderName?: string; fromName?: string; adminName?: string }
+    options?: {
+      clientEmail?: string;
+      notifyClient?: boolean;
+      technicianEmail?: string;
+      notifyTechnician?: boolean;
+      changesSummary?: string;
+      senderName?: string;
+      fromName?: string;
+      adminName?: string;
+    }
   ) => {
     try {
+      const prevJob = scheduledJobs.find((j) => j.id === id);
       const updated = await scheduledJobAPI.updateScheduledJob(id, data);
       setScheduledJobs((prev) =>
         prev.map((job) => (job.id === id ? { ...job, ...updated } : job))
@@ -354,6 +464,61 @@ export function useScheduledJobs() {
         }
       }
 
+      if (options?.notifyTechnician && updated) {
+        try {
+          const req = await serviceRequestAPI.getServiceRequest(updated.serviceRequestId);
+          const targetTechId = updated.techId;
+          const tech = await resolveTechnicianForJob(targetTechId);
+          const techEmail = options.technicianEmail || tech?.email;
+          if (techEmail) {
+            const isReassigned = prevJob && prevJob.techId !== targetTechId;
+            if (isReassigned) {
+              sendTechnicianJobAssignmentNotification({
+                technicianName: tech?.name || 'Technician',
+                technicianEmail: techEmail,
+                technicianId: targetTechId,
+                job: {
+                  id: req?.id || updated.serviceRequestId,
+                  service: req?.service || 'Scheduled Service',
+                  client: req?.client || 'Valued Client',
+                  location: req?.location || 'Client Location',
+                  status: updated.status || 'Scheduled',
+                  scheduledDate: updated.scheduledDate,
+                  requestTime: `${updated.startHour}:00`,
+                  estimatedDuration: `${updated.duration || 2} hours`,
+                  notes: updated.notes || req?.notes,
+                },
+                senderName: options.senderName || options.fromName || options.adminName,
+              }).catch((err) => console.error('[useScheduledJobs] Auto-notification error on technician reassignment:', err));
+            } else {
+              const summary =
+                options.changesSummary ||
+                `Status: ${updated.status || 'Scheduled'}, Scheduled: ${updated.scheduledDate || 'Standard'} at ${updated.startHour}:00`;
+              sendTechnicianJobUpdateNotification({
+                technicianName: tech?.name || 'Technician',
+                technicianEmail: techEmail,
+                technicianId: targetTechId,
+                job: {
+                  id: req?.id || updated.serviceRequestId,
+                  service: req?.service || 'Scheduled Job',
+                  client: req?.client || 'Valued Client',
+                  location: req?.location || 'Client Location',
+                  status: updated.status,
+                  scheduledDate: updated.scheduledDate,
+                  requestTime: `${updated.startHour}:00`,
+                  estimatedDuration: `${updated.duration || 2} hours`,
+                  notes: updated.notes || req?.notes,
+                },
+                changesSummary: summary,
+                senderName: options.senderName || options.fromName || options.adminName,
+              }).catch((err) => console.error('[useScheduledJobs] Auto-notification error on technician update:', err));
+            }
+          }
+        } catch (notifyErr) {
+          console.warn('[useScheduledJobs] Failed to send technician notification on update:', notifyErr);
+        }
+      }
+
       return updated;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update scheduled job';
@@ -372,7 +537,15 @@ export function useScheduledJobs() {
       notes?: string;
       scheduledDate?: string;
     },
-    options?: { clientEmail?: string; notifyClient?: boolean; senderName?: string; fromName?: string; adminName?: string }
+    options?: {
+      clientEmail?: string;
+      notifyClient?: boolean;
+      technicianEmail?: string;
+      notifyTechnician?: boolean;
+      senderName?: string;
+      fromName?: string;
+      adminName?: string;
+    }
   ) => {
     try {
       const created = await scheduledJobAPI.createScheduledJob(data);
@@ -401,6 +574,36 @@ export function useScheduledJobs() {
           }
         } catch (notifyErr) {
           console.warn('[useScheduledJobs] Failed to send create notification:', notifyErr);
+        }
+      }
+
+      if (options?.notifyTechnician && created && created.techId) {
+        try {
+          const req = await serviceRequestAPI.getServiceRequest(created.serviceRequestId);
+          const tech = await resolveTechnicianForJob(created.techId);
+          const techEmail = options.technicianEmail || tech?.email;
+          if (techEmail) {
+            sendTechnicianJobAssignmentNotification({
+              technicianName: tech?.name || 'Technician',
+              technicianEmail: techEmail,
+              technicianId: created.techId,
+              job: {
+                id: req?.id || created.serviceRequestId,
+                service: req?.service || 'Scheduled Service',
+                client: req?.client || 'Valued Client',
+                location: req?.location || 'Client Location',
+                priority: req?.priority || 'medium',
+                status: created.status || 'Scheduled',
+                scheduledDate: created.scheduledDate,
+                requestTime: `${created.startHour}:00`,
+                estimatedDuration: `${created.duration || 2} hours`,
+                notes: created.notes || req?.notes,
+              },
+              senderName: options.senderName || options.fromName || options.adminName,
+            }).catch((err) => console.error('[useScheduledJobs] Auto-notification error on tech assignment:', err));
+          }
+        } catch (notifyErr) {
+          console.warn('[useScheduledJobs] Failed to send tech assignment notification:', notifyErr);
         }
       }
 
