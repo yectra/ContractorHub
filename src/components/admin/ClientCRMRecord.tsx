@@ -7,6 +7,9 @@ import type { Schema } from '../../../amplify/data/resource';
 import styles from '../../styles/UI/ClientRecord.module.scss';
 import { IconButton, Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import PaymentIcon from '@mui/icons-material/Payment';
 import ClientModal, { type ClientFormData } from './modals/ClientModal';
 import JobModal, { type JobFormData } from './modals/JobModal';
 import DeleteConfirmModal from './modals/DeleteConfirmModal';
@@ -792,46 +795,51 @@ export default function ClientCRMRecord(): React.JSX.Element {
           {/* Main Panel Area: Metrics & Job History */}
           <div className={styles.mainSection}>
             {/* Financial Summary metrics panel */}
-            <div className={styles.card}>
+          <div className={`${styles.card} ${styles.mainPanelCard}`}>
               <div className={styles.sectionTitle}>
                 <span>Financial Summary Panel</span>
                 <span className={styles.sectionSubtitle}>Live billing data</span>
               </div>
               <div className={styles.metricGrid}>
-                <div className={styles.metricCard}>
-                  <div className={styles.detailLabel}>Outstanding Invoices</div>
-                  <div className={`${styles.metricValue} ${outstandingInvoicesCount > 0 ? styles.orange : ''}`}>
-                    {outstandingInvoicesCount}
+              <div className={`${styles.metricCard} ${styles.statsCard} ${styles.outstandingInvoicesCard}`}>
+                <div className={styles.cardContent}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardTitle}>Outstanding Invoices</div>
+                    <ReceiptLongIcon className={styles.cardIcon} />
                   </div>
-                  <div className={styles.fontSize9Muted}>Unpaid Work Orders</div>
+                  <div className={styles.cardValue}>{outstandingInvoicesCount}</div>
+                  <div className={styles.cardDescription}>Unpaid Work Orders</div>
                 </div>
+              </div>
 
-                <div className={styles.metricCard}>
-                  <div className={styles.detailLabel}>Overdue Balance</div>
-                  <div className={`${styles.metricValue} ${totalOutstanding > 0 ? styles.red : styles.green}`}>
-                    ${totalOutstanding.toFixed(2)}
+              <div className={`${styles.metricCard} ${styles.statsCard} ${totalOutstanding > 0 ? styles.balanceOverdueCard : styles.balanceGoodCard}`}>
+                <div className={styles.cardContent}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardTitle}>Overdue Balance</div>
+                    <AccountBalanceWalletIcon className={styles.cardIcon} />
                   </div>
-                  <div className={styles.fontSize9Muted}>Billing Balance</div>
+                  <div className={styles.cardValue}>${totalOutstanding.toFixed(2)}</div>
+                  <div className={styles.cardDescription}>Billing Balance</div>
                 </div>
+              </div>
 
-                <div className={styles.metricCard}>
-                  <div className={styles.detailLabel}>Payment Status</div>
-                  <div className={styles.marginTop4}>
-                    {paymentStatus === 'PAID' ? (
-                      <span className={styles.pillPaid}>PAID / GOOD</span>
-                    ) : paymentStatus === 'OVERDUE' ? (
-                      <span className={styles.pillOverdue}>OVERDUE</span>
-                    ) : (
-                      <span className={styles.pillPending}>PENDING ({outstandingInvoicesCount})</span>
-                    )}
+              <div className={`${styles.metricCard} ${styles.statsCard} ${styles.standingCard}`}>
+                <div className={styles.cardContent}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardTitle}>Payment Status</div>
+                    <PaymentIcon className={styles.cardIcon} />
                   </div>
-                  <div className={styles.fontSize9Muted}>Account Standing</div>
+                  <div className={styles.cardValue}>
+                    {paymentStatus === 'PAID' ? 'PAID' : paymentStatus === 'OVERDUE' ? 'OVERDUE' : `PENDING (${outstandingInvoicesCount})`}
+                  </div>
+                  <div className={styles.cardDescription}>Account Standing</div>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Job History Table */}
-            <div className={styles.card}>
+          {/* Job History Table */}
+          <div className={`${styles.card} ${styles.mainPanelCard}`}>
               <div className={styles.sectionTitle}>
                 <span>Job History Table</span>
                 <span className={styles.pillCount}>{clientJobs.length} Jobs Total</span>
@@ -1231,4 +1239,3 @@ export default function ClientCRMRecord(): React.JSX.Element {
     </div>
   );
 }
-
