@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/purity */
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -34,6 +34,9 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useAuthenticator } from '@aws-amplify/ui-react';
+import { clearAuthSessionAndRedirect } from '../utils/authUtils';
+import AukuraHeader from './AukuraHeader';
 
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
@@ -41,16 +44,15 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EngineeringIcon from '@mui/icons-material/Engineering';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SpeedIcon from '@mui/icons-material/Speed';
-import PeopleIcon from '@mui/icons-material/People';
 import HandymanIcon from '@mui/icons-material/Handyman';
-import EventNoteIcon from '@mui/icons-material/EventNote';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
+import LogoutIcon from '@mui/icons-material/Logout';
+import GroupsIcon from '@mui/icons-material/Groups';
 
 import styles from '../styles/UI/TechnicianManagement.module.scss';
+import dashboardStyles from '../styles/UI/Dashboard.module.scss';
 import { technicianAPI, scheduledJobAPI } from '../services/api';
 import type { Schema } from '../../amplify/data/resource';
 
@@ -98,6 +100,82 @@ const INITIAL_FORM_STATE: {
 
 export default function TechnicianManagement() {
   const navigate = useNavigate();
+
+  type ProfileUser = {
+    username?: string;
+    signInDetails?: {
+      loginId?: string;
+    };
+    attributes?: Record<string, string | undefined>;
+  };
+
+  const { signOut, user } = useAuthenticator((context) => [
+    context.signOut,
+    context.user,
+  ]);
+  const profileUser = user as ProfileUser | undefined;
+
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const profileEmail =
+    profileUser?.attributes?.email ||
+    profileUser?.signInDetails?.loginId ||
+    profileUser?.username ||
+    '';
+
+  const profileImageUrl =
+    profileUser?.attributes?.picture ||
+    profileUser?.attributes?.profile_image ||
+    profileUser?.attributes?.avatar_url ||
+    '';
+
+  const profileAvatarInitials = useMemo(() => {
+    const emailUsername = profileEmail.split('@')[0] || profileEmail;
+    const normalized = emailUsername.replace(/[._-]+/g, ' ').trim();
+
+    if (!normalized) {
+      return 'U';
+    }
+
+    const parts = normalized.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+
+    return parts
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase();
+  }, [profileEmail]);
+
+  const profileName =
+    profileUser?.attributes?.name ||
+    profileUser?.attributes?.given_name ||
+    (profileEmail ? profileEmail.split('@')[0] : '') ||
+    'User';
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        event.target instanceof Node &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [profileMenuOpen]);
+
+  const handleLogout = async () => {
+    await clearAuthSessionAndRedirect(signOut);
+  };
 
   // Live Data States
   const [technicians, setTechnicians] = useState<TechnicianRecord[]>([]);
@@ -463,69 +541,101 @@ export default function TechnicianManagement() {
   };
 
   return (
-    <Box className={styles.techBoardRoot}>
-      {/* ── Header Status Bar ── */}
-      <Box className={styles.techHeader} component="header">
-        <Box className={styles.techHeaderContent}>
-          <Box className={styles.techHeaderLeft}>
-            <IconButton
-              className={styles.techBackButton}
-              onClick={() => navigate(-1)}
-              aria-label="Back to dashboard"
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+        width: '100vw',
+        maxWidth: '100vw',
+        overflowX: 'hidden',
+        bgcolor: '#1e293b',
+      }}
+    >
+      {/* ── Aukura Unified Corporate Header Bar ────────────────────────── */}
+      {/* Pinned Margin Components: <img src="/assets/logo.png" alt="Aukura Logo" className="h-8 w-auto object-contain" /> */}
+      <AukuraHeader
+        className="w-full max-w-[100vw] overflow-x-hidden px-4 md:px-6 py-3 flex justify-between items-center bg-slate-800"
+        profileImageUrl={profileImageUrl}
+        profileAvatarInitials={profileAvatarInitials}
+        profileEmail={profileEmail}
+        profileName={profileName}
+        profileMenuOpen={profileMenuOpen}
+        setProfileMenuOpen={setProfileMenuOpen}
+        profileMenuRef={profileMenuRef}
+        triggerId="tech-profile-menu-trigger"
+        dropdownContent={
+          <Box
+            className={dashboardStyles.profileDropdown}
+            role="menu"
+            aria-labelledby="tech-profile-menu-trigger"
+          >
+            <button
+              id="dispatch-board-nav-btn"
+              type="button"
+              className={dashboardStyles.profileMenuItem}
+              onClick={() => {
+                navigate('/');
+                setProfileMenuOpen(false);
+              }}
+              role="menuitem"
             >
-              <ArrowBackIcon className={styles.techBackIcon} />
-            </IconButton>
-            <Box>
-              <Typography variant="h5" className={styles.techManagementTitle}>
-                Field Technician Management
-              </Typography>
-              <Typography variant="caption" className={styles.techManagementSubtitle}>
-                Admin Portal / Field Service Technicians Directory
-              </Typography>
-            </Box>
+              <SpeedIcon className={dashboardStyles.profileMenuIcon} />
+              <span>Dispatch Board</span>
+            </button>
+            <button
+              id="crm-nav-btn"
+              type="button"
+              className={dashboardStyles.profileMenuItem}
+              onClick={() => {
+                navigate('/crm');
+                setProfileMenuOpen(false);
+              }}
+              role="menuitem"
+            >
+              <GroupsIcon className={dashboardStyles.profileMenuIcon} />
+              <span>Client CRM</span>
+            </button>
+            <button
+              id="user-management-nav-btn"
+              type="button"
+              className={dashboardStyles.profileMenuItem}
+              onClick={() => {
+                navigate('/admin/users');
+                setProfileMenuOpen(false);
+              }}
+              role="menuitem"
+            >
+              <PersonAddIcon className={dashboardStyles.profileMenuIcon} />
+              <span>Users</span>
+            </button>
+            <button
+              id="logout-nav-btn"
+              type="button"
+              className={`${dashboardStyles.profileMenuItem} ${dashboardStyles.profileMenuItemDanger}`}
+              onClick={() => {
+                setProfileMenuOpen(false);
+                handleLogout();
+              }}
+              role="menuitem"
+            >
+              <LogoutIcon className={dashboardStyles.profileMenuIcon} />
+              <span>Logout</span>
+            </button>
           </Box>
+        }
+      />
 
-          {/* Top navigation shortcuts */}
-          <Box className={styles.techManagementNavActions}>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<SpeedIcon className={styles.techManagementNavIcon} />}
-              onClick={() => navigate('/')}
-              className={styles.techManagementNavButton}
-            >
-              Dispatch Board
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<PeopleIcon className={styles.techManagementNavIcon} />}
-              onClick={() => navigate('/crm')}
-              className={styles.techManagementNavButton}
-            >
-              CRM Record
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<AdminPanelSettingsIcon className={styles.techManagementNavIcon} />}
-              onClick={() => navigate('/admin/users')}
-              className={styles.techManagementNavButton}
-            >
-              User Management
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<EventNoteIcon className={styles.techManagementNavIcon} />}
-              onClick={() => navigate('/tech-dashboard')}
-              className={styles.techManagementNavButton}
-            >
-              Tech Calendar
-            </Button>
-          </Box>
-        </Box>
-      </Box>
+      <Box
+        className={styles.techBoardRoot}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          width: '100%',
+          maxWidth: '100vw',
+          overflowX: 'hidden',
+        }}
+      >
 
       {/* ── Main Container ── */}
       <Box className={styles.statsContainer}>
@@ -1223,6 +1333,7 @@ export default function TechnicianManagement() {
           {alert.message}
         </Alert>
       </Snackbar>
+      </Box>
     </Box>
   );
 }

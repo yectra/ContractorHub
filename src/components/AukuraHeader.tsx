@@ -20,6 +20,7 @@ export interface AukuraHeaderProps {
   profileMenuRef: React.RefObject<HTMLDivElement | null>;
   triggerId?: string;
   dropdownContent: React.ReactNode;
+  className?: string;
 }
 
 export const AukuraHeader: React.FC<AukuraHeaderProps> = ({
@@ -32,14 +33,16 @@ export const AukuraHeader: React.FC<AukuraHeaderProps> = ({
   profileMenuRef,
   triggerId = 'profile-menu-trigger',
   dropdownContent,
+  className,
 }) => {
   const navigate = useNavigate();
 
   return (
     <Box
       component="header"
+      className={`w-full max-w-[100vw] overflow-x-hidden px-4 md:px-6 py-3 flex justify-between items-center bg-slate-800 ${className || ''}`.trim()}
       sx={{
-        width: '100%',
+        width: '100%',       
         height: '48px',
         minHeight: '48px',
         bgcolor: '#1e293b',
