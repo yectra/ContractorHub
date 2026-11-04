@@ -755,7 +755,7 @@ export default function FieldExecution() {
             To start executing work, schedule a job on the Dispatch timeline and make sure you select it from the dropdown above.
           </p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/admin')}
             className={styles.buttonPrimary}
           >
             Go to Dispatch Board

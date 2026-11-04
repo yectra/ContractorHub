@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Box,
   IconButton,
@@ -33,12 +33,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CancelIcon from '@mui/icons-material/Cancel';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CloseIcon from '@mui/icons-material/Close';
-import GroupsIcon from '@mui/icons-material/Groups';
-import EngineeringIcon from '@mui/icons-material/Engineering';
-import LogoutIcon from '@mui/icons-material/Logout';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useAuthenticator } from '@aws-amplify/ui-react';
-import { clearAuthSessionAndRedirect } from '../utils/authUtils';
 
 import {
   useServiceRequests,
@@ -59,7 +55,7 @@ import CreateTechnicianModal, {
   type CreateTechnicianData,
 } from './admin/modals/CreateTechnicianModal';
 import DeleteServiceRequestModal from './modals/DeleteServiceRequestModal';
-import AukuraHeader from './AukuraHeader';
+import AppLayout from './layout/AppLayout';
 
 import styles from '../styles/UI/Dashboard.module.scss';
 import modalStyles from '../styles/UI/DispatchCenter.module.scss';
@@ -230,7 +226,7 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
 
         if (onNotification) {
           onNotification(
-            'âœ… Checklist saved! Technician will see the updated steps immediately.',
+            '✅ Checklist saved! Technician will see the updated steps immediately.',
             'success'
           );
         }
@@ -266,7 +262,7 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
             variant="h6"
             className={modalStyles.modalTitle}
           >
-            ðŸ“‹ Job Checklist Editor
+            📋 Job Checklist Editor
           </Typography>
           <Chip
             label="Task Editor"
@@ -380,18 +376,14 @@ type ProfileUser = {
  * Principal Dispatch Command Center Dashboard Component
  */
 export const DispatchCenter: React.FC = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlJobId = searchParams.get('jobId') || searchParams.get('highlight');
   const urlDate = searchParams.get('date');
 
-  const { signOut, user } = useAuthenticator((context) => [
-    context.signOut,
-    context.user,
-  ]);
+  const { user } = useAuthenticator((context) => [context.user]);
   const profileUser = user as ProfileUser | undefined;
 
-  // â”€â”€ Layout & Selection State Architecture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Layout & Selection State Architecture Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [userRightPanelOpen, setUserRightPanelOpen] = useState<boolean | undefined>(
     undefined
@@ -412,8 +404,6 @@ export const DispatchCenter: React.FC = () => {
     undefined
   );
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   // Synchronize state resets when URL parameters change
   const [prevUrlState, setPrevUrlState] = useState({ urlJobId, urlDate });
@@ -424,56 +414,27 @@ export const DispatchCenter: React.FC = () => {
     setUserSelectedDate(undefined);
   }
 
-  // â”€â”€ Dispatcher Checklist Modal state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Dispatcher Checklist Modal state Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const [checklistModalOpen, setChecklistModalOpen] = useState(false);
   const [checklistModalJobId, setChecklistModalJobId] = useState<string | null>(null);
   const [checklistDraftItems, setChecklistDraftItems] = useState<
     DispatchChecklistItem[]
   >([]);
 
-  // â”€â”€ Create Technician Modal state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Create Technician Modal state Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const [createTechModalOpen, setCreateTechModalOpen] = useState(false);
 
-  // â”€â”€ Delete Service Request Modal state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Delete Service Request Modal state Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [jobIdToDelete, setJobIdToDelete] = useState<string | null>(null);
-
-  const profileEmail =
-    profileUser?.attributes?.email ||
-    profileUser?.signInDetails?.loginId ||
-    profileUser?.username ||
-    '';
-
-  const profileImageUrl =
-    profileUser?.attributes?.picture ||
-    profileUser?.attributes?.profile_image ||
-    profileUser?.attributes?.avatar_url ||
-    '';
-
-  const profileAvatarInitials = useMemo(() => {
-    const emailUsername = profileEmail.split('@')[0] || profileEmail;
-    const normalized = emailUsername.replace(/[._-]+/g, ' ').trim();
-
-    if (!normalized) {
-      return 'U';
-    }
-
-    const parts = normalized.split(/\s+/).filter(Boolean);
-    if (parts.length === 1) {
-      return parts[0].slice(0, 2).toUpperCase();
-    }
-
-    return parts
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase();
-  }, [profileEmail]);
 
   const adminDisplayName =
     profileUser?.attributes?.name ||
     profileUser?.attributes?.given_name ||
-    (profileEmail ? profileEmail.split('@')[0] : '') ||
+    (profileUser?.signInDetails?.loginId
+      ? profileUser.signInDetails.loginId.split('@')[0]
+      : '') ||
+    profileUser?.username ||
     'ContractorHub Dispatch';
 
   // Real-time data streams
@@ -620,25 +581,6 @@ export const DispatchCenter: React.FC = () => {
     setSelectedDate(newDate || getTodayString());
   };
 
-  useEffect(() => {
-    if (!profileMenuOpen) {
-      return;
-    }
-
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (
-        profileMenuRef.current &&
-        event.target instanceof Node &&
-        !profileMenuRef.current.contains(event.target)
-      ) {
-        setProfileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [profileMenuOpen]);
-
   const handleCreateTechnician = async (techData: CreateTechnicianData) => {
     try {
       const created = await createTechnician(techData);
@@ -652,10 +594,6 @@ export const DispatchCenter: React.FC = () => {
       showNotification_(msg, 'error');
       throw err;
     }
-  };
-
-  const handleLogout = async () => {
-    await clearAuthSessionAndRedirect(signOut);
   };
 
   // Filter scheduled jobs by selectedDate
@@ -1059,7 +997,7 @@ export const DispatchCenter: React.FC = () => {
       });
       localStorage.removeItem(`checklist_job_${checklistModalJobId}`);
       showNotification_(
-        'âœ… Checklist saved! Technician will see the updated steps immediately.',
+        'Ã¢Å“â€¦ Checklist saved! Technician will see the updated steps immediately.',
         'success'
       );
       setChecklistModalOpen(false);
@@ -1069,7 +1007,7 @@ export const DispatchCenter: React.FC = () => {
     }
   };
 
-  // â”€â”€ Drag & Drop Handlers with Intact Schema Transfer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Drag & Drop Handlers with Intact Schema Transfer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const handleDragStart = (
     event: React.DragEvent<HTMLDivElement>,
     type: 'request' | 'job',
@@ -1360,87 +1298,12 @@ export const DispatchCenter: React.FC = () => {
   }, []);
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        width: '100vw',
-        overflow: 'hidden',
-        bgcolor: '#1e293b',
-      }}
+    <AppLayout
+      hideSubHeader
+      activePage="dashboard"
+      fullWidth
+      noScroll
     >
-      {/* ── Aukura Unified Corporate Header Bar ────────────────────────── */}
-      <AukuraHeader
-        profileImageUrl={profileImageUrl}
-        profileAvatarInitials={profileAvatarInitials}
-        profileEmail={profileEmail}
-        profileName={profileEmail.split('@')[0]}
-        profileMenuOpen={profileMenuOpen}
-        setProfileMenuOpen={setProfileMenuOpen}
-        profileMenuRef={profileMenuRef}
-        triggerId="profile-menu-trigger"
-        dropdownContent={
-          <Box
-            className={styles.profileDropdown}
-            role="menu"
-            aria-labelledby="profile-menu-trigger"
-          >
-            <button
-              id="create-technician-nav-btn"
-              type="button"
-              className={styles.profileMenuItem}
-              onClick={() => {
-                navigate('/admin/technicians');
-                setProfileMenuOpen(false);
-              }}
-              role="menuitem"
-            >
-              <EngineeringIcon className={styles.profileMenuIcon} />
-              <span>Technicians</span>
-            </button>
-            <button
-              type="button"
-              className={styles.profileMenuItem}
-              onClick={() => {
-                navigate('/crm');
-                setProfileMenuOpen(false);
-              }}
-              role="menuitem"
-            >
-              <GroupsIcon className={styles.profileMenuIcon} />
-              <span>Client</span>
-            </button>
-            <button
-              id="user-management-nav-btn"
-              type="button"
-              className={styles.profileMenuItem}
-              onClick={() => {
-                navigate('/admin/users');
-                setProfileMenuOpen(false);
-              }}
-              role="menuitem"
-            >
-              <PersonAddIcon className={styles.profileMenuIcon} />
-              <span>Users</span>
-            </button>
-            <button
-              id="logout-nav-btn"
-              type="button"
-              className={`${styles.profileMenuItem} ${styles.profileMenuItemDanger}`}
-              onClick={() => {
-                setProfileMenuOpen(false);
-                handleLogout();
-              }}
-              role="menuitem"
-            >
-              <LogoutIcon className={styles.profileMenuIcon} />
-              <span>Logout</span>
-            </button>
-          </Box>
-        }
-      />
-
       <Box
         className={styles.dashboardRoot}
         sx={{
@@ -1452,7 +1315,7 @@ export const DispatchCenter: React.FC = () => {
           overflow: 'hidden',
         }}
       >
-      {/* ── Left Panel - Service Queue (320px) ────────────────────────── */}
+      {/* â”€â”€ Left Panel - Service Queue (320px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <Box
         className={`${styles.dashboardSidePanel} ${styles.dashboardLeftPanel} ${
           leftPanelOpen
@@ -1608,7 +1471,7 @@ export const DispatchCenter: React.FC = () => {
         )}
       </Box>
 
-      {/* â”€â”€ Center Panel - Scheduling Matrix (Flexible) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Center Panel - Scheduling Matrix (Flexible) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <Box className={styles.dashboardCenterPanel}>
         <Box className={styles.dashboardCenterHeader} sx={{ pt: 1.5 }}>
 
@@ -1794,21 +1657,21 @@ export const DispatchCenter: React.FC = () => {
 
           <Box className={styles.dashboardGuide}>
             <Typography variant="body2" className={styles.dashboardGuideTitle}>
-              ðŸ’¡ Quick Guide
+              💡 Quick Guide
             </Typography>
             <Typography variant="caption" className={styles.dashboardGuideCopy}>
-              â€¢ Click on service requests in the left queue to view details
+              • Click on service requests in the left queue to view details
               <br />
-              â€¢ Drag requests from the queue to technician time slots to schedule
+              • Drag requests from the queue to technician time slots to schedule
               <br />
-              â€¢ Click scheduled jobs in the center to view details
-              <br />â€¢ Drag existing jobs to reschedule or reassign technicians
+              • Click scheduled jobs in the center to view details
+              <br />• Drag existing jobs to reschedule or reassign technicians
             </Typography>
           </Box>
         </Box>
       </Box>
 
-      {/* â”€â”€ Right Panel - Work Order Details (400px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Right Panel - Work Order Details (400px) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <Box
         className={`${styles.dashboardSidePanel} ${styles.dashboardRightPanel} ${
           rightPanelOpen
@@ -2151,7 +2014,7 @@ export const DispatchCenter: React.FC = () => {
                         }
                         className={styles.dashboardPrimaryButton}
                       >
-                        ðŸ“‹ Manage Job Checklist
+                        📋 Manage Job Checklist
                       </Button>
                     </Box>
                   )}
@@ -2268,7 +2131,7 @@ export const DispatchCenter: React.FC = () => {
                         variant="body2"
                         className={styles.dashboardMapCopy}
                       >
-                        ðŸ—ºï¸ Map Preview
+                        Map Preview
                       </Typography>
                     </Box>
                   </Box>
@@ -2431,7 +2294,7 @@ export const DispatchCenter: React.FC = () => {
         </Dialog>
       )}
       </Box>
-    </Box>
+    </AppLayout>
   );
 };
 

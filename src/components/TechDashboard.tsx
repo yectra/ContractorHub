@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -14,21 +14,18 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TodayIcon from '@mui/icons-material/Today';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
-import { useAuthenticator } from '@aws-amplify/ui-react';
-import { clearAuthSessionAndRedirect } from '../utils/authUtils';
 import { useServiceRequests, useScheduledJobs, useTechnicians } from '../hooks/useDispatchData';
-import AukuraHeader from './AukuraHeader';
+import AppLayout from './layout/AppLayout';
 import styles from '../styles/UI/TechDashboard.module.scss';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-/** Time columns: 7 AM → 7 PM (13 one-hour slots, matching Admin Dashboard) */
+/** Time columns: 7 AM â†’ 7 PM (13 one-hour slots, matching Admin Dashboard) */
 const HOUR_COLUMNS = Array.from({ length: 13 }, (_, i) => i + 7);
 
 
-// ─── Date Utility Helpers ─────────────────────────────────────────────────────
+// â”€â”€â”€ Date Utility Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Return a local YYYY-MM-DD string for a given Date object */
 function toDateStr(d: Date): string {
@@ -47,14 +44,14 @@ function todayStr(): string {
  * Given a cursor Date and viewMode, return the ordered array of YYYY-MM-DD
  * strings that should appear as row headers in the calendar.
  *
- * Week View  → 7 days starting from the Monday of the week containing cursor
- * Month View → all days in the calendar month of the cursor
+ * Week View  â†’ 7 days starting from the Monday of the week containing cursor
+ * Month View â†’ all days in the calendar month of the cursor
  */
 function buildCalendarDates(cursor: Date, viewMode: 'week' | 'month'): string[] {
   if (viewMode === 'week') {
     // Snap to the Monday of the cursor's week
     const monday = new Date(cursor);
-    const dow = monday.getDay(); // 0=Sun … 6=Sat
+    const dow = monday.getDay(); // 0=Sun â€¦ 6=Sat
     const diff = dow === 0 ? -6 : 1 - dow; // shift so Monday=0
     monday.setDate(monday.getDate() + diff);
 
@@ -78,15 +75,15 @@ function buildCalendarDates(cursor: Date, viewMode: 'week' | 'month'): string[] 
 /**
  * Build the human-readable center label string.
  *
- * Week View  → "26 July – 01 August, 2026"
- * Month View → "July 2026"
+ * Week View  â†’ "26 July â€“ 01 August, 2026"
+ * Month View â†’ "July 2026"
  */
 function buildLabel(cursor: Date, viewMode: 'week' | 'month'): string {
   if (viewMode === 'month') {
     return cursor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   }
 
-  // Week view: compute Mon→Sun span
+  // Week view: compute Monâ†’Sun span
   const monday = new Date(cursor);
   const dow = monday.getDay();
   const diff = dow === 0 ? -6 : 1 - dow;
@@ -105,9 +102,9 @@ function buildLabel(cursor: Date, viewMode: 'week' | 'month'): string {
   const endYear = sunday.getFullYear();
 
   if (monday.getMonth() === sunday.getMonth()) {
-    return `${startDay} – ${endDay} ${endMonth} ${endYear}`;
+    return `${startDay} â€“ ${endDay} ${endMonth} ${endYear}`;
   }
-  return `${startDay} ${startMonth} – ${endDay} ${endMonth} ${endYear}`;
+  return `${startDay} ${startMonth} â€“ ${endDay} ${endMonth} ${endYear}`;
 }
 
 /** Format a YYYY-MM-DD string into "Mon, Jul 9" */
@@ -128,7 +125,7 @@ function formatHour(hour: number): string {
   return `${hour}:00 AM`;
 }
 
-// ─── ScheduledJobCard Sub-component (Desktop Matrix Tile) ───────────────────────
+// â”€â”€â”€ ScheduledJobCard Sub-component (Desktop Matrix Tile) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface ScheduledJobCardProps {
   jobId: string;
@@ -150,7 +147,7 @@ function ScheduledJobCard({ srId, client, service, techColor, onClick }: Schedul
         e.stopPropagation();
         onClick();
       }}
-      title={`${srId} — ${client}: ${service}`}
+      title={`${srId} â€” ${client}: ${service}`}
     >
       <Typography variant="caption" className={styles.techJobId}>
         {srId}
@@ -162,7 +159,7 @@ function ScheduledJobCard({ srId, client, service, techColor, onClick }: Schedul
   );
 }
 
-// ─── Types & Main Component ───────────────────────────────────────────────────
+// â”€â”€â”€ Types & Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type ViewMode = 'week' | 'month';
 
@@ -175,93 +172,18 @@ type JobItemData = {
   startHour: number;
 };
 
-type ProfileUser = {
-  username?: string;
-  signInDetails?: {
-    loginId?: string;
-  };
-  attributes?: Record<string, string | undefined>;
-};
-
 export default function TechDashboard() {
   const routerNavigate = useNavigate();
-  const { signOut, user } = useAuthenticator((context) => [context.signOut, context.user]);
-  const profileUser = user as ProfileUser | undefined;
-
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   const { serviceRequests, loading: srLoading } = useServiceRequests();
   const { scheduledJobs, loading: jobsLoading } = useScheduledJobs();
   const { technicians } = useTechnicians();
 
-  // ── Profile details extraction ────────────────────────────────────────────
-  const profileEmail =
-    profileUser?.attributes?.email ||
-    profileUser?.signInDetails?.loginId ||
-    profileUser?.username ||
-    'technician@service.com';
-
-  const profileName =
-    profileUser?.attributes?.name ||
-    profileUser?.attributes?.given_name ||
-    profileEmail.split('@')[0] ||
-    'Technician';
-
-  const profileImageUrl =
-    profileUser?.attributes?.picture ||
-    profileUser?.attributes?.profile_image ||
-    profileUser?.attributes?.avatar_url ||
-    '';
-
-  const profileAvatarInitials = useMemo(() => {
-    const emailUsername = profileEmail.split('@')[0] || profileEmail;
-    const normalized = emailUsername.replace(/[._-]+/g, ' ').trim();
-
-    if (!normalized) {
-      return 'T';
-    }
-
-    const parts = normalized.split(/\s+/).filter(Boolean);
-    if (parts.length === 1) {
-      return parts[0].slice(0, 2).toUpperCase();
-    }
-
-    return parts
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase();
-  }, [profileEmail]);
-
-  // ── Click-away detection for profile dropdown ─────────────────────────────
-  useEffect(() => {
-    if (!profileMenuOpen) return;
-
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (
-        profileMenuRef.current &&
-        event.target instanceof Node &&
-        !profileMenuRef.current.contains(event.target)
-      ) {
-        setProfileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [profileMenuOpen]);
-
-  // ── Authentication & Sandbox Teardown Handler (Logout) ────────────────────
-  const handleLogout = async () => {
-    await clearAuthSessionAndRedirect(signOut);
-  };
-
   // ── Navigation state ──────────────────────────────────────────────────────
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [viewMode, setViewMode] = useState<ViewMode>('week');
 
-  // ── Step backward / forward ───────────────────────────────────────────────
+  // â”€â”€ Step backward / forward â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const navigate = (direction: 'prev' | 'next') => {
     setCurrentDate((prev) => {
       const d = new Date(prev);
@@ -276,22 +198,22 @@ export default function TechDashboard() {
     });
   };
 
-  // ── Derived calendar dates (rows / list items) ────────────────────────────
+  // â”€â”€ Derived calendar dates (rows / list items) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const calendarDates = useMemo(
     () => buildCalendarDates(currentDate, viewMode),
     [currentDate, viewMode]
   );
 
-  // ── Center label ─────────────────────────────────────────────────────────
+  // â”€â”€ Center label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const centerLabel = useMemo(
     () => buildLabel(currentDate, viewMode),
     [currentDate, viewMode]
   );
 
-  // ── Today string (for row/card highlighting) ─────────────────────────────
+  // â”€â”€ Today string (for row/card highlighting) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const today = todayStr();
 
-  // ── Chronologically Grouped Jobs by Date (for mobile feed & matrix lookup) ─
+  // â”€â”€ Chronologically Grouped Jobs by Date (for mobile feed & matrix lookup) â”€
   const jobsByDate = useMemo(() => {
     const map: Record<string, JobItemData[]> = {};
     calendarDates.forEach((date) => {
@@ -330,7 +252,7 @@ export default function TechDashboard() {
     return map;
   }, [scheduledJobs, serviceRequests, technicians, calendarDates]);
 
-  // ── Desktop matrix lookup: "YYYY-MM-DD::HH" → array of chip data ─────────
+  // â”€â”€ Desktop matrix lookup: "YYYY-MM-DD::HH" â†’ array of chip data â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const jobGrid = useMemo(() => {
     const grid: Record<string, JobItemData[]> = {};
 
@@ -345,7 +267,7 @@ export default function TechDashboard() {
     return grid;
   }, [jobsByDate]);
 
-  // ── Navigate to FieldExecution with context ───────────────────────────────
+  // â”€â”€ Navigate to FieldExecution with context â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleChipClick = (jobId: string, srId: string) => {
     sessionStorage.setItem('previousView', 'TECH_DASHBOARD');
     sessionStorage.setItem('selectedJobId', jobId);
@@ -356,67 +278,21 @@ export default function TechDashboard() {
   const isLoading = srLoading || jobsLoading;
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        width: '100vw',
-        overflow: 'hidden',
-        bgcolor: '#1e293b',
-      }}
+    <AppLayout
+      title="Technician Schedule"
+      subtitle="Live Calendar & Assigned Job Execution"
+      activePage="tech-dashboard"
+      showBackButton
+      backTo="/admin"
+      fullWidth
+      noScroll
     >
-      {/* ── Aukura Unified Corporate Header Bar ────────────────────────── */}
-      <AukuraHeader
-        profileImageUrl={profileImageUrl}
-        profileAvatarInitials={profileAvatarInitials}
-        profileEmail={profileEmail}
-        profileName={profileName}
-        profileMenuOpen={profileMenuOpen}
-        setProfileMenuOpen={setProfileMenuOpen}
-        profileMenuRef={profileMenuRef}
-        triggerId="tech-profile-menu-trigger"
-        dropdownContent={
-          <Box
-            className={styles.profileDropdown}
-            role="menu"
-            aria-labelledby="tech-profile-menu-trigger"
-          >
-            {/* User Info Header */}
-            <Box className={styles.profileHeader}>
-              <Typography className={styles.profileName}>
-                {profileName}
-              </Typography>
-              <Typography className={styles.profileEmail}>
-                {profileEmail}
-              </Typography>
-              <span className={styles.profileRoleBadge}>Technician</span>
-            </Box>
-
-            <button
-              id="tech-logout-nav-btn"
-              type="button"
-              className={`${styles.profileMenuItem} ${styles.profileMenuItemDanger}`}
-              onClick={() => {
-                setProfileMenuOpen(false);
-                handleLogout();
-              }}
-              role="menuitem"
-            >
-              <LogoutIcon className={styles.profileMenuIcon} />
-              <span>Logout</span>
-            </button>
-          </Box>
-        }
-      />
-
-      {/* ── Technician Dashboard Content Panel ────────────────────────── */}
       <Box
         className={styles.techDashboardRoot}
         sx={{
           flex: 1,
           minHeight: 0,
-          height: 'calc(100vh - 48px)',
+          height: 'calc(100vh - 96px)',
           width: '100%',
           maxWidth: '100vw',
           p: { xs: 1, sm: 1.5 },
@@ -425,9 +301,9 @@ export default function TechDashboard() {
         }}
       >
         <Box className={styles.techDashboardPanel} sx={{ width: '100%', height: '100%' }}>
-          {/* ════════════════════════════════════════════════════════════════════
+          {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
               CALENDAR SUB-HEADER (Title, Stats & Period Navigation Controls)
-          ════════════════════════════════════════════════════════════════════ */}
+          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
           <Box className={styles.techDashboardHeader} sx={{ width: '100%' }}>
             {/* Calendar Controls & Navigation Row */}
             <Box
@@ -545,22 +421,22 @@ export default function TechDashboard() {
             </Typography>
           </Box>
 
-        {/* ════════════════════════════════════════════════════════════════════
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
             MAIN CONTENT AREA: CONDITIONAL DESKTOP MATRIX / MOBILE FEED
-        ════════════════════════════════════════════════════════════════════ */}
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         {isLoading ? (
           <Box className={styles.techDashboardLoadingBox}>
             <CircularProgress size={40} />
             <Typography className={styles.techDashboardLoadingText}>
-              Loading schedule data…
+              Loading schedule dataâ€¦
             </Typography>
           </Box>
         ) : (
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', overflow: 'auto' }}>
-            {/* ─────────────────────────────────────────────────────────────
+            {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 1. DESKTOP & TABLET VIEW (lg:block / >= 1024px)
                 Horizontal timeline grid matrix intact
-            ───────────────────────────────────────────────────────────── */}
+            â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <Box
               className={styles.techDashboardDesktopView}
               sx={{
@@ -570,7 +446,7 @@ export default function TechDashboard() {
             >
               <Box className={styles.techDashboardGridScroll}>
                 <Box className={styles.techDashboardGridInner}>
-                  {/* ── Time Header Row (Sticky Horizontal Hourly Headers) ── */}
+                  {/* â”€â”€ Time Header Row (Sticky Horizontal Hourly Headers) â”€â”€ */}
                   <Box className={styles.techDashboardTimeHeaderRow}>
                     <Box className={styles.techDashboardSpacer}>
                       {viewMode === 'week' ? 'Week Day' : 'Day'}
@@ -582,7 +458,7 @@ export default function TechDashboard() {
                     ))}
                   </Box>
 
-                  {/* ── Date Rows ── */}
+                  {/* â”€â”€ Date Rows â”€â”€ */}
                   {calendarDates.map((dateStr) => {
                     const isCurrentDay = dateStr === today;
 
@@ -648,10 +524,10 @@ export default function TechDashboard() {
               </Box>
             </Box>
 
-            {/* ─────────────────────────────────────────────────────────────
+            {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 2. MOBILE & SMALL BREAKPOINT FEED (max-width: 1023px / lg:hidden)
                 Sleek, chronological vertical-scrolling feed list layout
-            ───────────────────────────────────────────────────────────── */}
+            â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <Box
               className={styles.techDashboardMobileFeed}
               sx={{
@@ -723,11 +599,11 @@ export default function TechDashboard() {
                                   {job.srId}
                                 </Typography>
                                 <Typography className={styles.mobileTaskClient}>
-                                  • {job.client || 'Unknown Client'}
+                                  â€¢ {job.client || 'Unknown Client'}
                                 </Typography>
                               </Box>
                               <Box className={styles.mobileTimePill}>
-                                ⏱️ {formatHour(job.startHour)}
+                                â±ï¸ {formatHour(job.startHour)}
                               </Box>
                             </Box>
                             {job.service && (
@@ -744,9 +620,9 @@ export default function TechDashboard() {
               })}
             </Box>
 
-            {/* ─────────────────────────────────────────────────────────────
+            {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 3. QUICK GUIDE FOOTER (Responsive collapsing text column)
-            ───────────────────────────────────────────────────────────── */}
+            â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <Box
               sx={{
                 px: { xs: 1.5, lg: 2 },
@@ -770,17 +646,17 @@ export default function TechDashboard() {
                   <InfoOutlinedIcon fontSize="small" /> Quick Guide
                 </Typography>
                 <Typography className={styles.techDashboardGuideCopy}>
-                  • Tap any job card to open the technician execution checklist.
+                  â€¢ Tap any job card to open the technician execution checklist.
                 </Typography>
                 <Typography className={styles.techDashboardGuideCopy}>
-                  • Highlighted card/row represents Today. Use top controls to navigate dates.
+                  â€¢ Highlighted card/row represents Today. Use top controls to navigate dates.
                 </Typography>
                 <Typography className={styles.techDashboardGuideCopy}>
-                  • Switch between <strong>Week View</strong> and <strong>Month View</strong> using the selector.
+                  â€¢ Switch between <strong>Week View</strong> and <strong>Month View</strong> using the selector.
                 </Typography>
                 {scheduledJobs.length === 0 && (
                   <Typography className={styles.techDashboardGuideWarn}>
-                    ⚠ No jobs scheduled yet — assign requests from the Admin Dispatch Center onto the timeline.
+                    âš  No jobs scheduled yet â€” assign requests from the Admin Dispatch Center onto the timeline.
                   </Typography>
                 )}
               </Box>
@@ -789,6 +665,6 @@ export default function TechDashboard() {
         )}
       </Box>
     </Box>
-    </Box>
+    </AppLayout>
   );
 }

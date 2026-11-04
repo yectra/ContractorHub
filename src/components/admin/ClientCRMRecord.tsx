@@ -1,18 +1,11 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { useClients, useServiceRequests, useTechnicians, useScheduledJobs } from '../../hooks/useDispatchData';
 import { parseStartHour, parseDurationHours, getTodayString, mapServiceStatusToJobStatus, formatDisplayDate } from '../../utils/jobHelpers';
 import type { Schema } from '../../../amplify/data/resource';
 import styles from '../../styles/UI/ClientRecord.module.scss';
-import dashboardStyles from '../../styles/UI/Dashboard.module.scss';
-import { clearAuthSessionAndRedirect } from '../../utils/authUtils';
-import AukuraHeader from '../AukuraHeader';
-import { Box } from '@mui/material';
-import SpeedIcon from '@mui/icons-material/Speed';
-import EngineeringIcon from '@mui/icons-material/Engineering';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import LogoutIcon from '@mui/icons-material/Logout';
+import AppLayout from '../layout/AppLayout';
 import { IconButton, Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -99,81 +92,7 @@ const DispatchIcon: React.FC = () => (
 );
 
 export default function ClientCRMRecord(): React.JSX.Element {
-  type ProfileUser = {
-    username?: string;
-    signInDetails?: {
-      loginId?: string;
-    };
-    attributes?: Record<string, string | undefined>;
-  };
-
-  const { signOut, user } = useAuthenticator((context) => [
-    context.signOut,
-    context.user,
-  ]);
-  const profileUser = user as ProfileUser | undefined;
-
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement | null>(null);
-
-  const profileEmail =
-    profileUser?.attributes?.email ||
-    profileUser?.signInDetails?.loginId ||
-    profileUser?.username ||
-    '';
-
-  const profileImageUrl =
-    profileUser?.attributes?.picture ||
-    profileUser?.attributes?.profile_image ||
-    profileUser?.attributes?.avatar_url ||
-    '';
-
-  const profileAvatarInitials = useMemo(() => {
-    const emailUsername = profileEmail.split('@')[0] || profileEmail;
-    const normalized = emailUsername.replace(/[._-]+/g, ' ').trim();
-
-    if (!normalized) {
-      return 'U';
-    }
-
-    const parts = normalized.split(/\s+/).filter(Boolean);
-    if (parts.length === 1) {
-      return parts[0].slice(0, 2).toUpperCase();
-    }
-
-    return parts
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase();
-  }, [profileEmail]);
-
-  const profileName =
-    profileUser?.attributes?.name ||
-    profileUser?.attributes?.given_name ||
-    (profileEmail ? profileEmail.split('@')[0] : '') ||
-    'User';
-
-  useEffect(() => {
-    if (!profileMenuOpen) return;
-
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (
-        profileMenuRef.current &&
-        event.target instanceof Node &&
-        !profileMenuRef.current.contains(event.target)
-      ) {
-        setProfileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [profileMenuOpen]);
-
-  const handleLogout = async () => {
-    await clearAuthSessionAndRedirect(signOut);
-  };
+  const { user } = useAuthenticator((context) => [context.user]);
   const adminDisplayName =
     (user as any)?.attributes?.name ||
     (user as any)?.attributes?.given_name ||
@@ -214,7 +133,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
     if (scheduledDate) {
       params.set('date', scheduledDate);
     }
-    navigate(`/?${params.toString()}`);
+    navigate(`/admin?${params.toString()}`);
   };
 
   // Handle responsive layout checks
@@ -765,132 +684,40 @@ export default function ClientCRMRecord(): React.JSX.Element {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-        width: '100vw',
-        maxWidth: '100vw',
-        overflowX: 'hidden',
-        backgroundColor: '#1e293b',
-      }}
-    >
-      {/* ── Aukura Unified Corporate Header Bar ────────────────────────── */}
-      {/* Pinned Margin Components: <img src="/assets/logo.png" alt="Aukura Logo" className="h-8 w-auto object-contain" /> */}
-      <AukuraHeader
-        className="w-full max-w-[100vw] overflow-x-hidden px-4 md:px-6 py-3 flex justify-between items-center bg-slate-800"
-        profileImageUrl={profileImageUrl}
-        profileAvatarInitials={profileAvatarInitials}
-        profileEmail={profileEmail}
-        profileName={profileName}
-        profileMenuOpen={profileMenuOpen}
-        setProfileMenuOpen={setProfileMenuOpen}
-        profileMenuRef={profileMenuRef}
-        triggerId="crm-profile-menu-trigger"
-        dropdownContent={
-          <Box
-            className={dashboardStyles.profileDropdown}
-            role="menu"
-            aria-labelledby="crm-profile-menu-trigger"
+    <AppLayout
+      title="Client CRM Dashboard"
+      subtitle="Customer Accounts & Historical Work Orders"
+      activePage="crm"
+      showBackButton
+      backTo="/admin"
+      leftControls={
+        !loadingClients && clients.length > 0 ? (
+          <select
+            value={effectiveSelectedClientId}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedClientId(e.target.value)}
+            className={styles.clientSelect}
+            aria-label="Select Client"
           >
-            <button
-              id="dispatch-board-nav-btn"
-              type="button"
-              className={dashboardStyles.profileMenuItem}
-              onClick={() => {
-                navigate('/');
-                setProfileMenuOpen(false);
-              }}
-              role="menuitem"
-            >
-              <SpeedIcon className={dashboardStyles.profileMenuIcon} />
-              <span>Dispatch Board</span>
-            </button>
-            <button
-              id="technicians-nav-btn"
-              type="button"
-              className={dashboardStyles.profileMenuItem}
-              onClick={() => {
-                navigate('/admin/technicians');
-                setProfileMenuOpen(false);
-              }}
-              role="menuitem"
-            >
-              <EngineeringIcon className={dashboardStyles.profileMenuIcon} />
-              <span>Technicians</span>
-            </button>
-            <button
-              id="user-management-nav-btn"
-              type="button"
-              className={dashboardStyles.profileMenuItem}
-              onClick={() => {
-                navigate('/admin/users');
-                setProfileMenuOpen(false);
-              }}
-              role="menuitem"
-            >
-              <PersonAddIcon className={dashboardStyles.profileMenuIcon} />
-              <span>Users</span>
-            </button>
-            <button
-              id="logout-nav-btn"
-              type="button"
-              className={`${dashboardStyles.profileMenuItem} ${dashboardStyles.profileMenuItemDanger}`}
-              onClick={() => {
-                setProfileMenuOpen(false);
-                handleLogout();
-              }}
-              role="menuitem"
-            >
-              <LogoutIcon className={dashboardStyles.profileMenuIcon} />
-              <span>Logout</span>
-            </button>
-          </Box>
-        }
-      />
-
-      {/* ── Operational Sub-Header Bar (Client Selector & New Client Action) ── */}
-      <div className={styles.header}>
-        <div className={styles.headerRow}>
-          <div className={styles.flexGap8}>
-            {/* Client Selector dropdown */}
-            {!loadingClients && clients.length > 0 && (
-              <select
-                value={effectiveSelectedClientId}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedClientId(e.target.value)}
-                className={styles.clientSelect}
-              >
-                {clients.map((c: Client, index: number) => (
-                  <option key={c.id || index} value={c.id || ''}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            )}
-
-            {/* Quick add client button */}
-            <button 
-              onClick={() => setShowNewClientModal(true)} 
-              className={styles.newClientBtn}
-            >
-              <PlusIcon />
-              {!isMobile && 'NEW CLIENT'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div
-        className={styles.container}
-        style={{
-          flex: 1,
-          minHeight: 0,
-          width: '100%',
-          maxWidth: '100vw',
-          overflowX: 'hidden',
-        }}
-      >
+            {clients.map((c: Client, index: number) => (
+              <option key={c.id || index} value={c.id || ''}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        ) : null
+      }
+      primaryAction={
+        <button 
+          type="button"
+          onClick={() => setShowNewClientModal(true)} 
+          className={styles.newClientBtn}
+        >
+          <PlusIcon />
+          <span>{!isMobile && 'NEW CLIENT'}</span>
+        </button>
+      }
+    >
+      <div className={styles.container}>
 
       {/* Alert Banners */}
       {successAlert && (
@@ -903,17 +730,17 @@ export default function ClientCRMRecord(): React.JSX.Element {
                 className={styles.alertActionBtn}
                 onClick={() => handleNavigateToDashboard(successAlert.jobId!, successAlert.date)}
               >
-                View in Dashboard â†’
+                View in Dashboard &rarr;
               </button>
             )}
           </div>
-          <button className={styles.alertCloseBtn} onClick={() => setSuccessAlert(null)}>Ã—</button>
+          <button className={styles.alertCloseBtn} onClick={() => setSuccessAlert(null)}>&times;</button>
         </div>
       )}
       {errorAlert && (
         <div className={styles.alertError}>
           <span>{errorAlert}</span>
-          <button className={styles.alertCloseBtn} onClick={() => setErrorAlert(null)}>Ã—</button>
+          <button className={styles.alertCloseBtn} onClick={() => setErrorAlert(null)}>&times;</button>
         </div>
       )}
 
@@ -1387,6 +1214,6 @@ export default function ClientCRMRecord(): React.JSX.Element {
         onConfirm={handleDeleteJobConfirm}
       />
       </div>
-    </div>
+    </AppLayout>
   );
 }

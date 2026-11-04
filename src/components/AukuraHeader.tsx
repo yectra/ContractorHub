@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   IconButton,
@@ -15,11 +15,11 @@ export interface AukuraHeaderProps {
   profileAvatarInitials?: string;
   profileEmail?: string;
   profileName?: string;
-  profileMenuOpen: boolean;
-  setProfileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  profileMenuRef: React.RefObject<HTMLDivElement | null>;
+  profileMenuOpen?: boolean;
+  setProfileMenuOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  profileMenuRef?: React.RefObject<HTMLDivElement | null>;
   triggerId?: string;
-  dropdownContent: React.ReactNode;
+  dropdownContent?: React.ReactNode;
   className?: string;
 }
 
@@ -36,6 +36,39 @@ export const AukuraHeader: React.FC<AukuraHeaderProps> = ({
   className,
 }) => {
   const navigate = useNavigate();
+
+  // Internal fallback state if caller does not manage profile dropdown
+  const [internalMenuOpen, setInternalMenuOpen] = useState(false);
+  const internalMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const isMenuOpen = profileMenuOpen !== undefined ? profileMenuOpen : internalMenuOpen;
+  const menuRef = profileMenuRef || internalMenuRef;
+
+  const handleToggle = () => {
+    if (setProfileMenuOpen) {
+      setProfileMenuOpen((prev) => !prev);
+    } else {
+      setInternalMenuOpen((prev) => !prev);
+    }
+  };
+
+  useEffect(() => {
+    if (profileMenuOpen !== undefined) return; // Caller manages outside click
+    if (!internalMenuOpen) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        internalMenuRef.current &&
+        event.target instanceof Node &&
+        !internalMenuRef.current.contains(event.target)
+      ) {
+        setInternalMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [internalMenuOpen, profileMenuOpen]);
 
   return (
     <Box
@@ -81,8 +114,9 @@ export const AukuraHeader: React.FC<AukuraHeaderProps> = ({
         />
       </Box>
 
+      {/* ── Far Right Area: Profile Avatar & Dropdown ───────────────── */}
       <Box
-        ref={profileMenuRef}
+        ref={menuRef}
         sx={{
           position: 'relative',
           display: 'inline-flex',
@@ -92,9 +126,9 @@ export const AukuraHeader: React.FC<AukuraHeaderProps> = ({
         <Tooltip title={`Profile Account (${profileName ? `${profileName} - ` : ''}${profileEmail || 'User'})`} arrow>
           <IconButton
             id={triggerId}
-            onClick={() => setProfileMenuOpen((prev) => !prev)}
+            onClick={handleToggle}
             aria-label="Open user profile menu"
-            aria-expanded={profileMenuOpen}
+            aria-expanded={isMenuOpen}
             aria-haspopup="menu"
             sx={{
               p: '2px',
@@ -121,24 +155,13 @@ export const AukuraHeader: React.FC<AukuraHeaderProps> = ({
                 letterSpacing: 0,
               }}
             >
-              {!profileImageUrl ? (profileAvatarInitials) : null}
+              {!profileImageUrl ? (profileAvatarInitials || 'U') : null}
             </Avatar>
           </IconButton>
         </Tooltip>
 
         {/* Existing dropdown menu rendered seamlessly */}
-        {profileMenuOpen && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 'calc(100% + 8px)',
-              right: 0,
-              zIndex: 1400,
-            }}
-          >
-            {dropdownContent}
-          </Box>
-        )}
+        {isMenuOpen && dropdownContent}
       </Box>
     </Box>
   );

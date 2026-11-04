@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/purity */
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -37,10 +37,7 @@ import {
   DialogActions,
   InputAdornment,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { useAuthenticator } from '@aws-amplify/ui-react';
-import { clearAuthSessionAndRedirect } from '../../utils/authUtils';
-import AukuraHeader from '../AukuraHeader';
+import AppLayout from '../layout/AppLayout';
 
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
@@ -55,12 +52,8 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import KeyIcon from '@mui/icons-material/Key';
 import PeopleIcon from '@mui/icons-material/People';
 import SmartphoneIcon from '@mui/icons-material/Smartphone';
-import SpeedIcon from '@mui/icons-material/Speed';
-import LogoutIcon from '@mui/icons-material/Logout';
-import GroupsIcon from '@mui/icons-material/Groups';
 
 import styles from '../../styles/UI/UserManagement.module.scss';
-import dashboardStyles from '../../styles/UI/Dashboard.module.scss';
 
 import { technicianAPI } from '../../services/api';
 
@@ -152,83 +145,6 @@ const getAvatarColor = (role: string, name?: string): string => {
 };
 
 export default function UserManagement() {
-  // navigate declared above
-
-  type ProfileUser = {
-    username?: string;
-    signInDetails?: {
-      loginId?: string;
-    };
-    attributes?: Record<string, string | undefined>;
-  };
-
-  const { signOut, user } = useAuthenticator((context) => [
-    context.signOut,
-    context.user,
-  ]);
-  const profileUser = user as ProfileUser | undefined;
-
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement | null>(null);
-
-  const profileEmail =
-    profileUser?.attributes?.email ||
-    profileUser?.signInDetails?.loginId ||
-    profileUser?.username ||
-    '';
-
-  const profileImageUrl =
-    profileUser?.attributes?.picture ||
-    profileUser?.attributes?.profile_image ||
-    profileUser?.attributes?.avatar_url ||
-    '';
-
-  const profileAvatarInitials = useMemo(() => {
-    const emailUsername = profileEmail.split('@')[0] || profileEmail;
-    const normalized = emailUsername.replace(/[._-]+/g, ' ').trim();
-
-    if (!normalized) {
-      return 'U';
-    }
-
-    const parts = normalized.split(/\s+/).filter(Boolean);
-    if (parts.length === 1) {
-      return parts[0].slice(0, 2).toUpperCase();
-    }
-
-    return parts
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase();
-  }, [profileEmail]);
-
-  const profileName =
-    profileUser?.attributes?.name ||
-    profileUser?.attributes?.given_name ||
-    (profileEmail ? profileEmail.split('@')[0] : '') ||
-    'User';
-
-  useEffect(() => {
-    if (!profileMenuOpen) return;
-
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (
-        profileMenuRef.current &&
-        event.target instanceof Node &&
-        !profileMenuRef.current.contains(event.target)
-      ) {
-        setProfileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [profileMenuOpen]);
-
-  const handleLogout = async () => {
-    await clearAuthSessionAndRedirect(signOut);
-  };
   // Database States
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -277,8 +193,6 @@ export default function UserManagement() {
     message: '',
     severity: 'success',
   });
-
-  const navigate = useNavigate();
 
   // Helper to trigger alert notifications
   const showSnackbar = useCallback(
@@ -615,7 +529,7 @@ export default function UserManagement() {
 
       setSimulatedNotification({
         open: true,
-        title: `🔔 PUSH RECEIVED: ${userName}'s Device`,
+        title: `ðŸ”” PUSH RECEIVED: ${userName}'s Device`,
         message: testPushText,
         device: `${deviceType} (${pushToken.substring(0, 15)}...)`,
       });
@@ -627,101 +541,35 @@ export default function UserManagement() {
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-        width: '100vw',
-        maxWidth: '100vw',
-        overflowX: 'hidden',
-        bgcolor: '#1e293b',
-      }}
+    <AppLayout
+      title="User Account Management"
+      subtitle="Admin Portal / Technicians and Dispatchers Directory"
+      activePage="users"
+      showBackButton
+      backTo="/admin"
+      primaryAction={
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<PersonAddIcon />}
+          onClick={handleOpenAddModal}
+          sx={{
+            bgcolor: '#0284c7',
+            '&:hover': { bgcolor: '#0369a1' },
+            textTransform: 'none',
+            fontWeight: 600,
+            fontSize: '0.74rem',
+            height: '28px',
+            borderRadius: '6px',
+            boxShadow: 'none',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          + ADD USER
+        </Button>
+      }
     >
-      {/* ── Aukura Unified Corporate Header Bar ────────────────────────── */}
-      {/* Pinned Margin Components: <img src="/assets/logo.png" alt="Aukura Logo" className="h-8 w-auto object-contain" /> */}
-      <AukuraHeader
-        className="w-full max-w-[100vw] overflow-x-hidden px-4 md:px-6 py-3 flex justify-between items-center bg-slate-800"
-        profileImageUrl={profileImageUrl}
-        profileAvatarInitials={profileAvatarInitials}
-        profileEmail={profileEmail}
-        profileName={profileName}
-        profileMenuOpen={profileMenuOpen}
-        setProfileMenuOpen={setProfileMenuOpen}
-        profileMenuRef={profileMenuRef}
-        triggerId="user-profile-menu-trigger"
-        dropdownContent={
-          <Box
-            className={dashboardStyles.profileDropdown}
-            role="menu"
-            aria-labelledby="user-profile-menu-trigger"
-          >
-            <button
-              id="dispatch-board-nav-btn"
-              type="button"
-              className={dashboardStyles.profileMenuItem}
-              onClick={() => {
-                navigate('/');
-                setProfileMenuOpen(false);
-              }}
-              role="menuitem"
-            >
-              <SpeedIcon className={dashboardStyles.profileMenuIcon} />
-              <span>Dispatch Board</span>
-            </button>
-            <button
-              id="technicians-nav-btn"
-              type="button"
-              className={dashboardStyles.profileMenuItem}
-              onClick={() => {
-                navigate('/admin/technicians');
-                setProfileMenuOpen(false);
-              }}
-              role="menuitem"
-            >
-              <EngineeringIcon className={dashboardStyles.profileMenuIcon} />
-              <span>Technicians</span>
-            </button>
-            <button
-              id="crm-nav-btn"
-              type="button"
-              className={dashboardStyles.profileMenuItem}
-              onClick={() => {
-                navigate('/crm');
-                setProfileMenuOpen(false);
-              }}
-              role="menuitem"
-            >
-              <GroupsIcon className={dashboardStyles.profileMenuIcon} />
-              <span>Client CRM</span>
-            </button>
-            <button
-              id="logout-nav-btn"
-              type="button"
-              className={`${dashboardStyles.profileMenuItem} ${dashboardStyles.profileMenuItemDanger}`}
-              onClick={() => {
-                setProfileMenuOpen(false);
-                handleLogout();
-              }}
-              role="menuitem"
-            >
-              <LogoutIcon className={dashboardStyles.profileMenuIcon} />
-              <span>Logout</span>
-            </button>
-          </Box>
-        }
-      />
-
-      <Box
-        className={styles.userboardRoot}
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          width: '100%',
-          maxWidth: '100vw',
-          overflowX: 'hidden',
-        }}
-      >
+      <Box className={styles.userboardRoot}>
 
       {/* Main Container */}
       <Box className={styles.statsContainer}>
@@ -992,7 +840,7 @@ export default function UserManagement() {
                                 )}
                               </Box>
                               <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.68rem', lineHeight: 1.2 }}>
-                                {user.email} • {user.phone}
+                                {user.email} â€¢ {user.phone}
                               </Typography>
                             </Box>
                           </Box>
@@ -1722,6 +1570,6 @@ export default function UserManagement() {
         </Box>
       )}
       </Box>
-    </Box>
+    </AppLayout>
   );
 }
