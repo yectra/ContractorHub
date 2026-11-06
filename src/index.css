@@ -1,96 +1,283 @@
+/* ==========================================================================
+   Aukura Foundation Global Stylesheet
+   Replicated from Aukura Web Reference UI System
+   ========================================================================== */
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Typography Tokens */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-heading: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Font Weights */
+  --weight-light: 350;
+  --weight-regular: 450;
+  --weight-medium: 550;
+  --weight-semibold: 600;
+  --weight-bold: 650;
+  --weight-extrabold: 750;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
+  /* Core Color Palette */
+  --color-primary: #2563eb;
+  --color-primary-light: #3b82f6;
+  --color-primary-dark: #1e40af;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-contrast: #ffffff;
+  --color-primary-subtle: #eff6ff;
+
+  --color-secondary: #f59e0b;
+  --color-secondary-light: #fbbf24;
+  --color-secondary-dark: #d97706;
+
+  /* Surface & Background */
+  --color-bg-default: #f8fafc;
+  --color-bg-alt: #f1f5f9;
+  --color-bg-paper: #ffffff;
+  --color-bg-dark: #1e293b;
+  --color-bg-darker: #0f172a;
+
+  /* Text Colors */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-text-caption: #6b7280;
+  --color-text-label: #374151;
+
+  /* Borders & Dividers */
+  --color-border-divider: #e2e8f0;
+  --color-border-subtle: #e5e7eb;
+  --color-border-medium: #cbd5e1;
+  --color-border-strong: #94a3b8;
+
+  /* DataGrid / Tables */
+  --datagrid-header: #cbd5e1;
+  --datagrid-border: #e2e8f0;
+  --datagrid-row-even: #ffffff;
+  --datagrid-row-odd: #f1f5f9;
+  --datagrid-hover: #e2e8f0;
+  --datagrid-selected: #dbeafe;
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-base: 10px;
+  --radius-card: 12px;
+  --radius-modal: 16px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-dropdown: 0 14px 30px rgba(15, 23, 42, 0.16);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Root Font Configuration */
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
   color-scheme: light;
-  color: var(--text);
-  background: var(--bg);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-default);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+/* ── Universal Reset ───────────────────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  background-color: var(--color-bg-default);
+  color: var(--color-text-primary);
+  overflow-x: hidden;
 }
 
 #root {
   width: 100%;
   max-width: 100vw;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   overflow-x: hidden;
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
+/* ── Typography Hierarchy ─────────────────────────────────────────────────── */
 h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  color: var(--color-text-primary);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
 }
 
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+  font-size: 2rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
 }
+
 h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+  font-size: 1.875rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.25;
 }
+
+h3 {
+  font-size: 1.75rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.3;
+}
+
+h4 {
+  font-size: 1.5rem;
+  font-weight: var(--weight-medium);
+  line-height: 1.35;
+  margin-bottom: 0.5rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+  font-weight: var(--weight-medium);
+  line-height: 1.4;
+}
+
+h6 {
+  font-size: 1rem;
+  font-weight: var(--weight-semibold);
+  line-height: 1.4;
+}
+
 p {
-  margin: 0;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+small {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.15s ease-in-out;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
 }
 
 code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+pre {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+/* ── Base Form Control Overrides ─────────────────────────────────────────── */
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* ── Amplify Authenticator Polish (Replicated from Aukura globals.css) ───── */
+@keyframes auth-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(20px, -16px) scale(1.05); }
+}
+
+@keyframes auth-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(-16px, 20px) scale(1.05); }
+}
+
+[data-amplify-authenticator] {
+  min-height: 100vh;
+  background-color: #eef2f9;
+  background-image:
+    radial-gradient(circle, rgba(99, 130, 190, 0.20) 1px, transparent 1px),
+    radial-gradient(ellipse at 12% 12%, rgba(59, 130, 246, 0.13) 0%, transparent 52%),
+    radial-gradient(ellipse at 88% 88%, rgba(99, 102, 241, 0.11) 0%, transparent 52%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Ccircle cx='80' cy='80' r='70' fill='none' stroke='%233b82f6' stroke-width='1' stroke-opacity='0.12'/%3E%3Ccircle cx='80' cy='80' r='130' fill='none' stroke='%233b82f6' stroke-width='1' stroke-opacity='0.07'/%3E%3Ccircle cx='80' cy='80' r='200' fill='none' stroke='%233b82f6' stroke-width='1' stroke-opacity='0.04'/%3E%3Ccircle cx='540' cy='540' r='80' fill='none' stroke='%236366f1' stroke-width='1' stroke-opacity='0.12'/%3E%3Ccircle cx='540' cy='540' r='150' fill='none' stroke='%236366f1' stroke-width='1' stroke-opacity='0.07'/%3E%3Ccircle cx='540' cy='540' r='240' fill='none' stroke='%236366f1' stroke-width='1' stroke-opacity='0.04'/%3E%3Cline x1='0' y1='600' x2='600' y2='0' stroke='%2393c5fd' stroke-width='0.7' stroke-opacity='0.09'/%3E%3Cline x1='-80' y1='600' x2='520' y2='0' stroke='%2393c5fd' stroke-width='0.7' stroke-opacity='0.06'/%3E%3Cline x1='80' y1='600' x2='680' y2='0' stroke='%2393c5fd' stroke-width='0.7' stroke-opacity='0.06'/%3E%3C/svg%3E");
+  background-size: 26px 26px, cover, cover, cover;
+  background-position: 0 0, center, center, center;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-amplify-authenticator] [data-amplify-router] {
+  border-radius: 16px !important;
+  border: 1px solid rgba(186, 207, 235, 0.80) !important;
+  box-shadow:
+    0 4px 24px rgba(59, 130, 246, 0.08),
+    0 1px 6px rgba(15, 23, 42, 0.07) !important;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  background-color: #ffffff;
+}
+
+[data-amplify-authenticator] [data-amplify-router]::before {
+  content: '';
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 60%, #60a5fa 100%);
+}
+
+[data-amplify-authenticator]::before {
+  content: '';
+  position: fixed;
+  top: -130px;
+  left: -130px;
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.11) 0%, transparent 70%);
+  animation: auth-drift-1 13s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-amplify-authenticator]::after {
+  content: '';
+  position: fixed;
+  bottom: -110px;
+  right: -110px;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.10) 0%, transparent 70%);
+  animation: auth-drift-2 15s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
 }
