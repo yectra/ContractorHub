@@ -19,14 +19,12 @@ import { useServiceRequests, useScheduledJobs, useTechnicians } from '../hooks/u
 import AppLayout from './layout/AppLayout';
 import styles from '../styles/UI/TechDashboard.module.scss';
 
-// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
+// Constants
 /** Time columns: 7 AM â†’ 7 PM (13 one-hour slots, matching Admin Dashboard) */
 const HOUR_COLUMNS = Array.from({ length: 13 }, (_, i) => i + 7);
 
 
-// â”€â”€â”€ Date Utility Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
+// Date Utility Helpers 
 /** Return a local YYYY-MM-DD string for a given Date object */
 function toDateStr(d: Date): string {
   const y = d.getFullYear();
@@ -40,19 +38,12 @@ function todayStr(): string {
   return toDateStr(new Date());
 }
 
-/**
- * Given a cursor Date and viewMode, return the ordered array of YYYY-MM-DD
- * strings that should appear as row headers in the calendar.
- *
- * Week View  â†’ 7 days starting from the Monday of the week containing cursor
- * Month View â†’ all days in the calendar month of the cursor
- */
 function buildCalendarDates(cursor: Date, viewMode: 'week' | 'month'): string[] {
   if (viewMode === 'week') {
     // Snap to the Monday of the cursor's week
     const monday = new Date(cursor);
-    const dow = monday.getDay(); // 0=Sun â€¦ 6=Sat
-    const diff = dow === 0 ? -6 : 1 - dow; // shift so Monday=0
+    const dow = monday.getDay();
+    const diff = dow === 0 ? -6 : 1 - dow; 
     monday.setDate(monday.getDate() + diff);
 
     return Array.from({ length: 7 }, (_, i) => {
@@ -72,18 +63,12 @@ function buildCalendarDates(cursor: Date, viewMode: 'week' | 'month'): string[] 
   }
 }
 
-/**
- * Build the human-readable center label string.
- *
- * Week View  â†’ "26 July â€“ 01 August, 2026"
- * Month View â†’ "July 2026"
- */
 function buildLabel(cursor: Date, viewMode: 'week' | 'month'): string {
   if (viewMode === 'month') {
     return cursor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   }
 
-  // Week view: compute Monâ†’Sun span
+  // Week view: compute Monday-Sunday span
   const monday = new Date(cursor);
   const dow = monday.getDay();
   const diff = dow === 0 ? -6 : 1 - dow;
@@ -92,19 +77,20 @@ function buildLabel(cursor: Date, viewMode: 'week' | 'month'): string {
   const sunday = new Date(monday);
   sunday.setDate(sunday.getDate() + 6);
 
-  const fmt = (d: Date, opts: Intl.DateTimeFormatOptions) =>
-    d.toLocaleDateString(undefined, opts);
+  const rangeDateFormatter = new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+  const toUtcCalendarDate = (date: Date) =>
+    new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const startLabel = rangeDateFormatter.format(toUtcCalendarDate(monday));
+  const endLabel = rangeDateFormatter.format(toUtcCalendarDate(sunday));
 
-  const startDay = fmt(monday, { day: '2-digit' });
-  const startMonth = fmt(monday, { month: 'short' });
-  const endDay = fmt(sunday, { day: '2-digit' });
-  const endMonth = fmt(sunday, { month: 'short' });
-  const endYear = sunday.getFullYear();
-
-  if (monday.getMonth() === sunday.getMonth()) {
-    return `${startDay} â€“ ${endDay} ${endMonth} ${endYear}`;
+  if (monday.getFullYear() !== sunday.getFullYear()) {
+    return `${startLabel}, ${monday.getFullYear()} - ${endLabel}, ${sunday.getFullYear()}`;
   }
-  return `${startDay} ${startMonth} â€“ ${endDay} ${endMonth} ${endYear}`;
+  return `${startLabel} - ${endLabel}, ${sunday.getFullYear()}`;
 }
 
 /** Format a YYYY-MM-DD string into "Mon, Jul 9" */
@@ -125,7 +111,7 @@ function formatHour(hour: number): string {
   return `${hour}:00 AM`;
 }
 
-// â”€â”€â”€ ScheduledJobCard Sub-component (Desktop Matrix Tile) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ScheduledJobCard Sub-component (Desktop Matrix Tile) 
 
 interface ScheduledJobCardProps {
   jobId: string;
@@ -159,8 +145,7 @@ function ScheduledJobCard({ srId, client, service, techColor, onClick }: Schedul
   );
 }
 
-// â”€â”€â”€ Types & Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
+// Types & Main Component 
 type ViewMode = 'week' | 'month';
 
 type JobItemData = {
@@ -179,11 +164,11 @@ export default function TechDashboard() {
   const { scheduledJobs, loading: jobsLoading } = useScheduledJobs();
   const { technicians } = useTechnicians();
 
-  // ── Navigation state ──────────────────────────────────────────────────────
+  // Navigation state
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [viewMode, setViewMode] = useState<ViewMode>('week');
 
-  // â”€â”€ Step backward / forward â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Step backward / forward 
   const navigate = (direction: 'prev' | 'next') => {
     setCurrentDate((prev) => {
       const d = new Date(prev);
@@ -198,22 +183,19 @@ export default function TechDashboard() {
     });
   };
 
-  // â”€â”€ Derived calendar dates (rows / list items) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Derived calendar dates (rows / list items)
   const calendarDates = useMemo(
     () => buildCalendarDates(currentDate, viewMode),
     [currentDate, viewMode]
   );
 
-  // â”€â”€ Center label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Center label 
   const centerLabel = useMemo(
     () => buildLabel(currentDate, viewMode),
     [currentDate, viewMode]
   );
 
-  // â”€â”€ Today string (for row/card highlighting) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const today = todayStr();
 
-  // â”€â”€ Chronologically Grouped Jobs by Date (for mobile feed & matrix lookup) â”€
   const jobsByDate = useMemo(() => {
     const map: Record<string, JobItemData[]> = {};
     calendarDates.forEach((date) => {
@@ -252,7 +234,6 @@ export default function TechDashboard() {
     return map;
   }, [scheduledJobs, serviceRequests, technicians, calendarDates]);
 
-  // â”€â”€ Desktop matrix lookup: "YYYY-MM-DD::HH" â†’ array of chip data â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const jobGrid = useMemo(() => {
     const grid: Record<string, JobItemData[]> = {};
 
@@ -267,7 +248,6 @@ export default function TechDashboard() {
     return grid;
   }, [jobsByDate]);
 
-  // â”€â”€ Navigate to FieldExecution with context â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleChipClick = (jobId: string, srId: string) => {
     sessionStorage.setItem('previousView', 'TECH_DASHBOARD');
     sessionStorage.setItem('selectedJobId', jobId);
@@ -301,9 +281,8 @@ export default function TechDashboard() {
         }}
       >
         <Box className={styles.techDashboardPanel} sx={{ width: '100%', height: '100%' }}>
-          {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-              CALENDAR SUB-HEADER (Title, Stats & Period Navigation Controls)
-          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+         
+          {/* CALENDAR SUB-HEADER */}
           <Box className={styles.techDashboardHeader} sx={{ width: '100%' }}>
             {/* Calendar Controls & Navigation Row */}
             <Box
@@ -421,9 +400,7 @@ export default function TechDashboard() {
             </Typography>
           </Box>
 
-        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            MAIN CONTENT AREA: CONDITIONAL DESKTOP MATRIX / MOBILE FEED
-        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+        {/* MAIN CONTENT AREA: CONDITIONAL DESKTOP MATRIX / MOBILE FEED */}
         {isLoading ? (
           <Box className={styles.techDashboardLoadingBox}>
             <CircularProgress size={40} />
@@ -433,10 +410,7 @@ export default function TechDashboard() {
           </Box>
         ) : (
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', overflow: 'auto' }}>
-            {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                1. DESKTOP & TABLET VIEW (lg:block / >= 1024px)
-                Horizontal timeline grid matrix intact
-            â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          
             <Box
               className={styles.techDashboardDesktopView}
               sx={{
