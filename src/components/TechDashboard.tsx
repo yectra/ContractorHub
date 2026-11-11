@@ -75,15 +75,22 @@ function buildCalendarDates(cursor: Date, viewMode: 'week' | 'month'): string[] 
 /**
  * Build the human-readable center label string.
  *
- * Week View  â†’ "26 July â€“ 01 August, 2026"
- * Month View â†’ "July 2026"
+ * Week View  -> "Jul 26 - Aug 1, 2026"
+ * Month View -> "July 2026"
  */
 function buildLabel(cursor: Date, viewMode: 'week' | 'month'): string {
+  const toUtcCalendarDate = (date: Date) =>
+    new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+
   if (viewMode === 'month') {
-    return cursor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    return new Intl.DateTimeFormat(undefined, {
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(toUtcCalendarDate(cursor));
   }
 
-  // Week view: compute Monâ†’Sun span
+  // Week view: compute Monday-Sunday span
   const monday = new Date(cursor);
   const dow = monday.getDay();
   const diff = dow === 0 ? -6 : 1 - dow;
@@ -92,30 +99,30 @@ function buildLabel(cursor: Date, viewMode: 'week' | 'month'): string {
   const sunday = new Date(monday);
   sunday.setDate(sunday.getDate() + 6);
 
-  const fmt = (d: Date, opts: Intl.DateTimeFormatOptions) =>
-    d.toLocaleDateString(undefined, opts);
+  const formatter = new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+  const startLabel = formatter.format(toUtcCalendarDate(monday));
+  const endLabel = formatter.format(toUtcCalendarDate(sunday));
 
-  const startDay = fmt(monday, { day: '2-digit' });
-  const startMonth = fmt(monday, { month: 'short' });
-  const endDay = fmt(sunday, { day: '2-digit' });
-  const endMonth = fmt(sunday, { month: 'short' });
-  const endYear = sunday.getFullYear();
-
-  if (monday.getMonth() === sunday.getMonth()) {
-    return `${startDay} â€“ ${endDay} ${endMonth} ${endYear}`;
+  if (monday.getFullYear() !== sunday.getFullYear()) {
+    return `${startLabel}, ${monday.getFullYear()} - ${endLabel}, ${sunday.getFullYear()}`;
   }
-  return `${startDay} ${startMonth} â€“ ${endDay} ${endMonth} ${endYear}`;
+  return `${startLabel} - ${endLabel}, ${sunday.getFullYear()}`;
 }
 
 /** Format a YYYY-MM-DD string into "Mon, Jul 9" */
 function formatDateLabel(dateStr: string): string {
   const [y, m, d] = dateStr.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString(undefined, {
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return new Intl.DateTimeFormat(undefined, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
-  });
+    timeZone: 'UTC',
+  }).format(date);
 }
 
 /** Format an integer hour into "7:00 AM" / "1:00 PM" matching Admin Dashboard */
