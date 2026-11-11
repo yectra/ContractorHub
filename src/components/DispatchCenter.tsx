@@ -1331,11 +1331,13 @@ export const DispatchCenter: React.FC = () => {
                   Service Queue
                 </Typography>
               </Box>
-              <Typography variant="caption" className={styles.dashboardCaption}>
-                {srLoading
-                  ? 'Loading...'
-                  : `${pendingRequests.length} pending requests`}
-              </Typography>
+              <Box className={styles.dashboardPanelPendingRequestWrap}>
+                <Typography variant="caption" className={styles.dashboardCaption}>
+                  {srLoading
+                    ? 'Loading...'
+                    : `${pendingRequests.length} pending requests`}
+                </Typography>
+              </Box>  
               <TextField
                 type="date"
                 label="Schedule Date"
