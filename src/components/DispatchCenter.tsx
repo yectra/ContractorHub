@@ -59,6 +59,7 @@ import AppLayout from './layout/AppLayout';
 
 import styles from '../styles/UI/Dashboard.module.scss';
 import modalStyles from '../styles/UI/DispatchCenter.module.scss';
+import { formatJobNumber } from '../utils/formatters';
 
 // Hours for the schedule grid (7 AM to 7 PM inclusive - 13 hourly slots)
 const hours = Array.from({ length: 13 }, (_, i) => i + 7);
@@ -1397,7 +1398,7 @@ export const DispatchCenter: React.FC = () => {
                           variant="subtitle2"
                           className={styles.dashboardRequestId}
                         >
-                          {request.id}
+                          {formatJobNumber(request.id)}
                         </Typography>
                         <Chip
                           label={request.type}
@@ -1638,7 +1639,7 @@ export const DispatchCenter: React.FC = () => {
                               variant="caption"
                               className={styles.dashboardJobId}
                             >
-                              {job.serviceRequestId || job.id}
+                              {formatJobNumber(job.serviceRequestId || job.id)}
                             </Typography>
                             <Typography
                               variant="caption"
@@ -1696,7 +1697,7 @@ export const DispatchCenter: React.FC = () => {
                 </Typography>
               </Box>
               <Typography variant="caption" className={styles.dashboardCaption}>
-                {selectedServiceReq?.id || selectedRequest || 'No request selected'}
+                {formatJobNumber(selectedServiceReq?.id || selectedRequest || '') || 'No request selected'}
               </Typography>
             </Box>
 

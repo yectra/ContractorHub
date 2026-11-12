@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { useClients, useServiceRequests, useTechnicians, useScheduledJobs } from '../../hooks/useDispatchData';
 import { parseStartHour, parseDurationHours, getTodayString, mapServiceStatusToJobStatus, formatDisplayDate } from '../../utils/jobHelpers';
+import { formatJobNumber } from '../../utils/formatters';
 import type { Schema } from '../../../amplify/data/resource';
 import styles from '../../styles/UI/ClientRecord.module.scss';
 import AppLayout from '../layout/AppLayout';
@@ -179,6 +180,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
 
       const matchSearch =
         jobIdStr.toLowerCase().includes(query) ||
+        formatJobNumber(jobIdStr).toLowerCase().includes(query) ||
         job.service.toLowerCase().includes(query) ||
         (job.notes || '').toLowerCase().includes(query) ||
         techName.includes(query);
@@ -597,7 +599,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
       }
 
       setSuccessAlert({
-        message: `Job #${selectedJob.id} updated successfully!`,
+        message: `Job #${formatJobNumber(selectedJob.id)} updated successfully!`,
         jobId: selectedJob.id,
         date: isAssigned ? scheduledDate : undefined,
       });
@@ -904,7 +906,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
                                 }}
                                 title="Open in Dispatch Dashboard"
                               >
-                                {job.id || 'N/A'}
+                                {formatJobNumber(job.id)}
                               </button>
                             </td>
                             {/* Created Date Column */}

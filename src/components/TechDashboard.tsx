@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { useServiceRequests, useScheduledJobs, useTechnicians } from '../hooks/useDispatchData';
 import AppLayout from './layout/AppLayout';
 import styles from '../styles/UI/TechDashboard.module.scss';
+import { formatJobNumber } from '../utils/formatters';
 
 // â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -154,10 +155,10 @@ function ScheduledJobCard({ srId, client, service, techColor, onClick }: Schedul
         e.stopPropagation();
         onClick();
       }}
-      title={`${srId} â€” ${client}: ${service}`}
+      title={`${formatJobNumber(srId)} â€” ${client}: ${service}`}
     >
       <Typography variant="caption" className={styles.techJobId}>
-        {srId}
+        {formatJobNumber(srId)}
       </Typography>
       <Typography variant="caption" className={styles.techJobClient}>
         {client || 'Unknown'}
@@ -603,7 +604,7 @@ export default function TechDashboard() {
                             <Box className={styles.mobileTaskHeader}>
                               <Box className={styles.mobileTaskMainInfo}>
                                 <Typography className={styles.mobileTaskJobId}>
-                                  {job.srId}
+                                  {formatJobNumber(job.srId)}
                                 </Typography>
                                 <Typography className={styles.mobileTaskClient}>
                                   â€¢ {job.client || 'Unknown Client'}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useServiceRequests, useScheduledJobs } from '../../hooks/useDispatchData';
 import styles from '../../styles/UI/FieldExecution.module.scss';
+import { formatJobNumber } from '../../utils/formatters';
 
 // Zero-dependency SVG Icons matching CRM design system
 const PhoneIcon = () => (
@@ -659,7 +660,7 @@ export default function FieldExecution() {
   };
 
   const jobIdString = selectedJob
-    ? `${selectedJob.serviceRequestId || selectedJob.id} - ${selectedJob.clientName}`
+    ? `${formatJobNumber(selectedJob.serviceRequestId || selectedJob.id || '')} - ${selectedJob.clientName}`
     : 'No Active Job';
 
   return (
@@ -701,7 +702,7 @@ export default function FieldExecution() {
               >
                 {activeJobs.map((j) => (
                   <option key={j.id || ''} value={j.id || ''}>
-                    {j.serviceRequestId || j.id} - {j.clientName}
+                    {formatJobNumber(j.serviceRequestId || j.id)} - {j.clientName}
                   </option>
                 ))}
               </select>
