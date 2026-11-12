@@ -140,11 +140,25 @@ interface ScheduledJobCardProps {
   srId: string;
   client: string;
   service: string;
+  serviceType?: string;
+  service_name?: string;
   techColor?: string;
   onClick: () => void;
 }
 
-function ScheduledJobCard({ srId, client, service, techColor, onClick }: ScheduledJobCardProps) {
+function ScheduledJobCard({
+  srId,
+  client,
+  service,
+  serviceType,
+  service_name,
+  techColor,
+  onClick,
+}: ScheduledJobCardProps) {
+  const displayService = serviceType || service_name || service;
+  const formattedJobNumber = formatJobNumber(srId);
+  const clientName = client || 'Unknown';
+
   return (
     <Box
       className={styles.techScheduledJob}
@@ -155,13 +169,18 @@ function ScheduledJobCard({ srId, client, service, techColor, onClick }: Schedul
         e.stopPropagation();
         onClick();
       }}
-      title={`${formatJobNumber(srId)} â€” ${client}: ${service}`}
+      title={`${formattedJobNumber} — ${displayService ? `${displayService} | ` : ''}${clientName}`}
     >
       <Typography variant="caption" className={styles.techJobId}>
-        {formatJobNumber(srId)}
+        {formattedJobNumber}
       </Typography>
+      {displayService && (
+        <Typography variant="caption" className={styles.techJobService}>
+          {displayService}
+        </Typography>
+      )}
       <Typography variant="caption" className={styles.techJobClient}>
-        {client || 'Unknown'}
+        {clientName}
       </Typography>
     </Box>
   );
@@ -176,6 +195,8 @@ type JobItemData = {
   srId: string;
   client: string;
   service: string;
+  serviceType: string;
+  service_name: string;
   techColor: string;
   startHour: number;
 };
@@ -242,11 +263,19 @@ export default function TechDashboard() {
         map[date] = [];
       }
 
+      const serviceName =
+        sr?.service ||
+        (job as unknown as { serviceType?: string; service?: string }).serviceType ||
+        (job as unknown as { service?: string }).service ||
+        'Service';
+
       map[date].push({
         jobId: job.id || '',
         srId: job.serviceRequestId || job.id || '',
         client: sr?.client || 'Unknown',
-        service: sr?.service || 'Service',
+        service: serviceName,
+        serviceType: serviceName,
+        service_name: serviceName,
         techColor: cardColor,
         startHour: hour,
       });
@@ -517,6 +546,8 @@ export default function TechDashboard() {
                                     srId={chip.srId}
                                     client={chip.client}
                                     service={chip.service}
+                                    serviceType={chip.serviceType}
+                                    service_name={chip.service_name}
                                     techColor={chip.techColor}
                                     onClick={() => handleChipClick(chip.jobId, chip.srId)}
                                   />
@@ -606,6 +637,11 @@ export default function TechDashboard() {
                                 <Typography className={styles.mobileTaskJobId}>
                                   {formatJobNumber(job.srId)}
                                 </Typography>
+                                {(job.serviceType || job.service) && (
+                                  <span className={styles.mobileTaskServiceBadge}>
+                                    {job.serviceType || job.service}
+                                  </span>
+                                )}
                                 <Typography className={styles.mobileTaskClient}>
                                   â€¢ {job.client || 'Unknown Client'}
                                 </Typography>
@@ -614,9 +650,9 @@ export default function TechDashboard() {
                                 â±ï¸ {formatHour(job.startHour)}
                               </Box>
                             </Box>
-                            {job.service && (
+                            {(job.serviceType || job.service) && (
                               <Typography className={styles.mobileTaskService}>
-                                {job.service}
+                                {job.serviceType || job.service}
                               </Typography>
                             )}
                           </Box>

@@ -666,13 +666,13 @@
   display: flex;
   flex: 1;
   position: relative;
-  min-height: 46px;
+  min-height: 52px;
 }
 
 .dashboardTimeSlot {
   flex: 1 0 80px;
   min-width: 80px;
-  min-height: 46px;
+  min-height: 52px;
   border-right: 1px solid #e0e0e0;
   background-color: #fff;
   box-sizing: border-box;
@@ -689,12 +689,15 @@
   top: 4px;
   bottom: 4px;
   border-radius: 4px;
-  padding: 4px;
+  padding: 3px 6px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 1px;
   box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
   color: #FFFFFF !important;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .dashboardScheduledJob:hover {
@@ -715,12 +718,31 @@
   font-size: 0.65rem !important;
   line-height: 1.2 !important;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.dashboardJobService {
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  font-size: 0.58rem !important;
+  line-height: 1.15 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  opacity: 0.95;
 }
 
 .dashboardJobClient {
-  color: #FFFFFF !important;
-  font-size: 0.6rem !important;
-  line-height: 1.2 !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 0.58rem !important;
+  line-height: 1.15 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 .dashboardGuide {

@@ -597,13 +597,33 @@ export const DispatchCenter: React.FC = () => {
     }
   };
 
-  // Filter scheduled jobs by selectedDate
+  // Filter scheduled jobs by selectedDate and attach serviceType & client metadata
   const filteredJobs = useMemo(() => {
-    return scheduledJobs.filter((job) => {
-      const jobDate = job.scheduledDate || getTodayString();
-      return jobDate === selectedDate;
-    });
-  }, [scheduledJobs, selectedDate]);
+    return scheduledJobs
+      .filter((job) => {
+        const jobDate = job.scheduledDate || getTodayString();
+        return jobDate === selectedDate;
+      })
+      .map((job) => {
+        const req = serviceRequests.find((r) => r.id === job.serviceRequestId);
+        const serviceType =
+          req?.service ||
+          (job as unknown as { serviceType?: string; service?: string }).serviceType ||
+          (job as unknown as { service?: string }).service ||
+          '';
+        const clientName =
+          req?.client ||
+          (job as unknown as { clientName?: string; client?: string }).clientName ||
+          (job as unknown as { client?: string }).client ||
+          'Unknown';
+        return {
+          ...job,
+          serviceType,
+          service_name: serviceType,
+          clientName,
+        };
+      });
+  }, [scheduledJobs, selectedDate, serviceRequests]);
 
   // Filter service requests to show only unassigned jobs in the queue
   const pendingRequests = useMemo(() => {
@@ -1634,20 +1654,35 @@ export const DispatchCenter: React.FC = () => {
                               backgroundColor:
                                 tech.color || getTechnicianColor(tech.id!),
                             }}
+                            title={`${formatJobNumber(jobIdentifier)} — ${
+                              (job.serviceType || job.service_name)
+                                ? `${job.serviceType || job.service_name} | `
+                                : ''
+                            }${job.clientName || 'Unknown'}`}
                           >
                             <Typography
                               variant="caption"
                               className={styles.dashboardJobId}
                             >
-                              {formatJobNumber(job.serviceRequestId || job.id)}
+                              {formatJobNumber(jobIdentifier)}
                             </Typography>
+                            {(job.serviceType || job.service_name) && (
+                              <Typography
+                                variant="caption"
+                                className={styles.dashboardJobService}
+                              >
+                                {job.serviceType || job.service_name}
+                              </Typography>
+                            )}
                             <Typography
                               variant="caption"
                               className={styles.dashboardJobClient}
                             >
-                              {serviceRequests.find(
-                                (r) => r.id === job.serviceRequestId
-                              )?.client || 'Unknown'}
+                              {job.clientName ||
+                                serviceRequests.find(
+                                  (r) => r.id === job.serviceRequestId
+                                )?.client ||
+                                'Unknown'}
                             </Typography>
                           </Box>
                         );
