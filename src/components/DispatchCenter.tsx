@@ -35,6 +35,9 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSearchParams } from 'react-router-dom';
 import { useAuthenticator } from '@aws-amplify/ui-react';
+import type { Schema } from '../../amplify/data/resource';
+
+type ServiceRequest = Schema['ServiceRequest']['type'];
 
 import {
   useServiceRequests,
@@ -116,15 +119,68 @@ export interface JobChecklistEditorProps {
   onNotification?: (message: string, type?: 'success' | 'error' | 'warning') => void;
 }
 
-const parseChecklistFromNotes = (notes: string | null | undefined): DispatchChecklistItem[] => {
-  if (notes?.startsWith('CHECKLIST:')) {
-    try {
-      const parsed = JSON.parse(notes.replace('CHECKLIST:', ''));
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
+const parseChecklistFromNotes = (
+  notes: string | null | undefined,
+  jobId?: string | null
+): DispatchChecklistItem[] => {
+  if (notes) {
+    if (notes.startsWith('CHECKLIST:')) {
+      try {
+        const parsed = JSON.parse(notes.replace('CHECKLIST:', ''));
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((item: any, idx: number) => ({
+            id: String(item.id || `step-${idx + 1}`),
+            text: String(item.text || ''),
+            checked: Boolean(item.checked || item.completed || false),
+          }));
+        }
+      } catch {
+        // Fall through
+      }
+    } else {
+      try {
+        const parsed = JSON.parse(notes);
+        if (parsed) {
+          if (Array.isArray(parsed.checklist) && parsed.checklist.length > 0) {
+            return parsed.checklist.map((item: any, idx: number) => ({
+              id: String(item.id || `step-${idx + 1}`),
+              text: String(item.text || ''),
+              checked: Boolean(item.checked || item.completed || false),
+            }));
+          }
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.map((item: any, idx: number) => ({
+              id: String(item.id || `step-${idx + 1}`),
+              text: String(item.text || ''),
+              checked: Boolean(item.checked || item.completed || false),
+            }));
+          }
+        }
+      } catch {
+        // Fall through
+      }
     }
   }
+
+  // Fallback to localStorage cache for this job
+  if (jobId) {
+    try {
+      const cached = localStorage.getItem(`checklist_job_${jobId}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((item: any, idx: number) => ({
+            id: String(item.id || `step-${idx + 1}`),
+            text: String(item.text || ''),
+            checked: Boolean(item.checked || item.completed || false),
+          }));
+        }
+      }
+    } catch {
+      // Fall through
+    }
+  }
+
   return [];
 };
 
@@ -142,10 +198,10 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
   updateScheduledJob,
   onNotification,
 }) => {
-  const [prevProps, setPrevProps] = useState({ open, controlledItems, jobNotes });
+  const [prevProps, setPrevProps] = useState({ open, controlledItems, jobNotes, jobId });
   const [draftItems, setDraftItems] = useState<DispatchChecklistItem[]>(() => {
     if (controlledItems !== undefined) return controlledItems;
-    if (jobNotes) return parseChecklistFromNotes(jobNotes);
+    if (jobNotes) return parseChecklistFromNotes(jobNotes, jobId);
     return [];
   });
   const [newItemText, setNewItemText] = useState('');
@@ -154,14 +210,15 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
   if (
     prevProps.open !== open ||
     prevProps.controlledItems !== controlledItems ||
-    prevProps.jobNotes !== jobNotes
+    prevProps.jobNotes !== jobNotes ||
+    prevProps.jobId !== jobId
   ) {
-    setPrevProps({ open, controlledItems, jobNotes });
+    setPrevProps({ open, controlledItems, jobNotes, jobId });
     if (open) {
       if (controlledItems !== undefined) {
         setDraftItems(controlledItems);
       } else if (jobNotes) {
-        setDraftItems(parseChecklistFromNotes(jobNotes));
+        setDraftItems(parseChecklistFromNotes(jobNotes, jobId));
       } else {
         setDraftItems([]);
       }
@@ -645,9 +702,40 @@ export const DispatchCenter: React.FC = () => {
       (j) => j.id === selectedRequest || j.serviceRequestId === selectedRequest
     );
     if (matchedJob) {
-      return (
-        serviceRequests.find((r) => r.id === matchedJob.serviceRequestId) || null
+      const existingReq = serviceRequests.find(
+        (r) => r.id === matchedJob.serviceRequestId
       );
+      if (existingReq) return existingReq;
+
+      // Fallback synthesis from matched ScheduledJob data so the right-side inspection panel always displays
+      const synthesizedReq: ServiceRequest = {
+        id: matchedJob.serviceRequestId || matchedJob.id || selectedRequest,
+        client:
+          (matchedJob as any).clientName ||
+          (matchedJob as any).client ||
+          'Client',
+        service:
+          (matchedJob as any).serviceType ||
+          (matchedJob as any).service ||
+          (matchedJob as any).service_name ||
+          'Scheduled Service',
+        location:
+          (matchedJob as any).location ||
+          (matchedJob as any).address ||
+          'On Site',
+        requestTime:
+          (matchedJob as any).requestTime ||
+          `${matchedJob.startHour || 9}:00`,
+        estimatedDuration:
+          (matchedJob as any).estimatedDuration ||
+          `${matchedJob.duration || 1} hr`,
+        priority: ((matchedJob as any).priority as any) || 'medium',
+        type: ((matchedJob as any).type as any) || 'Scheduled',
+        status: (matchedJob.status as any) || 'Assigned',
+        notes: matchedJob.notes || '',
+        assignedTechnicianId: matchedJob.techId || null,
+      };
+      return synthesizedReq;
     }
 
     return null;
@@ -693,47 +781,84 @@ export const DispatchCenter: React.FC = () => {
     setSyncedServiceReqKey(null);
   }
 
-  // Find associated scheduled job if it exists for the selected service request
-  const associatedJob = useMemo(() => {
+  // Linked scheduled job for checklist manager and inspection details
+  const rightPanelJob = useMemo(() => {
     if (!selectedServiceReq && !selectedRequest) return null;
     const targetId = selectedServiceReq?.id || selectedRequest;
     return (
       scheduledJobs.find(
-        (job) => job.serviceRequestId === targetId || job.id === targetId
+        (j) =>
+          j.id === selectedRequest ||
+          j.serviceRequestId === selectedRequest ||
+          j.id === targetId ||
+          j.serviceRequestId === targetId ||
+          (selectedServiceReq &&
+            (j.serviceRequestId === selectedServiceReq.id ||
+              j.id === selectedServiceReq.id))
       ) || null
     );
   }, [selectedServiceReq, selectedRequest, scheduledJobs]);
 
-  // Parse notes to get technician comment and photos
+  // Parse notes and local caches to get technician comments and photos
   const techFeedback = useMemo(() => {
-    if (!associatedJob || !associatedJob.notes) return null;
-    try {
-      const parsed = JSON.parse(associatedJob.notes);
-      return {
-        comment: typeof parsed.comment === 'string' ? parsed.comment : '',
-        photos: Array.isArray(parsed.photos) ? parsed.photos : [],
-      };
-    } catch {
+    const job = rightPanelJob;
+    if (!job) return null;
+
+    let comment = '';
+    let photos: Array<{ id: string; url: string; name: string }> = [];
+
+    if (job.notes) {
+      if (job.notes.startsWith('CHECKLIST:')) {
+        // Plain checklist prefix, comments/photos might be in localStorage
+      } else {
+        try {
+          const parsed = JSON.parse(job.notes);
+          if (parsed && typeof parsed === 'object') {
+            if (typeof parsed.comment === 'string') comment = parsed.comment;
+            if (Array.isArray(parsed.photos)) photos = parsed.photos;
+          }
+        } catch {
+          // If not valid JSON, treat raw notes as a technician comment
+          if (!job.notes.startsWith('CHECKLIST:')) {
+            comment = job.notes;
+          }
+        }
+      }
+    }
+
+    // Check localStorage fallback if empty
+    if (!comment && job.id) {
+      try {
+        const cachedComment = localStorage.getItem(`comment_job_${job.id}`);
+        if (cachedComment) comment = cachedComment;
+      } catch {
+        // Ignore storage access issues
+      }
+    }
+    if ((!photos || photos.length === 0) && job.id) {
+      try {
+        const cachedPhotos = localStorage.getItem(`photos_job_${job.id}`);
+        if (cachedPhotos) {
+          const parsed = JSON.parse(cachedPhotos);
+          if (Array.isArray(parsed)) photos = parsed;
+        }
+      } catch {
+        // Ignore storage access issues
+      }
+    }
+
+    if (!comment && photos.length === 0) {
       return null;
     }
-  }, [associatedJob]);
+
+    return { comment, photos };
+  }, [rightPanelJob]);
 
   // Get selected client details
   const selectedClient = useMemo(() => {
     if (!selectedServiceReq) return null;
     return clients.find((c) => c.name === selectedServiceReq.client) || null;
   }, [selectedServiceReq, clients]);
-
-  // Linked scheduled job for checklist manager
-  const rightPanelJob = useMemo(() => {
-    if (!selectedServiceReq && !selectedRequest) return null;
-    const targetId = selectedServiceReq?.id || selectedRequest;
-    return (
-      scheduledJobs.find(
-        (j) => j.serviceRequestId === targetId || j.id === targetId
-      ) || null
-    );
-  }, [selectedServiceReq, selectedRequest, scheduledJobs]);
 
   const getTechnicianName = (techId: string): string => {
     return technicians.find((t) => t.id === techId)?.name || 'Unknown';
@@ -773,7 +898,11 @@ export const DispatchCenter: React.FC = () => {
     try {
       setIsSaving(true);
       const associated = scheduledJobs.find(
-        (job) => job.serviceRequestId === selectedServiceReq.id
+        (job) =>
+          job.serviceRequestId === selectedServiceReq.id ||
+          job.id === selectedServiceReq.id ||
+          job.id === selectedRequest ||
+          job.serviceRequestId === selectedRequest
       );
 
       if (
@@ -789,18 +918,23 @@ export const DispatchCenter: React.FC = () => {
         return;
       }
 
-      await updateServiceRequest(selectedServiceReq.id!, {
-        service: editService,
-        priority: editPriority,
-        location: editLocation,
-        notes: editNotes,
-        type: editType,
-        status: editStatus,
-        assignedTechnicianId:
-          editStatus === 'Unassigned'
-            ? null
-            : selectedServiceReq.assignedTechnicianId,
-      });
+      const reqExistsInSr = serviceRequests.some(
+        (r) => r.id === selectedServiceReq.id
+      );
+      if (reqExistsInSr) {
+        await updateServiceRequest(selectedServiceReq.id!, {
+          service: editService,
+          priority: editPriority,
+          location: editLocation,
+          notes: editNotes,
+          type: editType,
+          status: editStatus,
+          assignedTechnicianId:
+            editStatus === 'Unassigned'
+              ? null
+              : selectedServiceReq.assignedTechnicianId,
+        });
+      }
 
       if (associated) {
         if (editStatus === 'Unassigned') {
@@ -932,13 +1066,15 @@ export const DispatchCenter: React.FC = () => {
       const targetReq =
         serviceRequests.find((r) => r.id === targetId) || selectedServiceReq;
       const associated = scheduledJobs.find(
-        (job) => job.serviceRequestId === targetId
+        (job) => job.serviceRequestId === targetId || job.id === targetId
       );
       if (associated) {
         await deleteScheduledJob(associated.id!);
       }
 
-      await deleteServiceRequest(targetId);
+      if (serviceRequests.some((r) => r.id === targetId)) {
+        await deleteServiceRequest(targetId);
+      }
 
       try {
         const client =
@@ -1004,7 +1140,7 @@ export const DispatchCenter: React.FC = () => {
   };
 
   const openChecklistModal = (jobId: string, jobNotes?: string | null) => {
-    setChecklistDraftItems(parseChecklistFromNotes(jobNotes));
+    setChecklistDraftItems(parseChecklistFromNotes(jobNotes, jobId));
     setChecklistModalJobId(jobId);
     setChecklistModalOpen(true);
   };
@@ -1012,13 +1148,32 @@ export const DispatchCenter: React.FC = () => {
   const handleChecklistSave = async () => {
     if (!checklistModalJobId) return;
     try {
-      const payload = JSON.stringify(checklistDraftItems);
+      const currentJob = scheduledJobs.find((j) => j.id === checklistModalJobId);
+      let updatedNotes = `CHECKLIST:${JSON.stringify(checklistDraftItems)}`;
+      if (currentJob?.notes) {
+        try {
+          const parsed = JSON.parse(currentJob.notes);
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            updatedNotes = JSON.stringify({
+              ...parsed,
+              checklist: checklistDraftItems,
+            });
+          }
+        } catch {
+          // Keep CHECKLIST: format
+        }
+      }
+
       await updateScheduledJob(checklistModalJobId, {
-        notes: `CHECKLIST:${payload}`,
+        notes: updatedNotes,
       });
-      localStorage.removeItem(`checklist_job_${checklistModalJobId}`);
+      try {
+        localStorage.removeItem(`checklist_job_${checklistModalJobId}`);
+      } catch {
+        // Ignore storage restrictions
+      }
       showNotification_(
-        'Ã¢Å“â€¦ Checklist saved! Technician will see the updated steps immediately.',
+        '✅ Checklist saved! Technician will see the updated steps immediately.',
         'success'
       );
       setChecklistModalOpen(false);
@@ -1619,13 +1774,14 @@ export const DispatchCenter: React.FC = () => {
                     {filteredJobs
                       .filter((job) => job.techId === tech.id)
                       .map((job) => {
-                        const jobIdentifier = job.serviceRequestId || job.id!;
+                        const jobIdentifier = job.id || job.serviceRequestId || '';
                         const isSelected =
                           selectedRequest === jobIdentifier ||
                           selectedRequest === job.id ||
                           selectedRequest === job.serviceRequestId;
                         const isHighlighted =
                           urlJobId === jobIdentifier ||
+                          urlJobId === job.id ||
                           urlJobId === job.serviceRequestId;
 
                         return (
@@ -1636,7 +1792,7 @@ export const DispatchCenter: React.FC = () => {
                               handleDragStart(event, 'job', job.id!)
                             }
                             onDragEnd={handleDragEnd}
-                            onClick={() => handleJobSelect(jobIdentifier)}
+                            onClick={() => handleJobSelect(job.id || jobIdentifier)}
                             className={`${styles.dashboardScheduledJob} ${
                               isDragging
                                 ? styles.dashboardScheduledJobGrabbing
@@ -1716,20 +1872,47 @@ export const DispatchCenter: React.FC = () => {
             ? styles.dashboardRightPanelOpen
             : styles.dashboardRightPanelClosed
         }`}
+        sx={{
+          height: '100%',
+          maxHeight: '100%',
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
       >
         {rightPanelOpen && (
           <Box
             key={selectedServiceReq?.id || selectedRequest || 'no-selection'}
-            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+            sx={{
+              height: '100%',
+              maxHeight: '100%',
+              minHeight: 0,
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+            }}
           >
             {/* Header */}
-            <Box className={styles.dashboardPanelHeader}>
+            <Box
+              className={styles.dashboardPanelHeader}
+              sx={{ flexShrink: 0 }}
+            >
               <Box
                 className={`${styles.dashboardRowBetween} ${styles.dashboardRequestHeader}`}
               >
                 <Typography variant="h6" className={styles.dashboardTitle}>
                   Work Order Details
                 </Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => setRightPanelOpen(false)}
+                  sx={{ color: '#666', p: 0.5 }}
+                  aria-label="Close details panel"
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
               </Box>
               <Typography variant="caption" className={styles.dashboardCaption}>
                 {formatJobNumber(selectedServiceReq?.id || selectedRequest || '') || 'No request selected'}
@@ -1737,7 +1920,15 @@ export const DispatchCenter: React.FC = () => {
             </Box>
 
             {/* Details Content */}
-            <Box className={styles.dashboardDetailsContent}>
+            <Box
+              className={styles.dashboardDetailsContent}
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+              }}
+            >
               {clLoading ? (
                 <Box className={styles.dashboardLoadingBox}>
                   <CircularProgress size={40} />
@@ -2001,61 +2192,137 @@ export const DispatchCenter: React.FC = () => {
                     </Box>
                   )}
 
-                  {rightPanelJob && (
-                    <Box className={styles.dashboardDetailsSection}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          my: 1,
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          className={styles.dashboardSectionTitle}
+                  {rightPanelJob && (() => {
+                    const checklistItems = parseChecklistFromNotes(
+                      rightPanelJob.notes,
+                      rightPanelJob.id
+                    );
+                    const completedCount = checklistItems.filter((i) => i.checked).length;
+                    const isAllComplete =
+                      checklistItems.length > 0 && completedCount === checklistItems.length;
+
+                    return (
+                      <Box className={styles.dashboardDetailsSection}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            my: 1,
+                          }}
                         >
-                          Job Checklist
+                          <Typography
+                            variant="subtitle2"
+                            className={styles.dashboardSectionTitle}
+                          >
+                            Job Checklist
+                          </Typography>
+                          <Chip
+                            label={`${completedCount}/${checklistItems.length || 0} completed`}
+                            size="small"
+                            color={isAllComplete ? 'success' : 'primary'}
+                            variant="outlined"
+                          />
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: 'block',
+                            color: 'text.secondary',
+                            mb: 1.5,
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          Define and inspect the work tasks the technician must complete on site.
                         </Typography>
-                        <Chip
-                          label={`${
-                            parseChecklistFromNotes(rightPanelJob.notes).length ||
-                            'Default'
-                          } steps`}
-                          size="small"
-                          color="primary"
+
+                        {/* Checklist items inspection list */}
+                        {checklistItems.length > 0 && (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 0.75,
+                              mb: 1.5,
+                              maxHeight: '180px',
+                              overflowY: 'auto',
+                              pr: 0.5,
+                            }}
+                          >
+                            {checklistItems.map((item, idx) => (
+                              <Box
+                                key={item.id || idx}
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 1,
+                                  p: '6px 10px',
+                                  borderRadius: '6px',
+                                  backgroundColor: item.checked
+                                    ? 'rgba(46, 125, 50, 0.08)'
+                                    : '#f8fafc',
+                                  border: `1px solid ${
+                                    item.checked ? '#c8e6c9' : '#e2e8f0'
+                                  }`,
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    width: 20,
+                                    height: 20,
+                                    minWidth: 20,
+                                    borderRadius: '50%',
+                                    backgroundColor: item.checked
+                                      ? '#2e7d32'
+                                      : '#1976d2',
+                                    color: '#fff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.65rem',
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  {item.checked ? '✓' : idx + 1}
+                                </Box>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    flex: 1,
+                                    fontSize: '0.78rem',
+                                    color: item.checked
+                                      ? '#2e7d32'
+                                      : '#334155',
+                                    textDecoration: item.checked
+                                      ? 'line-through'
+                                      : 'none',
+                                  }}
+                                >
+                                  {item.text}
+                                </Typography>
+                              </Box>
+                            ))}
+                          </Box>
+                        )}
+
+                        <Button
+                          id="manage-checklist-btn"
                           variant="outlined"
-                        />
+                          fullWidth
+                          size="small"
+                          onClick={() =>
+                            openChecklistModal(
+                              rightPanelJob.id!,
+                              rightPanelJob.notes
+                            )
+                          }
+                          className={styles.dashboardPrimaryButton}
+                        >
+                          📋 {checklistItems.length > 0 ? 'Manage Checklist Tasks' : '+ Add Checklist Tasks'}
+                        </Button>
                       </Box>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          display: 'block',
-                          color: 'text.secondary',
-                          mb: 1,
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        Define the exact steps the technician must tick off before
-                        completing this job.
-                      </Typography>
-                      <Button
-                        id="manage-checklist-btn"
-                        variant="outlined"
-                        fullWidth
-                        size="small"
-                        onClick={() =>
-                          openChecklistModal(
-                            rightPanelJob.id!,
-                            rightPanelJob.notes
-                          )
-                        }
-                        className={styles.dashboardPrimaryButton}
-                      >
-                        📋 Manage Job Checklist
-                      </Button>
-                    </Box>
-                  )}
+                    );
+                  })()}
 
                   {techFeedback &&
                     (techFeedback.comment ||
@@ -2174,7 +2441,7 @@ export const DispatchCenter: React.FC = () => {
                     </Box>
                   </Box>
 
-                  <Box className={styles.dashboardActions}>
+                  <Box className={styles.dashboardActions} sx={{ pb: 3 }}>
                     <Button
                       variant="contained"
                       onClick={handleSave}
