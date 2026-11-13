@@ -244,6 +244,186 @@ const subscribeMock = (model: string, callback: SubscriberCallback, initialData:
 };
 
 /**
+ * Populates and normalizes related relations (technicianPhotos, comments, checklistItems)
+ * on a job or service request object, guaranteeing safe array access and falling back
+ * to notes JSON parsing or browser localStorage caches.
+ */
+export function populateJobRelations(job: any, serviceRequest?: any): any {
+  if (!job && !serviceRequest) return null;
+  const base = job || serviceRequest;
+  const secondary = job ? serviceRequest : null;
+
+  // Initialize relations
+  let technicianPhotos: any[] = Array.isArray(base.technicianPhotos)
+    ? [...base.technicianPhotos]
+    : Array.isArray(base.photos)
+    ? [...base.photos]
+    : [];
+
+  let comments: any[] = Array.isArray(base.comments)
+    ? [...base.comments]
+    : [];
+
+  let checklistItems: any[] = Array.isArray(base.checklistItems)
+    ? [...base.checklistItems]
+    : Array.isArray(base.checklist)
+    ? [...base.checklist]
+    : [];
+
+  // 1. Check notes on both base and secondary objects
+  const notesCandidates = [base.notes, secondary?.notes].filter(Boolean);
+  for (const notesStr of notesCandidates) {
+    if (typeof notesStr !== 'string') continue;
+    if (notesStr.startsWith('CHECKLIST:')) {
+      try {
+        const parsed = JSON.parse(notesStr.replace('CHECKLIST:', ''));
+        if (Array.isArray(parsed) && checklistItems.length === 0) {
+          checklistItems = parsed;
+        }
+      } catch {
+        // ignore
+      }
+    } else {
+      try {
+        const parsed = JSON.parse(notesStr);
+        if (parsed && typeof parsed === 'object') {
+          if (checklistItems.length === 0) {
+            if (Array.isArray(parsed.checklistItems)) checklistItems = parsed.checklistItems;
+            else if (Array.isArray(parsed.checklist)) checklistItems = parsed.checklist;
+          }
+          if (technicianPhotos.length === 0) {
+            if (Array.isArray(parsed.technicianPhotos)) technicianPhotos = parsed.technicianPhotos;
+            else if (Array.isArray(parsed.photos)) technicianPhotos = parsed.photos;
+          }
+          if (comments.length === 0) {
+            if (Array.isArray(parsed.comments)) {
+              comments = parsed.comments;
+            } else if (typeof parsed.comment === 'string' && parsed.comment.trim()) {
+              comments = [
+                {
+                  id: 'c-1',
+                  text: parsed.comment.trim(),
+                  author: 'Technician',
+                  createdAt: base.updatedAt || new Date().toISOString(),
+                },
+              ];
+            }
+          }
+        }
+      } catch {
+        // Plain text note fallback for comments
+        if (!notesStr.startsWith('CHECKLIST:') && comments.length === 0 && notesStr.trim()) {
+          comments = [
+            {
+              id: 'c-note',
+              text: notesStr.trim(),
+              author: 'Technician',
+              createdAt: base.updatedAt || new Date().toISOString(),
+            },
+          ];
+        }
+      }
+    }
+  }
+
+  // 2. Check localStorage caches for technician-uploaded data
+  if (typeof window !== 'undefined') {
+    const candidateIds = [
+      base.id,
+      base.serviceRequestId,
+      secondary?.id,
+      secondary?.serviceRequestId,
+    ].filter(Boolean) as string[];
+
+    for (const jId of candidateIds) {
+      try {
+        if (checklistItems.length === 0) {
+          const cached = localStorage.getItem(`checklist_job_${jId}`);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed)) checklistItems = parsed;
+          }
+        }
+        if (technicianPhotos.length === 0) {
+          const cached = localStorage.getItem(`photos_job_${jId}`);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed)) technicianPhotos = parsed;
+          }
+        }
+        if (comments.length === 0) {
+          const cachedComments = localStorage.getItem(`comments_job_${jId}`);
+          if (cachedComments) {
+            const parsed = JSON.parse(cachedComments);
+            if (Array.isArray(parsed)) comments = parsed;
+          } else {
+            const cachedComment = localStorage.getItem(`comment_job_${jId}`);
+            if (cachedComment && cachedComment.trim()) {
+              comments = [
+                {
+                  id: `c-${jId}`,
+                  text: cachedComment.trim(),
+                  author: 'Technician',
+                  createdAt: new Date().toISOString(),
+                },
+              ];
+            }
+          }
+        }
+      } catch {
+        // Ignore localStorage issues
+      }
+    }
+  }
+
+  // Normalize checklistItems
+  checklistItems = checklistItems.map((item: any, idx: number) => ({
+    id: String(item?.id || `step-${idx + 1}`),
+    text: String(item?.text || item?.title || item?.name || ''),
+    checked: Boolean(item?.checked ?? item?.completed ?? false),
+  }));
+
+  // Normalize technicianPhotos
+  technicianPhotos = technicianPhotos.map((photo: any, idx: number) => {
+    if (typeof photo === 'string') {
+      return { id: `photo-${idx + 1}`, url: photo, name: `Photo ${idx + 1}` };
+    }
+    return {
+      id: String(photo?.id || `photo-${idx + 1}`),
+      url: String(photo?.url || photo?.src || ''),
+      name: String(photo?.name || photo?.title || `Photo ${idx + 1}`),
+    };
+  });
+
+  // Normalize comments
+  comments = comments.map((c: any, idx: number) => {
+    if (typeof c === 'string') {
+      return {
+        id: `c-${idx + 1}`,
+        text: c,
+        author: 'Technician',
+        createdAt: new Date().toISOString(),
+      };
+    }
+    return {
+      id: String(c?.id || `c-${idx + 1}`),
+      text: String(c?.text || c?.comment || c?.message || ''),
+      author: String(c?.author || c?.userName || c?.techName || 'Technician'),
+      createdAt: String(c?.createdAt || c?.timestamp || new Date().toISOString()),
+    };
+  });
+
+  return {
+    ...base,
+    technicianPhotos,
+    photos: technicianPhotos,
+    comments,
+    checklistItems,
+    checklist: checklistItems,
+  };
+}
+
+/**
  * SERVICE REQUEST OPERATIONS
  */
 export const serviceRequestAPI = {
@@ -270,12 +450,15 @@ export const serviceRequestAPI = {
   },
 
   async getServiceRequest(id: string) {
+    let req: any;
     if (client) {
       const response = await client.models.ServiceRequest.get({ id });
-      return response.data;
+      req = response.data;
+    } else {
+      const list = getLocal('mock_service_requests', MOCK_SERVICE_REQUESTS);
+      req = list.find((r: any) => r.id === id) || null;
     }
-    const list = getLocal('mock_service_requests', MOCK_SERVICE_REQUESTS);
-    return list.find(r => r.id === id) || null;
+    return req ? populateJobRelations(req) : null;
   },
 
   async createServiceRequest(data: any) {
@@ -481,12 +664,47 @@ export const scheduledJobAPI = {
   },
 
   async getScheduledJob(id: string) {
+    let job: any;
     if (client) {
       const response = await client.models.ScheduledJob.get({ id });
-      return response.data;
+      job = response.data;
+    } else {
+      const list = getLocal<Schema['ScheduledJob']['type'][]>('mock_scheduled_jobs', []);
+      job = list.find((j: any) => j.id === id || j.serviceRequestId === id) || null;
     }
-    const list = getLocal<Schema['ScheduledJob']['type'][]>('mock_scheduled_jobs', []);
-    return list.find(j => j.id === id) || null;
+    return job ? populateJobRelations(job) : null;
+  },
+
+  async getJobWithRelations(id: string) {
+    let job: any = null;
+    let serviceReq: any = null;
+
+    if (client) {
+      try {
+        const response = await client.models.ScheduledJob.get({ id });
+        job = response.data;
+      } catch {
+        // Might be a serviceRequestId
+      }
+    } else {
+      const list = getLocal<any[]>('mock_scheduled_jobs', []);
+      job = list.find((j: any) => j.id === id || j.serviceRequestId === id) || null;
+    }
+
+    const sReqId = job?.serviceRequestId || id;
+    if (client && sReqId) {
+      try {
+        const sRes = await client.models.ServiceRequest.get({ id: sReqId });
+        serviceReq = sRes.data;
+      } catch {
+        // ignore
+      }
+    } else if (sReqId) {
+      const sList = getLocal<any[]>('mock_service_requests', MOCK_SERVICE_REQUESTS);
+      serviceReq = sList.find((r: any) => r.id === sReqId) || null;
+    }
+
+    return populateJobRelations(job || serviceReq, serviceReq);
   },
 
   async createScheduledJob(data: any) {
@@ -539,7 +757,342 @@ export const scheduledJobAPI = {
     notify('ScheduledJob', updated);
     return itemToDelete || null;
   },
+
+  async fetchJobDetails(id: string) {
+    return fetchJobDetails(id);
+  },
+
+  async uploadJobPhoto(id: string, photoData: any) {
+    return uploadJobPhoto(id, photoData);
+  },
+
+  async deleteJobPhoto(id: string, photoId: string) {
+    return deleteJobPhoto(id, photoId);
+  },
+
+  async addJobComment(id: string, commentData: any) {
+    return addJobComment(id, commentData);
+  },
+
+  async updateChecklist(id: string, checklistData: any) {
+    return updateChecklist(id, checklistData);
+  },
 };
+
+export interface TechnicianPhoto {
+  id: string;
+  url: string;
+  name: string;
+}
+
+export interface TechnicianComment {
+  id: string;
+  text: string;
+  author: string;
+  createdAt: string;
+}
+
+export interface TechnicianChecklistItem {
+  id: string;
+  text: string;
+  checked: boolean;
+}
+
+export interface JobDetailsPayload {
+  id: string;
+  serviceRequestId?: string;
+  client?: string;
+  clientName?: string;
+  service?: string;
+  serviceName?: string;
+  location?: string;
+  address?: string;
+  phone?: string;
+  status?: string;
+  startTime?: string;
+  endTime?: string;
+  technicianId?: string;
+  notes?: string;
+  technicianPhotos: TechnicianPhoto[];
+  photos: TechnicianPhoto[];
+  comments: TechnicianComment[];
+  comment?: string;
+  checklistItems: TechnicianChecklistItem[];
+  checklist: TechnicianChecklistItem[];
+  [key: string]: any;
+}
+
+/**
+ * Fetches fully-populated job details including relations: photos, comments, and checklist.
+ */
+export async function fetchJobDetails(jobId: string): Promise<JobDetailsPayload | null> {
+  if (!jobId) return null;
+  const job = await scheduledJobAPI.getJobWithRelations(jobId);
+  if (!job) return null;
+
+  return {
+    ...job,
+    photos: job.technicianPhotos || job.photos || [],
+    technicianPhotos: job.technicianPhotos || job.photos || [],
+    comments: job.comments || [],
+    checklist: job.checklistItems || job.checklist || [],
+    checklistItems: job.checklistItems || job.checklist || [],
+  };
+}
+
+/**
+ * Uploads a technician photo for a job and persists it to Amplify/S3 and storage cache.
+ */
+export async function uploadJobPhoto(
+  jobId: string,
+  photoData: File | Blob | FormData | { name: string; url?: string; dataUrl?: string }
+): Promise<TechnicianPhoto> {
+  if (!jobId) throw new Error('Job ID is required to upload photo');
+
+  let name = `photo_${Date.now()}.jpg`;
+  let url = '';
+  let blobToUpload: Blob | null = null;
+
+  if (typeof FormData !== 'undefined' && photoData instanceof FormData) {
+    const fileEntry: any = photoData.get('photo') || photoData.get('file');
+    if (fileEntry && typeof fileEntry === 'object') {
+      if (fileEntry.name) {
+        name = fileEntry.name;
+      }
+      blobToUpload = fileEntry;
+    }
+  } else if (typeof File !== 'undefined' && photoData instanceof File) {
+    name = photoData.name || name;
+    blobToUpload = photoData;
+  } else if (typeof Blob !== 'undefined' && photoData instanceof Blob) {
+    blobToUpload = photoData;
+  } else if (typeof photoData === 'object' && photoData !== null) {
+    if ('name' in photoData && photoData.name) {
+      name = photoData.name;
+    }
+    if ('url' in photoData && photoData.url) {
+      url = photoData.url;
+    } else if ('dataUrl' in photoData && photoData.dataUrl) {
+      url = photoData.dataUrl;
+    }
+  }
+
+  // AWS Amplify Storage upload if available
+  if (client && (blobToUpload || url)) {
+    try {
+      const storageModule = await import('aws-amplify/storage');
+      if (storageModule && typeof storageModule.uploadData === 'function') {
+        const fileObj = blobToUpload || (await (await fetch(url)).blob());
+        const cleanName = name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const uploadRes = await storageModule.uploadData({
+          path: `jobs/${jobId}/${Date.now()}_${cleanName}`,
+          data: fileObj,
+          options: {
+            contentType: 'image/jpeg',
+          },
+        }).result;
+
+        url = uploadRes.path || `https://s3.mock-amplify-bucket.amazonaws.com/${uploadRes.path}`;
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  // Fallback to Data URL if url still not set
+  if (!url && blobToUpload) {
+    url = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blobToUpload as Blob);
+    });
+  }
+
+  if (!url) {
+    url = `https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80`;
+  }
+
+  const newPhoto: TechnicianPhoto = {
+    id: `photo-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    url,
+    name,
+  };
+
+  const currentPhotos = getLocal<TechnicianPhoto[]>(`photos_job_${jobId}`, []);
+  const updatedPhotos = [...currentPhotos, newPhoto];
+  setLocal(`photos_job_${jobId}`, updatedPhotos);
+
+  // Sync to ScheduledJob notes
+  try {
+    const job = await scheduledJobAPI.getScheduledJob(jobId);
+    if (job) {
+      let notesObj: any = {};
+      if (job.notes && !job.notes.startsWith('CHECKLIST:')) {
+        try {
+          notesObj = JSON.parse(job.notes);
+        } catch {
+          // ignore
+        }
+      }
+      notesObj.photos = updatedPhotos;
+      notesObj.technicianPhotos = updatedPhotos;
+      await scheduledJobAPI.updateScheduledJob(job.id, {
+        notes: JSON.stringify(notesObj),
+      });
+    }
+  } catch (err) {
+    console.warn('Could not sync photo to scheduled job notes:', err);
+  }
+
+  return newPhoto;
+}
+
+/**
+ * Deletes a technician photo for a job and updates persistent state.
+ */
+export async function deleteJobPhoto(
+  jobId: string,
+  photoId: string
+): Promise<{ success: boolean; photoId: string }> {
+  if (!jobId) throw new Error('Job ID is required to delete photo');
+
+  const currentPhotos = getLocal<TechnicianPhoto[]>(`photos_job_${jobId}`, []);
+  const photoToDelete = currentPhotos.find((p) => p.id === photoId);
+  const updatedPhotos = currentPhotos.filter((p) => p.id !== photoId);
+  setLocal(`photos_job_${jobId}`, updatedPhotos);
+
+  if (client && photoToDelete?.url) {
+    try {
+      const storageModule = await import('aws-amplify/storage');
+      if (storageModule && typeof storageModule.remove === 'function') {
+        let path = photoToDelete.url;
+        if (path.startsWith('http')) {
+          const match = path.match(/jobs\/.+/);
+          if (match) path = match[0];
+        }
+        await storageModule.remove({ path });
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  try {
+    const job = await scheduledJobAPI.getScheduledJob(jobId);
+    if (job) {
+      let notesObj: any = {};
+      if (job.notes && !job.notes.startsWith('CHECKLIST:')) {
+        try {
+          notesObj = JSON.parse(job.notes);
+        } catch {
+          // ignore
+        }
+      }
+      notesObj.photos = updatedPhotos;
+      notesObj.technicianPhotos = updatedPhotos;
+      await scheduledJobAPI.updateScheduledJob(job.id, {
+        notes: JSON.stringify(notesObj),
+      });
+    }
+  } catch (err) {
+    console.warn('Could not sync photo deletion to scheduled job:', err);
+  }
+
+  return { success: true, photoId };
+}
+
+/**
+ * Adds a technician comment or activity log entry and persists to storage and backend.
+ */
+export async function addJobComment(
+  jobId: string,
+  commentData: string | { text: string; author?: string }
+): Promise<TechnicianComment> {
+  if (!jobId) throw new Error('Job ID is required to add comment');
+
+  const text = typeof commentData === 'string' ? commentData : commentData.text;
+  const author = typeof commentData === 'object' && commentData.author ? commentData.author : 'Technician';
+
+  const newComment: TechnicianComment = {
+    id: `c-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    text: (text || '').trim(),
+    author,
+    createdAt: new Date().toISOString(),
+  };
+
+  const currentComments = getLocal<TechnicianComment[]>(`comments_job_${jobId}`, []);
+  const updatedComments = [...currentComments, newComment];
+  setLocal(`comments_job_${jobId}`, updatedComments);
+  try {
+    localStorage.setItem(`comment_job_${jobId}`, (text || '').trim());
+  } catch {
+    // ignore
+  }
+
+  try {
+    const job = await scheduledJobAPI.getScheduledJob(jobId);
+    if (job) {
+      let notesObj: any = {};
+      if (job.notes && !job.notes.startsWith('CHECKLIST:')) {
+        try {
+          notesObj = JSON.parse(job.notes);
+        } catch {
+          // ignore
+        }
+      }
+      notesObj.comment = (text || '').trim();
+      notesObj.comments = updatedComments;
+      await scheduledJobAPI.updateScheduledJob(job.id, {
+        notes: JSON.stringify(notesObj),
+      });
+    }
+  } catch (err) {
+    console.warn('Could not sync comment to scheduled job:', err);
+  }
+
+  return newComment;
+}
+
+/**
+ * Updates technician checklist items for a job and persists to storage and backend.
+ */
+export async function updateChecklist(
+  jobId: string,
+  checklistData: Array<{ id: string; text: string; checked: boolean }>
+): Promise<TechnicianChecklistItem[]> {
+  if (!jobId) throw new Error('Job ID is required to update checklist');
+
+  const normalized: TechnicianChecklistItem[] = (checklistData || []).map((item, idx) => ({
+    id: String(item.id || `step-${idx + 1}`),
+    text: String(item.text || ''),
+    checked: Boolean(item.checked),
+  }));
+
+  setLocal(`checklist_job_${jobId}`, normalized);
+
+  try {
+    const job = await scheduledJobAPI.getScheduledJob(jobId);
+    if (job) {
+      let notesObj: any = {};
+      if (job.notes && !job.notes.startsWith('CHECKLIST:')) {
+        try {
+          notesObj = JSON.parse(job.notes);
+        } catch {
+          // ignore
+        }
+      }
+      notesObj.checklist = normalized;
+      await scheduledJobAPI.updateScheduledJob(job.id, {
+        notes: JSON.stringify(notesObj),
+      });
+    }
+  } catch (err) {
+    console.warn('Could not sync checklist to scheduled job:', err);
+  }
+
+  return normalized;
+}
 
 /**
  * CLIENT OPERATIONS

@@ -851,3 +851,76 @@
     margin-bottom: 16px;
   }
 }
+
+/* Comments / Activity Feed */
+.commentsFeedList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.commentFeedItem {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.commentFeedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.commentFeedAuthor {
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: #1e293b;
+}
+
+.commentFeedTime {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.commentFeedBody {
+  font-size: 0.8rem;
+  color: #334155;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.emptyCommentsNotice {
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  margin-bottom: 12px;
+}
+
+.spinnerSmall {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

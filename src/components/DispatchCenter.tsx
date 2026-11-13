@@ -45,7 +45,11 @@ import {
   useScheduledJobs,
   useClients,
 } from '../hooks/useDispatchData';
-import { serviceRequestAPI } from '../services/api';
+import {
+  serviceRequestAPI,
+  scheduledJobAPI,
+  populateJobRelations,
+} from '../services/api';
 import {
   sendJobUpdatedNotification,
   sendJobDeletedNotification,
@@ -182,6 +186,310 @@ const parseChecklistFromNotes = (
   }
 
   return [];
+};
+
+export interface JobPhoto {
+  id?: string;
+  url: string;
+  name?: string;
+}
+
+export interface JobComment {
+  id?: string;
+  text: string;
+  author?: string;
+  createdAt?: string;
+}
+
+export interface JobMediaGalleryProps {
+  photos?: JobPhoto[];
+  onPhotoClick?: (url: string) => void;
+  isLoading?: boolean;
+}
+
+/**
+ * Media Gallery / Photo Viewer Component
+ * Renders technician job site photos with safe fallbacks and empty state messaging
+ */
+export const JobMediaGallery: React.FC<JobMediaGalleryProps> = ({
+  photos = [],
+  onPhotoClick,
+  isLoading = false,
+}) => {
+  const safePhotos = Array.isArray(photos) ? photos : [];
+
+  return (
+    <Box className={styles.dashboardDetailsSection}>
+      <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
+        Technician Photos {safePhotos.length > 0 ? `(${safePhotos.length})` : ''}
+      </Typography>
+
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 1.5 }}>
+          <CircularProgress size={24} />
+        </Box>
+      ) : safePhotos.length === 0 ? (
+        <Box className={styles.emptyStateNotice}>
+          📷 No technician photos uploaded yet for this job.
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: 'flex',
+            gap: '8px',
+            flexWrap: 'wrap',
+          }}
+        >
+          {safePhotos?.map((photo, index) => (
+            <Box
+              key={photo?.id || index}
+              onClick={() => photo?.url && onPhotoClick?.(photo.url)}
+              sx={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '4px',
+                border: '1px solid #ddd',
+                overflow: 'hidden',
+                cursor: photo?.url ? 'pointer' : 'default',
+                position: 'relative',
+                transition: 'transform 0.1s',
+                '&:hover': photo?.url
+                  ? {
+                      transform: 'scale(1.05)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                    }
+                  : {},
+              }}
+            >
+              {photo?.url ? (
+                <img
+                  src={photo.url}
+                  alt={photo.name || `Job photo ${index + 1}`}
+                  className={styles.techFeedbackPhoto}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#f1f5f9',
+                    fontSize: '0.65rem',
+                    color: '#94a3b8',
+                  }}
+                >
+                  No URL
+                </Box>
+              )}
+            </Box>
+          ))}
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+export interface JobCommentsFeedProps {
+  comments?: JobComment[];
+  isLoading?: boolean;
+}
+
+/**
+ * Comments / Activity Feed Component
+ * Displays technician notes, site logs, and updates with timestamps and author attribution
+ */
+export const JobCommentsFeed: React.FC<JobCommentsFeedProps> = ({
+  comments = [],
+  isLoading = false,
+}) => {
+  const safeComments = Array.isArray(comments) ? comments : [];
+
+  return (
+    <Box className={styles.dashboardDetailsSection}>
+      <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
+        Technician Notes & Activity Feed {safeComments.length > 0 ? `(${safeComments.length})` : ''}
+      </Typography>
+
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 1.5 }}>
+          <CircularProgress size={24} />
+        </Box>
+      ) : safeComments.length === 0 ? (
+        <Box className={styles.emptyStateNotice}>
+          💬 No technician comments or notes logged yet.
+        </Box>
+      ) : (
+        <Box className={styles.commentsFeedList}>
+          {safeComments?.map((c, index) => (
+            <Box key={c?.id || index} className={styles.commentFeedItem}>
+              <Box className={styles.commentFeedHeader}>
+                <Typography className={styles.commentFeedAuthor}>
+                  {c?.author || 'Technician'}
+                </Typography>
+                {c?.createdAt && (
+                  <Typography className={styles.commentFeedTime}>
+                    {(() => {
+                      try {
+                        const d = new Date(c.createdAt);
+                        return isNaN(d.getTime())
+                          ? c.createdAt
+                          : d.toLocaleDateString(undefined, {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            });
+                      } catch {
+                        return c.createdAt;
+                      }
+                    })()}
+                  </Typography>
+                )}
+              </Box>
+              <Typography className={styles.commentFeedBody}>
+                {c?.text || ''}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+export interface DispatcherWorkChecklistModuleProps {
+  items?: DispatchChecklistItem[];
+  onManageClick: () => void;
+  isLoading?: boolean;
+}
+
+/**
+ * Dispatcher Work Checklist Module Component
+ * Displays high-density step-by-step task checklist with completion progress and editor launcher
+ */
+export const DispatcherWorkChecklistModule: React.FC<
+  DispatcherWorkChecklistModuleProps
+> = ({ items = [], onManageClick, isLoading = false }) => {
+  const safeItems = Array.isArray(items) ? items : [];
+  const completedCount = safeItems.filter((i) => i?.checked).length;
+  const isAllComplete = safeItems.length > 0 && completedCount === safeItems.length;
+
+  return (
+    <Box className={styles.dashboardDetailsSection}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          my: 1,
+        }}
+      >
+        <Typography variant="subtitle2" className={styles.dashboardSectionTitle}>
+          Job Checklist
+        </Typography>
+        <Chip
+          label={`${completedCount}/${safeItems.length || 0} completed`}
+          size="small"
+          color={isAllComplete ? 'success' : 'primary'}
+          variant="outlined"
+        />
+      </Box>
+      <Typography
+        variant="caption"
+        sx={{
+          display: 'block',
+          color: 'text.secondary',
+          mb: 1.5,
+          lineHeight: 1.4,
+        }}
+      >
+        Define and inspect the work tasks the technician must complete on site.
+      </Typography>
+
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 1.5 }}>
+          <CircularProgress size={24} />
+        </Box>
+      ) : safeItems.length === 0 ? (
+        <Box className={styles.emptyStateNotice}>
+          📋 No checklist tasks defined yet. Add tasks to guide the technician on site.
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.75,
+            mb: 1.5,
+            maxHeight: '180px',
+            overflowY: 'auto',
+            pr: 0.5,
+          }}
+        >
+          {safeItems?.map((item, idx) => (
+            <Box
+              key={item?.id || idx}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                p: '6px 10px',
+                borderRadius: '6px',
+                backgroundColor: item?.checked
+                  ? 'rgba(46, 125, 50, 0.08)'
+                  : '#f8fafc',
+                border: `1px solid ${
+                  item?.checked ? '#c8e6c9' : '#e2e8f0'
+                }`,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 20,
+                  height: 20,
+                  minWidth: 20,
+                  borderRadius: '50%',
+                  backgroundColor: item?.checked ? '#2e7d32' : '#1976d2',
+                  color: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.65rem',
+                  fontWeight: 700,
+                }}
+              >
+                {item?.checked ? '✓' : idx + 1}
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  flex: 1,
+                  fontSize: '0.78rem',
+                  color: item?.checked ? '#2e7d32' : '#334155',
+                  textDecoration: item?.checked ? 'line-through' : 'none',
+                }}
+              >
+                {item?.text || ''}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      <Button
+        id="manage-checklist-btn"
+        variant="outlined"
+        fullWidth
+        size="small"
+        onClick={onManageClick}
+        className={styles.dashboardPrimaryButton}
+      >
+        📋 {safeItems.length > 0 ? 'Manage Checklist Tasks' : '+ Add Checklist Tasks'}
+      </Button>
+    </Box>
+  );
 };
 
 /**
@@ -801,7 +1109,7 @@ export const DispatchCenter: React.FC = () => {
 
   // Parse notes and local caches to get technician comments and photos
   const techFeedback = useMemo(() => {
-    const job = rightPanelJob;
+    const job = rightPanelJob || selectedServiceReq;
     if (!job) return null;
 
     let comment = '';
@@ -816,6 +1124,7 @@ export const DispatchCenter: React.FC = () => {
           if (parsed && typeof parsed === 'object') {
             if (typeof parsed.comment === 'string') comment = parsed.comment;
             if (Array.isArray(parsed.photos)) photos = parsed.photos;
+            else if (Array.isArray(parsed.technicianPhotos)) photos = parsed.technicianPhotos;
           }
         } catch {
           // If not valid JSON, treat raw notes as a technician comment
@@ -827,17 +1136,18 @@ export const DispatchCenter: React.FC = () => {
     }
 
     // Check localStorage fallback if empty
-    if (!comment && job.id) {
+    const jId = job.id || (job as any).serviceRequestId;
+    if (!comment && jId) {
       try {
-        const cachedComment = localStorage.getItem(`comment_job_${job.id}`);
+        const cachedComment = localStorage.getItem(`comment_job_${jId}`);
         if (cachedComment) comment = cachedComment;
       } catch {
         // Ignore storage access issues
       }
     }
-    if ((!photos || photos.length === 0) && job.id) {
+    if ((!photos || photos.length === 0) && jId) {
       try {
-        const cachedPhotos = localStorage.getItem(`photos_job_${job.id}`);
+        const cachedPhotos = localStorage.getItem(`photos_job_${jId}`);
         if (cachedPhotos) {
           const parsed = JSON.parse(cachedPhotos);
           if (Array.isArray(parsed)) photos = parsed;
@@ -852,7 +1162,60 @@ export const DispatchCenter: React.FC = () => {
     }
 
     return { comment, photos };
-  }, [rightPanelJob]);
+  }, [rightPanelJob, selectedServiceReq]);
+
+  // Selected job related relations state (photos, comments feed, checklist items)
+  const [selectedJobRelations, setSelectedJobRelations] = useState<{
+    technicianPhotos: JobPhoto[];
+    comments: JobComment[];
+    checklistItems: DispatchChecklistItem[];
+  } | null>(null);
+  const [isLoadingRelations, setIsLoadingRelations] = useState<boolean>(false);
+
+  // Trigger data fetching for selected job relations whenever selection changes
+  useEffect(() => {
+    if (!selectedRequest) {
+      setSelectedJobRelations(null);
+      return;
+    }
+
+    let isMounted = true;
+    setIsLoadingRelations(true);
+
+    const fetchRelations = async () => {
+      try {
+        const jobWithRelations = await scheduledJobAPI.getJobWithRelations(selectedRequest);
+        if (isMounted) {
+          setSelectedJobRelations({
+            technicianPhotos: jobWithRelations?.technicianPhotos || [],
+            comments: jobWithRelations?.comments || [],
+            checklistItems: jobWithRelations?.checklistItems || [],
+          });
+          setIsLoadingRelations(false);
+        }
+      } catch (err) {
+        console.error('Error fetching job relations for right panel:', err);
+        if (isMounted) {
+          const fallbackPopulated = populateJobRelations(
+            rightPanelJob || selectedServiceReq,
+            selectedServiceReq
+          );
+          setSelectedJobRelations({
+            technicianPhotos: fallbackPopulated?.technicianPhotos || [],
+            comments: fallbackPopulated?.comments || [],
+            checklistItems: fallbackPopulated?.checklistItems || [],
+          });
+          setIsLoadingRelations(false);
+        }
+      }
+    };
+
+    fetchRelations();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedRequest, scheduledJobs, serviceRequests, rightPanelJob, selectedServiceReq]);
 
   // Get selected client details
   const selectedClient = useMemo(() => {
@@ -1149,14 +1512,18 @@ export const DispatchCenter: React.FC = () => {
     if (!checklistModalJobId) return;
     try {
       const currentJob = scheduledJobs.find((j) => j.id === checklistModalJobId);
+      const currentReq = serviceRequests.find((r) => r.id === checklistModalJobId);
+
       let updatedNotes = `CHECKLIST:${JSON.stringify(checklistDraftItems)}`;
-      if (currentJob?.notes) {
+      const sourceNotes = currentJob?.notes || currentReq?.notes;
+      if (sourceNotes) {
         try {
-          const parsed = JSON.parse(currentJob.notes);
+          const parsed = JSON.parse(sourceNotes);
           if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
             updatedNotes = JSON.stringify({
               ...parsed,
               checklist: checklistDraftItems,
+              checklistItems: checklistDraftItems,
             });
           }
         } catch {
@@ -1164,14 +1531,42 @@ export const DispatchCenter: React.FC = () => {
         }
       }
 
-      await updateScheduledJob(checklistModalJobId, {
-        notes: updatedNotes,
-      });
+      if (currentJob) {
+        await updateScheduledJob(checklistModalJobId, {
+          notes: updatedNotes,
+        });
+      } else if (currentReq) {
+        await updateServiceRequest(checklistModalJobId, {
+          notes: updatedNotes,
+        });
+      } else {
+        try {
+          await updateScheduledJob(checklistModalJobId, {
+            notes: updatedNotes,
+          });
+        } catch {
+          await updateServiceRequest(checklistModalJobId, {
+            notes: updatedNotes,
+          });
+        }
+      }
+
       try {
-        localStorage.removeItem(`checklist_job_${checklistModalJobId}`);
+        localStorage.setItem(
+          `checklist_job_${checklistModalJobId}`,
+          JSON.stringify(checklistDraftItems)
+        );
       } catch {
         // Ignore storage restrictions
       }
+
+      // Update active relations state immediately
+      setSelectedJobRelations((prev) => ({
+        technicianPhotos: prev?.technicianPhotos || [],
+        comments: prev?.comments || [],
+        checklistItems: checklistDraftItems,
+      }));
+
       showNotification_(
         '✅ Checklist saved! Technician will see the updated steps immediately.',
         'success'
@@ -1486,9 +1881,11 @@ export const DispatchCenter: React.FC = () => {
           flex: 1,
           minHeight: 0,
           height: 'calc(100vh - 48px)',
+          maxHeight: 'calc(100vh - 48px)',
           pt: 0,
           pb: 0,
           overflow: 'hidden',
+          boxSizing: 'border-box',
         }}
       >
       {/* â”€â”€ Left Panel - Service Queue (320px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
@@ -1879,25 +2276,28 @@ export const DispatchCenter: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
+          boxSizing: 'border-box',
         }}
       >
         {rightPanelOpen && (
           <Box
             key={selectedServiceReq?.id || selectedRequest || 'no-selection'}
+            className={styles.dashboardRightPanelInner}
             sx={{
               height: '100%',
               maxHeight: '100%',
               minHeight: 0,
-              flex: 1,
+              flex: '1 1 0%',
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
+              boxSizing: 'border-box',
             }}
           >
             {/* Header */}
             <Box
               className={styles.dashboardPanelHeader}
-              sx={{ flexShrink: 0 }}
+              sx={{ flexShrink: 0, boxSizing: 'border-box' }}
             >
               <Box
                 className={`${styles.dashboardRowBetween} ${styles.dashboardRequestHeader}`}
@@ -1923,10 +2323,14 @@ export const DispatchCenter: React.FC = () => {
             <Box
               className={styles.dashboardDetailsContent}
               sx={{
-                flex: 1,
+                flex: '1 1 0%',
+                flexGrow: 1,
+                flexShrink: 1,
+                flexBasis: '0%',
                 minHeight: 0,
                 overflowY: 'auto',
                 overflowX: 'hidden',
+                boxSizing: 'border-box',
               }}
             >
               {clLoading ? (
@@ -2192,237 +2596,66 @@ export const DispatchCenter: React.FC = () => {
                     </Box>
                   )}
 
-                  {rightPanelJob && (() => {
-                    const checklistItems = parseChecklistFromNotes(
-                      rightPanelJob.notes,
-                      rightPanelJob.id
-                    );
-                    const completedCount = checklistItems.filter((i) => i.checked).length;
-                    const isAllComplete =
-                      checklistItems.length > 0 && completedCount === checklistItems.length;
+                  {(() => {
+                    const activeChecklistItems =
+                      selectedJobRelations?.checklistItems ??
+                      (rightPanelJob?.notes || selectedServiceReq?.notes
+                        ? parseChecklistFromNotes(
+                            rightPanelJob?.notes || selectedServiceReq?.notes,
+                            rightPanelJob?.id || selectedServiceReq?.id
+                          )
+                        : []);
+
+                    const activeComments =
+                      selectedJobRelations?.comments && selectedJobRelations.comments.length > 0
+                        ? selectedJobRelations.comments
+                        : techFeedback?.comment
+                        ? [
+                            {
+                              id: 'c-1',
+                              text: techFeedback.comment,
+                              author: 'Technician',
+                              createdAt: '',
+                            },
+                          ]
+                        : [];
+
+                    const activePhotos =
+                      selectedJobRelations?.technicianPhotos &&
+                      selectedJobRelations.technicianPhotos.length > 0
+                        ? selectedJobRelations.technicianPhotos
+                        : techFeedback?.photos || [];
 
                     return (
-                      <Box className={styles.dashboardDetailsSection}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            my: 1,
-                          }}
-                        >
-                          <Typography
-                            variant="subtitle2"
-                            className={styles.dashboardSectionTitle}
-                          >
-                            Job Checklist
-                          </Typography>
-                          <Chip
-                            label={`${completedCount}/${checklistItems.length || 0} completed`}
-                            size="small"
-                            color={isAllComplete ? 'success' : 'primary'}
-                            variant="outlined"
-                          />
-                        </Box>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            display: 'block',
-                            color: 'text.secondary',
-                            mb: 1.5,
-                            lineHeight: 1.4,
-                          }}
-                        >
-                          Define and inspect the work tasks the technician must complete on site.
-                        </Typography>
-
-                        {/* Checklist items inspection list */}
-                        {checklistItems.length > 0 && (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: 0.75,
-                              mb: 1.5,
-                              maxHeight: '180px',
-                              overflowY: 'auto',
-                              pr: 0.5,
-                            }}
-                          >
-                            {checklistItems.map((item, idx) => (
-                              <Box
-                                key={item.id || idx}
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 1,
-                                  p: '6px 10px',
-                                  borderRadius: '6px',
-                                  backgroundColor: item.checked
-                                    ? 'rgba(46, 125, 50, 0.08)'
-                                    : '#f8fafc',
-                                  border: `1px solid ${
-                                    item.checked ? '#c8e6c9' : '#e2e8f0'
-                                  }`,
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    width: 20,
-                                    height: 20,
-                                    minWidth: 20,
-                                    borderRadius: '50%',
-                                    backgroundColor: item.checked
-                                      ? '#2e7d32'
-                                      : '#1976d2',
-                                    color: '#fff',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '0.65rem',
-                                    fontWeight: 700,
-                                  }}
-                                >
-                                  {item.checked ? '✓' : idx + 1}
-                                </Box>
-                                <Typography
-                                  variant="body2"
-                                  sx={{
-                                    flex: 1,
-                                    fontSize: '0.78rem',
-                                    color: item.checked
-                                      ? '#2e7d32'
-                                      : '#334155',
-                                    textDecoration: item.checked
-                                      ? 'line-through'
-                                      : 'none',
-                                  }}
-                                >
-                                  {item.text}
-                                </Typography>
-                              </Box>
-                            ))}
-                          </Box>
-                        )}
-
-                        <Button
-                          id="manage-checklist-btn"
-                          variant="outlined"
-                          fullWidth
-                          size="small"
-                          onClick={() =>
+                      <>
+                        <DispatcherWorkChecklistModule
+                          items={activeChecklistItems}
+                          isLoading={isLoadingRelations}
+                          onManageClick={() =>
                             openChecklistModal(
-                              rightPanelJob.id!,
-                              rightPanelJob.notes
+                              rightPanelJob?.id || selectedServiceReq?.id || selectedRequest || '',
+                              rightPanelJob?.notes || selectedServiceReq?.notes
                             )
                           }
-                          className={styles.dashboardPrimaryButton}
-                        >
-                          📋 {checklistItems.length > 0 ? 'Manage Checklist Tasks' : '+ Add Checklist Tasks'}
-                        </Button>
-                      </Box>
-                    );
-                  })()}
+                        />
 
-                  {techFeedback &&
-                    (techFeedback.comment ||
-                      (techFeedback.photos && techFeedback.photos.length > 0)) && (
-                      <>
-                        <Box className={styles.dashboardDetailsSection}>
-                          <Typography
-                            variant="subtitle2"
-                            className={styles.dashboardSectionTitle}
-                          >
-                            Technician Feedback
-                          </Typography>
+                        <Divider className={styles.dashboardDividerLg} />
 
-                          {techFeedback.comment && (
-                            <Box sx={{ mb: 1.5 }}>
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  display: 'block',
-                                  fontWeight: 600,
-                                  mb: 0.5,
-                                  color: '#666',
-                                }}
-                              >
-                                Technician Notes
-                              </Typography>
-                              <textarea
-                                value={techFeedback.comment}
-                                readOnly
-                                className={styles.techCommentTextarea}
-                              />
-                            </Box>
-                          )}
+                        <JobCommentsFeed
+                          comments={activeComments}
+                          isLoading={isLoadingRelations}
+                        />
 
-                          {techFeedback.photos &&
-                            techFeedback.photos.length > 0 && (
-                              <Box>
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    display: 'block',
-                                    fontWeight: 600,
-                                    mb: 0.5,
-                                    color: '#666',
-                                  }}
-                                >
-                                  Job Photos ({techFeedback.photos.length})
-                                </Typography>
-                                <Box
-                                  sx={{
-                                    display: 'flex',
-                                    gap: '8px',
-                                    flexWrap: 'wrap',
-                                  }}
-                                >
-                                  {techFeedback.photos.map(
-                                    (
-                                      photo: {
-                                        id: string;
-                                        url: string;
-                                        name: string;
-                                      },
-                                      index: number
-                                    ) => (
-                                      <Box
-                                        key={photo.id || index}
-                                        onClick={() =>
-                                          setPreviewImageUrl(photo.url)
-                                        }
-                                        sx={{
-                                          width: '60px',
-                                          height: '60px',
-                                          borderRadius: '4px',
-                                          border: '1px solid #ddd',
-                                          overflow: 'hidden',
-                                          cursor: 'pointer',
-                                          position: 'relative',
-                                          transition: 'transform 0.1s',
-                                          '&:hover': {
-                                            transform: 'scale(1.05)',
-                                            boxShadow:
-                                              '0 2px 8px rgba(0,0,0,0.15)',
-                                          },
-                                        }}
-                                      >
-                                        <img
-                                          src={photo.url}
-                                          alt={photo.name}
-                                          className={styles.techFeedbackPhoto}
-                                        />
-                                      </Box>
-                                    )
-                                  )}
-                                </Box>
-                              </Box>
-                            )}
-                        </Box>
+                        <JobMediaGallery
+                          photos={activePhotos}
+                          isLoading={isLoadingRelations}
+                          onPhotoClick={(url) => setPreviewImageUrl(url)}
+                        />
+
                         <Divider className={styles.dashboardDividerLg} />
                       </>
-                    )}
+                    );
+                  })()}
 
                   <Box className={styles.dashboardRoutePreview}>
                     <Typography

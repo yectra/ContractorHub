@@ -1,8 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useServiceRequests, useScheduledJobs } from '../../hooks/useDispatchData';
 import styles from '../../styles/UI/FieldExecution.module.scss';
 import { formatJobNumber } from '../../utils/formatters';
+import {
+  fetchJobDetails,
+  uploadJobPhoto,
+  deleteJobPhoto,
+  addJobComment,
+  updateChecklist,
+} from '../../services/api';
+import type { TechnicianComment } from '../../services/api';
 
 // Zero-dependency SVG Icons matching CRM design system
 const PhoneIcon = () => (
@@ -179,6 +187,8 @@ const getCommentForJob = (jobId: string, notes?: string | null): string => {
 
 export default function FieldExecution() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const queryJobId = searchParams.get('jobId') || searchParams.get('id') || '';
 
   // Connectivity state
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
@@ -191,16 +201,21 @@ export default function FieldExecution() {
 
   // Navigation context
   const previousView = sessionStorage.getItem('previousView') || 'ADMIN';
-  const [sessionJobId] = useState(() => sessionStorage.getItem('selectedJobId') || '');
+  const [sessionJobId] = useState(() => queryJobId || sessionStorage.getItem('selectedJobId') || '');
 
   // Selected job state
   const [selectedJobId, setSelectedJobId] = useState<string>(sessionJobId);
 
+  // Loading and mutation states
+  const [isLoadingJobDetails, setIsLoadingJobDetails] = useState<boolean>(false);
+  const [isUpdatingChecklist, setIsUpdatingChecklist] = useState<boolean>(false);
+
   // Checklist state
   const [checklist, setChecklist] = useState<ChecklistItem[]>(DEFAULT_STEPS);
 
-  // Comment state
+  // Comment state (current input and activity feed)
   const [comment, setComment] = useState<string>('');
+  const [commentsFeed, setCommentsFeed] = useState<TechnicianComment[]>([]);
   const [isSavingComment, setIsSavingComment] = useState<boolean>(false);
 
   // Photo state
@@ -251,7 +266,7 @@ export default function FieldExecution() {
   const sessionPreferredJobId = sessionJobId && activeJobs.some((j) => j.id === sessionJobId)
     ? sessionJobId
     : '';
-  const effectiveSelectedJobId = selectedJobId || sessionPreferredJobId || activeJobs[0]?.id || '';
+  const effectiveSelectedJobId = selectedJobId || sessionPreferredJobId || sessionJobId || activeJobs[0]?.id || '';
 
   useEffect(() => {
     if (activeJobs.length > 0 && sessionJobId) {
@@ -265,51 +280,87 @@ export default function FieldExecution() {
     return activeJobs.find((j) => j.id === effectiveSelectedJobId) || null;
   }, [activeJobs, effectiveSelectedJobId]);
 
-  const [loadedJobCacheKey, setLoadedJobCacheKey] = useState<string | null>(null);
-  const selectedJobCacheKey = effectiveSelectedJobId
-    ? JSON.stringify([effectiveSelectedJobId, selectedJob?.notes])
-    : null;
-
-  // Load checklist and photos from cache when job selection changes
-  if (effectiveSelectedJobId && selectedJobCacheKey !== loadedJobCacheKey) {
-    setLoadedJobCacheKey(selectedJobCacheKey);
-    setChecklist(getChecklistForJob(effectiveSelectedJobId, selectedJob?.notes));
-    setComment(getCommentForJob(effectiveSelectedJobId, selectedJob?.notes));
-    setUploadQueue(readCachedArray<QueuedUpload>(`upload_queue_${effectiveSelectedJobId}`, []));
-    setUploadedPhotos(readCachedArray<UploadedPhoto>(`photos_job_${effectiveSelectedJobId}`, []));
-  } else if (!effectiveSelectedJobId && loadedJobCacheKey) {
-    setLoadedJobCacheKey(null);
-  }
-
-  // Persist checklist changes
-  const saveChecklist = async (updatedChecklist: ChecklistItem[]) => {
-    setChecklist(updatedChecklist);
+  // Load checklist, comments, and photos when job selection changes via fetchJobDetails API with cache fallback
+  useEffect(() => {
     if (!effectiveSelectedJobId) return;
 
-    const checklistStr = JSON.stringify(updatedChecklist);
-    localStorage.setItem(`checklist_job_${effectiveSelectedJobId}`, checklistStr);
+    let isSubscribed = true;
 
-    if (isOnline) {
+    // Fast-path: immediate cache load to prevent flicker
+    const cachedChecklist = getChecklistForJob(effectiveSelectedJobId, selectedJob?.notes);
+    const cachedComment = getCommentForJob(effectiveSelectedJobId, selectedJob?.notes);
+    const cachedPhotos = readCachedArray<UploadedPhoto>(`photos_job_${effectiveSelectedJobId}`, []);
+    const cachedQueue = readCachedArray<QueuedUpload>(`upload_queue_${effectiveSelectedJobId}`, []);
+    const cachedFeed = readCachedArray<TechnicianComment>(`comments_job_${effectiveSelectedJobId}`, []);
+
+    setChecklist(cachedChecklist);
+    setComment(cachedComment);
+    setUploadedPhotos(cachedPhotos);
+    setUploadQueue(cachedQueue);
+    setCommentsFeed(
+      cachedFeed.length > 0
+        ? cachedFeed
+        : cachedComment
+        ? [
+            {
+              id: `c-init-${effectiveSelectedJobId}`,
+              text: cachedComment,
+              author: 'Technician',
+              createdAt: new Date().toISOString(),
+            },
+          ]
+        : []
+    );
+
+    // Fetch persisted data via API service
+    const loadDetails = async () => {
+      setIsLoadingJobDetails(true);
       try {
-        const notesObj = {
-          checklist: updatedChecklist,
-          comment: comment,
-          photos: uploadedPhotos,
-        };
-        await updateScheduledJob(effectiveSelectedJobId, {
-          notes: JSON.stringify(notesObj),
-        });
+        const payload = await fetchJobDetails(effectiveSelectedJobId);
+        if (isSubscribed && payload) {
+          if (Array.isArray(payload.checklist) && payload.checklist.length > 0) {
+            setChecklist(payload.checklist);
+          }
+          if (Array.isArray(payload.photos) && payload.photos.length > 0) {
+            setUploadedPhotos(payload.photos);
+          }
+          if (Array.isArray(payload.comments) && payload.comments.length > 0) {
+            setCommentsFeed(payload.comments);
+          }
+        }
       } catch (err) {
-        console.error('Failed to sync checklist update to backend:', err);
+        console.warn('Could not fetch persisted job details via API:', err);
+      } finally {
+        if (isSubscribed) {
+          setIsLoadingJobDetails(false);
+        }
       }
-    }
-  };
+    };
 
-  const handleToggleStep = (stepId: string) => {
+    loadDetails();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [effectiveSelectedJobId, selectedJob?.notes]);
+
+  const handleToggleStep = async (stepId: string) => {
+    if (!effectiveSelectedJobId) return;
+
     const updated = checklist.map((step) =>
       step.id === stepId ? { ...step, checked: !step.checked } : step
     );
-    saveChecklist(updated);
+    setChecklist(updated);
+
+    try {
+      setIsUpdatingChecklist(true);
+      await updateChecklist(effectiveSelectedJobId, updated);
+    } catch (err) {
+      console.error('Failed to sync checklist update to backend:', err);
+      setErrorAlert('Failed to sync checklist with server. Changes saved locally.');
+    } finally {
+      setIsUpdatingChecklist(false);
+    }
   };
 
   const progressPercentage = useMemo(() => {
@@ -375,43 +426,6 @@ export default function FieldExecution() {
     });
   };
 
-  // S3 or Simulated Upload helper
-  const uploadPhoto = async (name: string, blob: Blob | string, isBase64 = false): Promise<string> => {
-    try {
-      const storageModule = await import('aws-amplify/storage');
-      if (storageModule && typeof storageModule.uploadData === 'function') {
-        const fileObj = isBase64
-          ? await (await fetch(blob as string)).blob()
-          : (blob as Blob);
-
-        const result = await storageModule.uploadData({
-          path: `jobs/${effectiveSelectedJobId}/${Date.now()}_${name}`,
-          data: fileObj,
-          options: {
-            contentType: 'image/jpeg',
-          },
-        }).result;
-
-        return result.path || `https://s3.mock-amplify-bucket.amazonaws.com/${result.path}`;
-      }
-    } catch {
-      // Fallback to simulation
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-
-    if (isBase64) {
-      return blob as string;
-    }
-
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob as Blob);
-    });
-  };
-
   // Core file upload selection handler
   const handlePhotoSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -444,31 +458,9 @@ export default function FieldExecution() {
         setErrorAlert('Offline: Photo upload queued. Will resume when online.');
         setTimeout(() => setErrorAlert(null), 4000);
       } else {
-        const url = await uploadPhoto(fileName, compressedBlob);
-        const newPhoto: UploadedPhoto = {
-          id: `photo-${Date.now()}`,
-          url,
-          name: fileName,
-        };
-
-        const updatedPhotos = [...uploadedPhotos, newPhoto];
-        setUploadedPhotos(updatedPhotos);
-        localStorage.setItem(`photos_job_${effectiveSelectedJobId}`, JSON.stringify(updatedPhotos));
-
-        try {
-          const notesObj = {
-            checklist,
-            comment,
-            photos: updatedPhotos,
-          };
-          await updateScheduledJob(effectiveSelectedJobId, {
-            notes: JSON.stringify(notesObj),
-          });
-        } catch (err) {
-          console.error('Failed to sync uploaded photo to backend:', err);
-        }
-
-        setSuccessAlert('Photo uploaded successfully!');
+        const newPhoto = await uploadJobPhoto(effectiveSelectedJobId, compressedBlob);
+        setUploadedPhotos((prev) => [...prev, newPhoto]);
+        setSuccessAlert('Photo uploaded and persisted successfully!');
         setTimeout(() => setSuccessAlert(null), 3000);
       }
     } catch (err) {
@@ -489,36 +481,23 @@ export default function FieldExecution() {
       setSuccessAlert(`Syncing ${uploadQueue.length} queued photos...`);
 
       const failedUploads: QueuedUpload[] = [];
-      const successfulPhotos: UploadedPhoto[] = [...uploadedPhotos];
+      const successfulPhotos: UploadedPhoto[] = [];
 
       for (const item of uploadQueue) {
         try {
-          const url = await uploadPhoto(item.name, item.dataUrl, true);
-          successfulPhotos.push({
-            id: `photo-${Date.now()}-${Math.random()}`,
-            url,
+          const uploaded = await uploadJobPhoto(effectiveSelectedJobId, {
             name: item.name,
+            dataUrl: item.dataUrl,
           });
+          successfulPhotos.push(uploaded);
         } catch (err) {
           console.error(`Failed to upload queued item ${item.name}:`, err);
           failedUploads.push(item);
         }
       }
 
-      setUploadedPhotos(successfulPhotos);
-      localStorage.setItem(`photos_job_${effectiveSelectedJobId}`, JSON.stringify(successfulPhotos));
-
-      try {
-        const notesObj = {
-          checklist,
-          comment,
-          photos: successfulPhotos,
-        };
-        await updateScheduledJob(effectiveSelectedJobId, {
-          notes: JSON.stringify(notesObj),
-        });
-      } catch (err) {
-        console.error('Failed to sync synced photos to backend:', err);
+      if (successfulPhotos.length > 0) {
+        setUploadedPhotos((prev) => [...prev, ...successfulPhotos]);
       }
 
       setUploadQueue(failedUploads);
@@ -535,45 +514,21 @@ export default function FieldExecution() {
 
     processQueue();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline, uploadQueue, effectiveSelectedJobId, uploadedPhotos]);
+  }, [isOnline, effectiveSelectedJobId]);
 
   const handleDeleteUploadedPhoto = async (photo: UploadedPhoto) => {
     if (!effectiveSelectedJobId) return;
 
-    const updatedPhotos = uploadedPhotos.filter((p) => p.id !== photo.id);
-    setUploadedPhotos(updatedPhotos);
-    localStorage.setItem(`photos_job_${effectiveSelectedJobId}`, JSON.stringify(updatedPhotos));
+    setUploadedPhotos((prev) => prev.filter((p) => p.id !== photo.id));
 
-    if (isOnline) {
-      try {
-        const notesObj = {
-          checklist,
-          comment,
-          photos: updatedPhotos,
-        };
-        await updateScheduledJob(effectiveSelectedJobId, {
-          notes: JSON.stringify(notesObj),
-        });
-
-        const storageModule = await import('aws-amplify/storage');
-        if (storageModule && typeof storageModule.remove === 'function') {
-          let path = photo.url;
-          if (path.startsWith('http')) {
-            const match = path.match(/jobs\/.+/);
-            if (match) {
-              path = match[0];
-            }
-          }
-          await storageModule.remove({
-            path: path,
-          });
-        }
-      } catch (err) {
-        console.error('Failed to delete photo from storage:', err);
-      }
+    try {
+      await deleteJobPhoto(effectiveSelectedJobId, photo.id);
+      setSuccessAlert('Photo deleted successfully.');
+      setTimeout(() => setSuccessAlert(null), 3000);
+    } catch (err) {
+      console.error('Failed to delete photo from storage:', err);
+      setErrorAlert('Failed to delete photo from storage.');
     }
-    setSuccessAlert('Photo deleted successfully.');
-    setTimeout(() => setSuccessAlert(null), 3000);
   };
 
   const handleDeleteQueuedPhoto = (item: QueuedUpload) => {
@@ -588,23 +543,18 @@ export default function FieldExecution() {
   };
 
   const handleSaveComment = async () => {
-    if (!effectiveSelectedJobId) return;
+    if (!effectiveSelectedJobId || !comment.trim()) return;
 
     setIsSavingComment(true);
     setErrorAlert(null);
     try {
-      localStorage.setItem(`comment_job_${effectiveSelectedJobId}`, comment);
+      const newComment = await addJobComment(effectiveSelectedJobId, {
+        text: comment.trim(),
+        author: 'Technician',
+      });
 
-      if (isOnline) {
-        const notesObj = {
-          checklist: checklist,
-          comment: comment,
-          photos: uploadedPhotos,
-        };
-        await updateScheduledJob(effectiveSelectedJobId, {
-          notes: JSON.stringify(notesObj),
-        });
-      }
+      setCommentsFeed((prev) => [...prev, newComment]);
+      setComment('');
       setSuccessAlert('Technician notes submitted and saved successfully!');
       setTimeout(() => setSuccessAlert(null), 3000);
     } catch (err) {
@@ -813,7 +763,7 @@ export default function FieldExecution() {
                           : styles.pillScheduled
                       }
                     >
-                      {selectedJob.status?.toUpperCase() || 'SCHEDULED'}
+                      {isLoadingJobDetails ? 'SYNCING...' : (selectedJob.status?.toUpperCase() || 'SCHEDULED')}
                     </span>
                   </div>
                   <div className={styles.metricFooter}>Real-time Dispatch Sync</div>
@@ -826,7 +776,7 @@ export default function FieldExecution() {
               <div className={styles.sectionTitle}>
                 <span>Work Checklist</span>
                 <span className={styles.pillProgress}>
-                  {progressPercentage}% Completed
+                  {isUpdatingChecklist ? 'Syncing...' : `${progressPercentage}% Completed`}
                 </span>
               </div>
 
@@ -896,7 +846,13 @@ export default function FieldExecution() {
                 }`}
               >
                 <CameraIcon />
-                {isUploading ? 'PROCESSING & UPLOADING...' : 'CAPTURE & UPLOAD JOB PHOTO'}
+                {isUploading ? (
+                  <>
+                    <span className={styles.spinnerSmall} /> PROCESSING & UPLOADING...
+                  </>
+                ) : (
+                  'CAPTURE & UPLOAD JOB PHOTO'
+                )}
                 <input
                   type="file"
                   accept="image/*"
@@ -969,6 +925,34 @@ export default function FieldExecution() {
                 <span className={styles.sectionSubtitle}>Stored with job history</span>
               </div>
 
+              {/* Activity / Comments Feed */}
+              {commentsFeed.length > 0 ? (
+                <div className={styles.commentsFeedList}>
+                  {commentsFeed.map((c, idx) => (
+                    <div key={c.id || idx} className={styles.commentFeedItem}>
+                      <div className={styles.commentFeedHeader}>
+                        <span className={styles.commentFeedAuthor}>{c.author || 'Technician'}</span>
+                        <span className={styles.commentFeedTime}>
+                          {c.createdAt
+                            ? new Date(c.createdAt).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                month: 'short',
+                                day: 'numeric',
+                              })
+                            : 'Just now'}
+                        </span>
+                      </div>
+                      <div className={styles.commentFeedBody}>{c.text}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.emptyCommentsNotice}>
+                  💬 No technician notes or comments logged yet. Enter observations below.
+                </div>
+              )}
+
               <textarea
                 value={comment}
                 onChange={(e) => {
@@ -981,11 +965,18 @@ export default function FieldExecution() {
 
               <button
                 onClick={handleSaveComment}
-                disabled={isSavingComment}
+                disabled={isSavingComment || !comment.trim()}
                 className={styles.buttonPrimary}
               >
-                <SaveIcon />
-                {isSavingComment ? 'SAVING NOTES...' : 'SUBMIT & SAVE NOTES'}
+                {isSavingComment ? (
+                  <>
+                    <span className={styles.spinnerSmall} /> SAVING NOTES...
+                  </>
+                ) : (
+                  <>
+                    <SaveIcon /> SUBMIT & SAVE NOTES
+                  </>
+                )}
               </button>
             </div>
           </div>

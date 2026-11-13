@@ -1,12 +1,14 @@
 .dashboardRoot {
   display: flex;
-  min-height: 100vh;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
   width: 100%;
   overflow: hidden;
   position: relative;
   background-color: #f8fafc;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding-top: 0;
+  padding-bottom: 0;
   box-sizing: border-box;
 }
 
@@ -46,12 +48,26 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+.dashboardRightPanelInner {
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .dashboardRightPanelOpen {
   width: 400px;
   min-width: 400px;
   max-width: 400px;
+  height: 100%;
+  max-height: 100%;
   border-left: 1px solid #e0e0e0;
 }
 
@@ -777,16 +793,18 @@
 }
 
 .dashboardDetailsContent {
-  flex: 1 1 0%;
-  min-height: 0;
-  height: auto;
-  max-height: 100%;
+  flex: 1 1 0% !important;
+  flex-grow: 1 !important;
+  flex-shrink: 1 !important;
+  flex-basis: 0% !important;
+  min-height: 0 !important;
+  height: 0 !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  padding: 14px 14px 28px;
+  padding: 14px 14px 32px;
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
 
   /* Polished visible scrollbar */
   &::-webkit-scrollbar {
@@ -1066,6 +1084,59 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.emptyStateNotice {
+  padding: 10px 12px;
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  color: #64748b;
+  font-size: 0.75rem;
+  text-align: center;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.commentsFeedList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.commentFeedItem {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.commentFeedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.commentFeedAuthor {
+  font-weight: 600;
+  font-size: 0.72rem;
+  color: #1e293b;
+}
+
+.commentFeedTime {
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+.commentFeedBody {
+  font-size: 0.75rem;
+  color: #334155;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .previewImage {
