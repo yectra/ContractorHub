@@ -3,6 +3,7 @@ import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
 import outputs from '../../amplify_outputs.json';
+import { formatJobNumber, getCanonicalJobId } from '../utils/formatters';
 
 // Detect if Amplify is configured with a backend
 export const isAmplifyConfigured = Boolean(
@@ -413,8 +414,13 @@ export function populateJobRelations(job: any, serviceRequest?: any): any {
     };
   });
 
+  const canonicalId = getCanonicalJobId(base) || getCanonicalJobId(secondary) || base.id || '';
+  const jobNumber = formatJobNumber(canonicalId);
+
   return {
     ...base,
+    canonicalJobId: canonicalId,
+    jobNumber,
     technicianPhotos,
     photos: technicianPhotos,
     comments,
@@ -666,8 +672,24 @@ export const scheduledJobAPI = {
   async getScheduledJob(id: string) {
     let job: any;
     if (client) {
-      const response = await client.models.ScheduledJob.get({ id });
-      job = response.data;
+      try {
+        const response = await client.models.ScheduledJob.get({ id });
+        job = response.data;
+      } catch {
+        // Might be a serviceRequestId
+      }
+      if (!job) {
+        try {
+          const listRes = await client.models.ScheduledJob.list({
+            filter: { serviceRequestId: { eq: id } },
+          });
+          if (listRes.data && listRes.data.length > 0) {
+            job = listRes.data[0];
+          }
+        } catch {
+          // ignore
+        }
+      }
     } else {
       const list = getLocal<Schema['ScheduledJob']['type'][]>('mock_scheduled_jobs', []);
       job = list.find((j: any) => j.id === id || j.serviceRequestId === id) || null;
@@ -685,6 +707,18 @@ export const scheduledJobAPI = {
         job = response.data;
       } catch {
         // Might be a serviceRequestId
+      }
+      if (!job) {
+        try {
+          const listRes = await client.models.ScheduledJob.list({
+            filter: { serviceRequestId: { eq: id } },
+          });
+          if (listRes.data && listRes.data.length > 0) {
+            job = listRes.data[0];
+          }
+        } catch {
+          // ignore
+        }
       }
     } else {
       const list = getLocal<any[]>('mock_scheduled_jobs', []);
@@ -801,6 +835,8 @@ export interface TechnicianChecklistItem {
 export interface JobDetailsPayload {
   id: string;
   serviceRequestId?: string;
+  canonicalJobId?: string;
+  jobNumber?: string;
   client?: string;
   clientName?: string;
   service?: string;
@@ -832,6 +868,8 @@ export async function fetchJobDetails(jobId: string): Promise<JobDetailsPayload 
 
   return {
     ...job,
+    canonicalJobId: job.canonicalJobId || getCanonicalJobId(job),
+    jobNumber: job.jobNumber || formatJobNumber(job),
     photos: job.technicianPhotos || job.photos || [],
     technicianPhotos: job.technicianPhotos || job.photos || [],
     comments: job.comments || [],

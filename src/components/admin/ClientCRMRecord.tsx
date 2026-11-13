@@ -180,7 +180,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
 
       const matchSearch =
         jobIdStr.toLowerCase().includes(query) ||
-        formatJobNumber(jobIdStr).toLowerCase().includes(query) ||
+        formatJobNumber(job).toLowerCase().includes(query) ||
         job.service.toLowerCase().includes(query) ||
         (job.notes || '').toLowerCase().includes(query) ||
         techName.includes(query);
@@ -599,7 +599,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
       }
 
       setSuccessAlert({
-        message: `Job #${formatJobNumber(selectedJob.id)} updated successfully!`,
+        message: `Job #${formatJobNumber(selectedJob)} updated successfully!`,
         jobId: selectedJob.id,
         date: isAssigned ? scheduledDate : undefined,
       });
@@ -906,7 +906,7 @@ export default function ClientCRMRecord(): React.JSX.Element {
                                 }}
                                 title="Open in Dispatch Dashboard"
                               >
-                                {formatJobNumber(job.id)}
+                                {formatJobNumber(job)}
                               </button>
                             </td>
                             {/* Created Date Column */}

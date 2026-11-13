@@ -66,7 +66,7 @@ import AppLayout from './layout/AppLayout';
 
 import styles from '../styles/UI/Dashboard.module.scss';
 import modalStyles from '../styles/UI/DispatchCenter.module.scss';
-import { formatJobNumber } from '../utils/formatters';
+import { formatJobNumber, getCanonicalJobId } from '../utils/formatters';
 
 // Hours for the schedule grid (7 AM to 7 PM inclusive - 13 hourly slots)
 const hours = Array.from({ length: 13 }, (_, i) => i + 7);
@@ -1970,7 +1970,7 @@ export const DispatchCenter: React.FC = () => {
                           variant="subtitle2"
                           className={styles.dashboardRequestId}
                         >
-                          {formatJobNumber(request.id)}
+                          {formatJobNumber(request, scheduledJobs)}
                         </Typography>
                         <Chip
                           label={request.type}
@@ -2171,13 +2171,16 @@ export const DispatchCenter: React.FC = () => {
                     {filteredJobs
                       .filter((job) => job.techId === tech.id)
                       .map((job) => {
-                        const jobIdentifier = job.id || job.serviceRequestId || '';
+                        const canonicalId = getCanonicalJobId(job, scheduledJobs);
+                        const jobIdentifier = canonicalId || job.serviceRequestId || job.id || '';
                         const isSelected =
                           selectedRequest === jobIdentifier ||
+                          selectedRequest === canonicalId ||
                           selectedRequest === job.id ||
                           selectedRequest === job.serviceRequestId;
                         const isHighlighted =
                           urlJobId === jobIdentifier ||
+                          urlJobId === canonicalId ||
                           urlJobId === job.id ||
                           urlJobId === job.serviceRequestId;
 
@@ -2189,7 +2192,7 @@ export const DispatchCenter: React.FC = () => {
                               handleDragStart(event, 'job', job.id!)
                             }
                             onDragEnd={handleDragEnd}
-                            onClick={() => handleJobSelect(job.id || jobIdentifier)}
+                            onClick={() => handleJobSelect(canonicalId || job.serviceRequestId || job.id)}
                             className={`${styles.dashboardScheduledJob} ${
                               isDragging
                                 ? styles.dashboardScheduledJobGrabbing
@@ -2207,7 +2210,7 @@ export const DispatchCenter: React.FC = () => {
                               backgroundColor:
                                 tech.color || getTechnicianColor(tech.id!),
                             }}
-                            title={`${formatJobNumber(jobIdentifier)} — ${
+                            title={`${formatJobNumber(job, scheduledJobs)} — ${
                               (job.serviceType || job.service_name)
                                 ? `${job.serviceType || job.service_name} | `
                                 : ''
@@ -2217,7 +2220,7 @@ export const DispatchCenter: React.FC = () => {
                               variant="caption"
                               className={styles.dashboardJobId}
                             >
-                              {formatJobNumber(jobIdentifier)}
+                              {formatJobNumber(job, scheduledJobs)}
                             </Typography>
                             {(job.serviceType || job.service_name) && (
                               <Typography
@@ -2315,7 +2318,7 @@ export const DispatchCenter: React.FC = () => {
                 </IconButton>
               </Box>
               <Typography variant="caption" className={styles.dashboardCaption}>
-                {formatJobNumber(selectedServiceReq?.id || selectedRequest || '') || 'No request selected'}
+                {formatJobNumber(selectedServiceReq || rightPanelJob || selectedRequest, scheduledJobs) || 'No request selected'}
               </Typography>
             </Box>
 

@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { useServiceRequests, useScheduledJobs, useTechnicians } from '../hooks/useDispatchData';
 import AppLayout from './layout/AppLayout';
 import styles from '../styles/UI/TechDashboard.module.scss';
-import { formatJobNumber } from '../utils/formatters';
+import { formatJobNumber, getCanonicalJobId } from '../utils/formatters';
 
 // â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -147,6 +147,7 @@ interface ScheduledJobCardProps {
 }
 
 function ScheduledJobCard({
+  jobId,
   srId,
   client,
   service,
@@ -156,7 +157,8 @@ function ScheduledJobCard({
   onClick,
 }: ScheduledJobCardProps) {
   const displayService = serviceType || service_name || service;
-  const formattedJobNumber = formatJobNumber(srId);
+  const canonicalId = getCanonicalJobId({ serviceRequestId: srId, id: jobId });
+  const formattedJobNumber = formatJobNumber(canonicalId);
   const clientName = client || 'Unknown';
 
   return (
@@ -269,9 +271,11 @@ export default function TechDashboard() {
         (job as unknown as { service?: string }).service ||
         'Service';
 
+      const canonicalId = getCanonicalJobId(job);
+
       map[date].push({
         jobId: job.id || '',
-        srId: job.serviceRequestId || job.id || '',
+        srId: canonicalId || job.serviceRequestId || job.id || '',
         client: sr?.client || 'Unknown',
         service: serviceName,
         serviceType: serviceName,
@@ -309,7 +313,7 @@ export default function TechDashboard() {
     sessionStorage.setItem('previousView', 'TECH_DASHBOARD');
     sessionStorage.setItem('selectedJobId', jobId);
     sessionStorage.setItem('selectedSrId', srId);
-    routerNavigate('/technician');
+    routerNavigate(`/technician?jobId=${encodeURIComponent(jobId)}&srId=${encodeURIComponent(srId)}`);
   };
 
   const isLoading = srLoading || jobsLoading;

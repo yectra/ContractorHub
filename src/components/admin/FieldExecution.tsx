@@ -188,7 +188,12 @@ const getCommentForJob = (jobId: string, notes?: string | null): string => {
 export default function FieldExecution() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const queryJobId = searchParams.get('jobId') || searchParams.get('id') || '';
+  const queryJobId =
+    searchParams.get('jobId') ||
+    searchParams.get('srId') ||
+    searchParams.get('id') ||
+    '';
+  const querySrId = searchParams.get('srId') || '';
 
   // Connectivity state
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
@@ -201,7 +206,19 @@ export default function FieldExecution() {
 
   // Navigation context
   const previousView = sessionStorage.getItem('previousView') || 'ADMIN';
-  const [sessionJobId] = useState(() => queryJobId || sessionStorage.getItem('selectedJobId') || '');
+  const [sessionJobId] = useState(
+    () =>
+      queryJobId ||
+      sessionStorage.getItem('selectedJobId') ||
+      sessionStorage.getItem('selectedSrId') ||
+      ''
+  );
+  const [sessionSrId] = useState(
+    () =>
+      querySrId ||
+      sessionStorage.getItem('selectedSrId') ||
+      ''
+  );
 
   // Selected job state
   const [selectedJobId, setSelectedJobId] = useState<string>(sessionJobId);
@@ -262,11 +279,24 @@ export default function FieldExecution() {
     });
   }, [scheduledJobs, serviceRequests]);
 
-  // Prefer session-passed job if it matches an active job; otherwise first available job
-  const sessionPreferredJobId = sessionJobId && activeJobs.some((j) => j.id === sessionJobId)
-    ? sessionJobId
-    : '';
-  const effectiveSelectedJobId = selectedJobId || sessionPreferredJobId || sessionJobId || activeJobs[0]?.id || '';
+  // Prefer session-passed job if it matches an active job (matching by id or serviceRequestId); otherwise first available job
+  const sessionPreferredJob = useMemo(() => {
+    const target = selectedJobId || sessionJobId || sessionSrId || queryJobId;
+    if (!target) return null;
+    return (
+      activeJobs.find(
+        (j) => j.id === target || j.serviceRequestId === target
+      ) || null
+    );
+  }, [selectedJobId, sessionJobId, sessionSrId, queryJobId, activeJobs]);
+
+  const effectiveSelectedJobId =
+    sessionPreferredJob?.id ||
+    selectedJobId ||
+    sessionJobId ||
+    queryJobId ||
+    activeJobs[0]?.id ||
+    '';
 
   useEffect(() => {
     if (activeJobs.length > 0 && sessionJobId) {
@@ -275,9 +305,15 @@ export default function FieldExecution() {
     }
   }, [activeJobs.length, sessionJobId]);
 
-  // Find currently selected job details
+  // Find currently selected job details (matching by id or serviceRequestId)
   const selectedJob = useMemo(() => {
-    return activeJobs.find((j) => j.id === effectiveSelectedJobId) || null;
+    return (
+      activeJobs.find(
+        (j) =>
+          j.id === effectiveSelectedJobId ||
+          j.serviceRequestId === effectiveSelectedJobId
+      ) || null
+    );
   }, [activeJobs, effectiveSelectedJobId]);
 
   // Load checklist, comments, and photos when job selection changes via fetchJobDetails API with cache fallback
@@ -610,7 +646,7 @@ export default function FieldExecution() {
   };
 
   const jobIdString = selectedJob
-    ? `${formatJobNumber(selectedJob.serviceRequestId || selectedJob.id || '')} - ${selectedJob.clientName}`
+    ? `${formatJobNumber(selectedJob)} - ${selectedJob.clientName}`
     : 'No Active Job';
 
   return (
@@ -652,7 +688,7 @@ export default function FieldExecution() {
               >
                 {activeJobs.map((j) => (
                   <option key={j.id || ''} value={j.id || ''}>
-                    {formatJobNumber(j.serviceRequestId || j.id)} - {j.clientName}
+                    {formatJobNumber(j)} - {j.clientName}
                   </option>
                 ))}
               </select>
