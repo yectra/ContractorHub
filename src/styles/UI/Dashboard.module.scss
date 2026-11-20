@@ -1,8 +1,9 @@
 .dashboardRoot {
   display: flex;
-  height: 100%;
-  max-height: 100%;
+  height: calc(100vh - 48px);
+  max-height: calc(100vh - 48px);
   min-height: 0;
+  flex: 1;
   width: 100%;
   overflow: hidden;
   position: relative;
@@ -43,23 +44,38 @@
 .dashboardRightPanel {
   transition: width 0.3s ease-in-out, min-width 0.3s ease-in-out;
   height: 100%;
-  max-height: 100%;
+  max-height: calc(100vh - 64px);
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+
+  /* Polished visible scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f8fafc;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 3px;
+    &:hover {
+      background-color: #94a3b8;
+    }
+  }
 }
 
 .dashboardRightPanelInner {
-  height: 100%;
-  max-height: 100%;
-  min-height: 0;
-  flex: 1 1 0%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   box-sizing: border-box;
+  flex: 1 1 auto;
 }
 
 .dashboardRightPanelOpen {
@@ -67,7 +83,7 @@
   min-width: 400px;
   max-width: 400px;
   height: 100%;
-  max-height: 100%;
+  max-height: calc(100vh - 64px);
   border-left: 1px solid #e0e0e0;
 }
 
@@ -82,6 +98,14 @@
   border-bottom: 2px solid #e0e0e0;
   background-color: #fafafa;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.dashboardCloseButton {
+  color: #666 !important;
+  padding: 4px !important;
 }
 
 .dashboardPanelHeadingWrap {
@@ -793,33 +817,12 @@
 }
 
 .dashboardDetailsContent {
-  flex: 1 1 0% !important;
-  flex-grow: 1 !important;
-  flex-shrink: 1 !important;
-  flex-basis: 0% !important;
-  min-height: 0 !important;
-  height: 0 !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: visible;
+  overflow-x: hidden;
   padding: 14px 14px 32px;
   box-sizing: border-box;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-
-  /* Polished visible scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: #f8fafc;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 3px;
-    &:hover {
-      background-color: #94a3b8;
-    }
-  }
 }
 
 .dashboardDetailsSection {
@@ -993,6 +996,114 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-bottom: 24px;
+}
+
+/* Checklist Module Styling */
+.checklistHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4px 0 8px;
+}
+
+.checklistDescription {
+  display: block;
+  color: #64748b !important;
+  margin-bottom: 12px !important;
+  line-height: 1.4 !important;
+  font-size: 0.72rem !important;
+}
+
+.checklistItemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.checklistItemRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: background-color 0.15s ease;
+}
+
+.checklistItemChecked {
+  background-color: rgba(46, 125, 50, 0.08);
+  border-color: #c8e6c9;
+}
+
+.checklistStepBadge {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 50%;
+  background-color: #1976d2;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.checklistStepBadgeChecked {
+  background-color: #2e7d32;
+}
+
+.checklistItemText {
+  flex: 1;
+  font-size: 0.78rem !important;
+  color: #334155;
+}
+
+.checklistItemTextChecked {
+  color: #2e7d32;
+  text-decoration: line-through;
+}
+
+/* Media Gallery Styling */
+.photosGrid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.photoThumbnail {
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.photoThumbnailClickable {
+  cursor: pointer;
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.photoNoUrl {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f1f5f9;
+  font-size: 0.65rem;
+  color: #94a3b8;
 }
 
 .dashboardRoutePreview {
