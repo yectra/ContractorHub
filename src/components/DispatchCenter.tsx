@@ -49,6 +49,7 @@ import {
   serviceRequestAPI,
   scheduledJobAPI,
   populateJobRelations,
+  updateChecklist,
 } from '../services/api';
 import {
   sendJobUpdatedNotification,
@@ -431,7 +432,6 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
   updateScheduledJob,
   onNotification,
 }) => {
-  const [prevProps, setPrevProps] = useState({ open, controlledItems, jobNotes, jobId });
   const [draftItems, setDraftItems] = useState<DispatchChecklistItem[]>(() => {
     if (controlledItems !== undefined) return controlledItems;
     if (jobNotes) return parseChecklistFromNotes(jobNotes, jobId);
@@ -440,13 +440,8 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
   const [newItemText, setNewItemText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  if (
-    prevProps.open !== open ||
-    prevProps.controlledItems !== controlledItems ||
-    prevProps.jobNotes !== jobNotes ||
-    prevProps.jobId !== jobId
-  ) {
-    setPrevProps({ open, controlledItems, jobNotes, jobId });
+  // Sync draft items when modal opens or job changes
+  useEffect(() => {
     if (open) {
       if (controlledItems !== undefined) {
         setDraftItems(controlledItems);
@@ -457,41 +452,103 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
       }
       setNewItemText('');
     }
-  }
+  }, [open, jobId]);
 
-  const handleAddItem = useCallback(() => {
-    const text = newItemText.trim();
-    if (!text) return;
-
-    const newItem: DispatchChecklistItem = {
-      id: `step-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-      text,
-      checked: false,
-    };
-
-    const updated = [...draftItems, newItem];
-    setDraftItems(updated);
-    if (onItemsChange) {
-      onItemsChange(updated);
+  // Keep internal draftItems in sync if controlled items prop changes from outside
+  useEffect(() => {
+    if (open && controlledItems !== undefined) {
+      setDraftItems(controlledItems);
     }
-    setNewItemText('');
-  }, [newItemText, draftItems, onItemsChange]);
+  }, [open, controlledItems]);
+
+  const handleAddItem = useCallback(
+    async (e?: React.MouseEvent | React.KeyboardEvent) => {
+      if (e) {
+        e.preventDefault();
+      }
+      const text = newItemText.trim();
+      if (!text) return;
+
+      const newItem: DispatchChecklistItem = {
+        id: `step-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        text,
+        checked: false,
+      };
+
+      const updated = [...draftItems, newItem];
+      setDraftItems(updated);
+      setNewItemText('');
+
+      if (onItemsChange) {
+        onItemsChange(updated);
+      }
+
+      // Persist locally for immediate feedback across views
+      if (jobId) {
+        try {
+          localStorage.setItem(`checklist_job_${jobId}`, JSON.stringify(updated));
+        } catch {
+          // Ignore storage restrictions
+        }
+      }
+
+      // Persist to backend / AWS Amplify Data API if job is specified
+      if (jobId) {
+        try {
+          if (updateScheduledJob) {
+            await updateScheduledJob(jobId, {
+              notes: `CHECKLIST:${JSON.stringify(updated)}`,
+            });
+          } else {
+            await updateChecklist(jobId, updated);
+          }
+          console.log('[JobChecklistEditor] Successfully added and persisted step:', newItem);
+        } catch (apiErr) {
+          console.error('[JobChecklistEditor] Failed to persist new step to backend:', apiErr);
+        }
+      }
+    },
+    [newItemText, draftItems, onItemsChange, jobId, updateScheduledJob]
+  );
 
   const handleRemoveItem = useCallback(
-    (id: string) => {
+    async (id: string, e?: React.MouseEvent) => {
+      if (e) {
+        e.preventDefault();
+      }
       const updated = draftItems.filter((item) => item.id !== id);
       setDraftItems(updated);
       if (onItemsChange) {
         onItemsChange(updated);
       }
+
+      if (jobId) {
+        try {
+          localStorage.setItem(`checklist_job_${jobId}`, JSON.stringify(updated));
+        } catch {
+          // Ignore storage restrictions
+        }
+        try {
+          if (updateScheduledJob) {
+            await updateScheduledJob(jobId, {
+              notes: `CHECKLIST:${JSON.stringify(updated)}`,
+            });
+          } else {
+            await updateChecklist(jobId, updated);
+          }
+          console.log('[JobChecklistEditor] Successfully removed step and synced:', id);
+        } catch (apiErr) {
+          console.error('[JobChecklistEditor] Failed to sync removed step to backend:', apiErr);
+        }
+      }
     },
-    [draftItems, onItemsChange]
+    [draftItems, onItemsChange, jobId, updateScheduledJob]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleAddItem();
+      handleAddItem(e);
     }
   };
 
@@ -583,8 +640,9 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
                     {item.text}
                   </Typography>
                   <IconButton
+                    type="button"
                     size="small"
-                    onClick={() => handleRemoveItem(item.id)}
+                    onClick={(e) => handleRemoveItem(item.id, e)}
                     disabled={isSaving}
                     className={modalStyles.removeButton}
                     aria-label={`Remove step ${idx + 1}: ${item.text}`}
@@ -611,8 +669,9 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
             />
             <Button
               id="add-checklist-item-btn"
+              type="button"
               variant="contained"
-              onClick={handleAddItem}
+              onClick={(e) => handleAddItem(e)}
               disabled={!newItemText.trim() || isSaving}
               className={modalStyles.addButton}
             >
@@ -629,6 +688,7 @@ export const JobChecklistEditor: React.FC<JobChecklistEditorProps> = ({
 
         <Box className={modalStyles.modalFooter}>
           <Button
+            type="button"
             variant="outlined"
             startIcon={<CancelIcon />}
             onClick={onClose}
@@ -1433,13 +1493,14 @@ export const DispatchCenter: React.FC = () => {
     setChecklistModalOpen(true);
   };
 
-  const handleChecklistSave = async () => {
+  const handleChecklistSave = async (savedItems?: DispatchChecklistItem[]) => {
     if (!checklistModalJobId) return;
+    const items = Array.isArray(savedItems) ? savedItems : checklistDraftItems;
     try {
       const currentJob = scheduledJobs.find((j) => j.id === checklistModalJobId);
       const currentReq = serviceRequests.find((r) => r.id === checklistModalJobId);
 
-      let updatedNotes = `CHECKLIST:${JSON.stringify(checklistDraftItems)}`;
+      let updatedNotes = `CHECKLIST:${JSON.stringify(items)}`;
       const sourceNotes = currentJob?.notes || currentReq?.notes;
       if (sourceNotes) {
         try {
@@ -1447,8 +1508,8 @@ export const DispatchCenter: React.FC = () => {
           if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
             updatedNotes = JSON.stringify({
               ...parsed,
-              checklist: checklistDraftItems,
-              checklistItems: checklistDraftItems,
+              checklist: items,
+              checklistItems: items,
             });
           }
         } catch {
@@ -1479,7 +1540,7 @@ export const DispatchCenter: React.FC = () => {
       try {
         localStorage.setItem(
           `checklist_job_${checklistModalJobId}`,
-          JSON.stringify(checklistDraftItems)
+          JSON.stringify(items)
         );
       } catch {
         // Ignore storage restrictions
@@ -1489,7 +1550,7 @@ export const DispatchCenter: React.FC = () => {
       setSelectedJobRelations((prev) => ({
         technicianPhotos: prev?.technicianPhotos || [],
         comments: prev?.comments || [],
-        checklistItems: checklistDraftItems,
+        checklistItems: items,
       }));
 
       showNotification_(
@@ -2663,6 +2724,8 @@ export const DispatchCenter: React.FC = () => {
         items={checklistDraftItems}
         onItemsChange={setChecklistDraftItems}
         onSave={handleChecklistSave}
+        updateScheduledJob={updateScheduledJob}
+        onNotification={showNotification_}
       />
 
       {/* Create Technician Modal */}
