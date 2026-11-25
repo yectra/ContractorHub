@@ -106,6 +106,24 @@ const getTodayString = () => {
   return `${year}-${month}-${day}`;
 };
 
+const parseDurationHours = (estimatedDuration?: string | null, fallback = 2): number => {
+  if (!estimatedDuration) return fallback;
+  const match = estimatedDuration.match(/\d+(\.\d+)?/);
+  if (match) {
+    const val = parseFloat(match[0]);
+    return val > 0 ? Math.round(val) : fallback;
+  }
+  return fallback;
+};
+
+const isPastDateTime = (dateStr: string, hour: number): boolean => {
+  const now = new Date();
+  const todayStr = getTodayString();
+  if (dateStr < todayStr) return true;
+  if (dateStr > todayStr) return false;
+  return hour < now.getHours();
+};
+
 export interface DispatchChecklistItem {
   id: string;
   text: string;
@@ -749,6 +767,7 @@ export const DispatchCenter: React.FC = () => {
   const [notificationType, setNotificationType] = useState<
     'success' | 'error' | 'warning'
   >('success');
+  const [notificationKey, setNotificationKey] = useState<number>(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [userSelectedDate, setUserSelectedDate] = useState<string | undefined>(
@@ -1482,8 +1501,10 @@ export const DispatchCenter: React.FC = () => {
     message: string,
     type: 'success' | 'error' | 'warning' = 'success'
   ) => {
+    console.log(`[DispatchCenter] showNotification_: [${type}] "${message}"`);
     setNotificationMessage(message);
     setNotificationType(type);
+    setNotificationKey((prev) => prev + 1);
     setShowNotification(true);
   };
 
@@ -1571,11 +1592,16 @@ export const DispatchCenter: React.FC = () => {
     id: string
   ) => {
     setIsDragging(true);
-    event.dataTransfer.setData('application/json', JSON.stringify({ type, id }));
+    const payload = JSON.stringify({ type, id });
+    event.dataTransfer.setData('application/json', payload);
+    event.dataTransfer.setData('text/plain', payload);
+    event.dataTransfer.effectAllowed = 'move';
+    console.log('[DispatchCenter] handleDragStart:', { type, id });
   };
 
   const handleDragEnd = () => {
     setIsDragging(false);
+    console.log('[DispatchCenter] handleDragEnd');
   };
 
   const handleDrop = async (
@@ -1584,30 +1610,133 @@ export const DispatchCenter: React.FC = () => {
     startHour: number
   ) => {
     event.preventDefault();
+    event.stopPropagation();
     setIsDragging(false);
+
+    let raw = event.dataTransfer.getData('application/json');
+    if (!raw) {
+      raw = event.dataTransfer.getData('text/plain');
+    }
+    console.log('[DispatchCenter] handleDrop invoked:', {
+      techId,
+      startHour,
+      selectedDate,
+      rawPayload: raw,
+    });
 
     let data: { type?: string; id?: string } = {};
     try {
-      data = JSON.parse(
-        event.dataTransfer.getData('application/json') || '{}'
-      );
-    } catch {
+      data = JSON.parse(raw || '{}');
+    } catch (parseErr) {
+      console.error('[DispatchCenter] JSON parse error in handleDrop:', parseErr);
       return;
     }
 
-    if (!data.id) return;
+    if (!data.id) {
+      console.warn('[DispatchCenter] handleDrop aborted: payload missing id', data);
+      return;
+    }
+
+    if (isPastDateTime(selectedDate, startHour)) {
+      console.warn('[DispatchCenter] Drop rejected: Past date/time slot', {
+        selectedDate,
+        startHour,
+      });
+      showNotification_(
+        'Invalid time slot: Cannot schedule or move a job to a past date or time.',
+        'warning'
+      );
+      return;
+    }
+
+    // Determine target job duration and check for conflicts
+    let jobDuration = 2;
+    let requestItem: typeof serviceRequests[0] | undefined;
+    let existingJobItem: typeof scheduledJobs[0] | undefined;
+    let jobItem: typeof scheduledJobs[0] | undefined;
+
+    if (data.type === 'request') {
+      requestItem = serviceRequests.find((r) => r.id === data.id);
+      if (!requestItem) {
+        console.error('[DispatchCenter] Request not found for ID:', data.id);
+        showNotification_('Request not found', 'error');
+        return;
+      }
+      existingJobItem = scheduledJobs.find(
+        (j) => j.serviceRequestId === data.id
+      );
+      jobDuration =
+        existingJobItem?.duration ||
+        parseDurationHours(requestItem.estimatedDuration, 2);
+    } else if (data.type === 'job') {
+      jobItem = scheduledJobs.find((j) => j.id === data.id || j.serviceRequestId === data.id);
+      if (!jobItem) {
+        console.error('[DispatchCenter] Job not found for ID:', data.id);
+        showNotification_('Job not found', 'error');
+        return;
+      }
+      jobDuration = jobItem.duration || 2;
+    }
+
+    const targetStart = startHour;
+    const targetEnd = startHour + jobDuration;
+
+    console.log('[DispatchCenter] Checking overlap conflicts:', {
+      techId,
+      targetStart,
+      targetEnd,
+      jobDuration,
+      type: data.type,
+      id: data.id,
+    });
+
+    const conflictingJob = scheduledJobs.find((scheduledJob) => {
+      if (String(scheduledJob.techId) !== String(techId)) return false;
+
+      const jobDate = scheduledJob.scheduledDate || getTodayString();
+      if (jobDate !== selectedDate) return false;
+
+      if (scheduledJob.status === 'Cancelled') return false;
+
+      if (data.type === 'job') {
+        if (scheduledJob.id === data.id || scheduledJob.serviceRequestId === data.id) return false;
+        if (jobItem && scheduledJob.id === jobItem.id) return false;
+      }
+      if (data.type === 'request') {
+        if (scheduledJob.serviceRequestId === data.id) return false;
+        if (existingJobItem && scheduledJob.id === existingJobItem.id) return false;
+      }
+
+      const existingStart = scheduledJob.startHour;
+      const existingDuration = scheduledJob.duration || 2;
+      const existingEnd = existingStart + existingDuration;
+
+      const overlaps = targetStart < existingEnd && targetEnd > existingStart;
+      if (overlaps) {
+        console.warn('[DispatchCenter] Conflict detected with job:', {
+          conflictingJobId: scheduledJob.id,
+          existingStart,
+          existingEnd,
+          targetStart,
+          targetEnd,
+        });
+      }
+      return overlaps;
+    });
+
+    if (conflictingJob) {
+      console.warn('[DispatchCenter] Drop rejected due to conflict with job:', conflictingJob.id);
+      showNotification_(
+        'Scheduling conflict: This technician already has a job assigned during this time slot.',
+        'warning'
+      );
+      return;
+    }
 
     try {
       if (data.type === 'request') {
-        const request = serviceRequests.find((r) => r.id === data.id);
-        if (!request) {
-          showNotification_('Request not found', 'error');
-          return;
-        }
-
-        const existingJob = scheduledJobs.find(
-          (j) => j.serviceRequestId === data.id
-        );
+        const request = requestItem!;
+        const existingJob = existingJobItem;
 
         if (existingJob) {
           await updateScheduledJob(existingJob.id!, {
@@ -1621,7 +1750,7 @@ export const DispatchCenter: React.FC = () => {
             techId,
             serviceRequestId: data.id,
             startHour,
-            duration: 2,
+            duration: jobDuration,
             status: 'Scheduled',
             scheduledDate: selectedDate,
           });
@@ -1712,7 +1841,7 @@ export const DispatchCenter: React.FC = () => {
       }
 
       if (data.type === 'job') {
-        const job = scheduledJobs.find((j) => j.id === data.id);
+        const job = jobItem || scheduledJobs.find((j) => j.id === data.id);
         if (!job) {
           showNotification_('Job not found', 'error');
           return;
@@ -2134,14 +2263,28 @@ export const DispatchCenter: React.FC = () => {
                   </Box>
 
                   <Box className={styles.dashboardTimeSlots}>
-                    {hours.map((hour) => (
-                      <Box
-                        key={hour}
-                        onDragOver={(event) => event.preventDefault()}
-                        onDrop={(event) => handleDrop(event, tech.id!, hour)}
-                        className={styles.dashboardTimeSlot}
-                      />
-                    ))}
+                    {hours.map((hour) => {
+                      const isPast = isPastDateTime(selectedDate, hour);
+                      return (
+                        <Box
+                          key={hour}
+                          onDragOver={(event) => {
+                            event.preventDefault();
+                          }}
+                          onDrop={(event) => {
+                            console.log('[DispatchCenter] onDrop on slot:', {
+                              hour,
+                              techId: tech.id,
+                              isPast,
+                            });
+                            handleDrop(event, tech.id!, hour);
+                          }}
+                          className={`${styles.dashboardTimeSlot} ${
+                            isPast ? styles.dashboardTimeSlotPast : ''
+                          }`}
+                        />
+                      );
+                    })}
 
                     {/* Middle lane scheduled job chips mapping block */}
                     {filteredJobs
@@ -2168,6 +2311,31 @@ export const DispatchCenter: React.FC = () => {
                               handleDragStart(event, 'job', job.id!)
                             }
                             onDragEnd={handleDragEnd}
+                            onDragOver={(event) => {
+                              event.preventDefault();
+                            }}
+                            onDrop={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              const rect = event.currentTarget.getBoundingClientRect();
+                              const offsetX = event.clientX - rect.left;
+                              const chipDur = job.duration || 2;
+                              const hourOffset = Math.floor(
+                                (offsetX / Math.max(rect.width, 1)) * chipDur
+                              );
+                              const droppedHour =
+                                job.startHour +
+                                Math.max(0, Math.min(hourOffset, chipDur - 1));
+                              console.log(
+                                '[DispatchCenter] onDrop on existing scheduled job chip:',
+                                {
+                                  targetJobId: job.id,
+                                  techId: tech.id,
+                                  droppedHour,
+                                }
+                              );
+                              handleDrop(event, tech.id!, droppedHour);
+                            }}
                             onClick={() => handleJobSelect(canonicalId || job.serviceRequestId || job.id)}
                             className={`${styles.dashboardScheduledJob} ${
                               isDragging
@@ -2702,15 +2870,26 @@ export const DispatchCenter: React.FC = () => {
 
       {/* Notification Toast */}
       <Snackbar
+        key={notificationKey}
         open={showNotification}
-        autoHideDuration={3500}
-        onClose={() => setShowNotification(false)}
+        autoHideDuration={4000}
+        onClose={(_event, reason) => {
+          if (reason === 'clickaway') return;
+          setShowNotification(false);
+        }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ zIndex: 9999 }}
       >
         <Alert
           onClose={() => setShowNotification(false)}
           severity={notificationType}
+          variant="filled"
           className={styles.dashboardToastAlert}
+          sx={{
+            minWidth: '320px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+            fontWeight: 600,
+          }}
         >
           {notificationMessage}
         </Alert>

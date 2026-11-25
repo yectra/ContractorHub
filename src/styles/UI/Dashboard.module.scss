@@ -735,6 +735,17 @@
   cursor: pointer;
 }
 
+.dashboardTimeSlotPast {
+  background-color: #f5f5f5 !important;
+  cursor: not-allowed !important;
+  opacity: 0.65;
+
+  &:hover {
+    background-color: #f0f0f0 !important;
+    cursor: not-allowed !important;
+  }
+}
+
 .dashboardScheduledJob {
   position: absolute;
   top: 4px;
